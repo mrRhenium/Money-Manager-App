@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Mail, Lock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -48,15 +49,15 @@ export default function RegisterPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" name="name" type="text" placeholder="Enter Name" required />
+              <Input id="name" name="name" type="text" placeholder="Enter Name" icon={<User />} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="Enter Email" required />
+              <Input id="email" name="email" type="email" placeholder="Enter Email" icon={<Mail />} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required minLength={6} />
+              <Input id="password" name="password" type="password" placeholder="••••••••" icon={<Lock />} required minLength={6} />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">

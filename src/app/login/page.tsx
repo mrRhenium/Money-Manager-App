@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Mail, Lock } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,13 +62,13 @@ export default function LoginPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="Enter Email" required />
+              <Input id="email" name="email" type="email" placeholder="Enter Email" icon={<Mail />} required />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <Input id="password" name="password" type="password" required />
+              <Input id="password" name="password" type="password" placeholder="••••••••" icon={<Lock />} required />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">

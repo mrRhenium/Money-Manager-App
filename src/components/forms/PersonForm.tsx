@@ -60,7 +60,7 @@ export function PersonForm() {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. John Doe" {...field} />
+                    <Input placeholder="e.g. Enter Name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

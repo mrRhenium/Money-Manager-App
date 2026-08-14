@@ -48,11 +48,11 @@ export default function RegisterPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" name="name" type="text" placeholder="John Doe" required />
+              <Input id="name" name="name" type="text" placeholder="Enter Name" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+              <Input id="email" name="email" type="email" placeholder="Enter Email" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

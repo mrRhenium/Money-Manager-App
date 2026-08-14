@@ -5,8 +5,13 @@ import { getPeople } from "@/actions/person";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
 import { ArrowUpRight, ArrowDownRight, Wallet, Users } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
   const [accounts, transactions, people] = await Promise.all([
     getAccounts(),
     getTransactions(100), // Get recent 100 for dashboard

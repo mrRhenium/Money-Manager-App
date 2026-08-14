@@ -61,7 +61,7 @@ export default function LoginPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+              <Input id="email" name="email" type="email" placeholder="Enter Email" required />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">

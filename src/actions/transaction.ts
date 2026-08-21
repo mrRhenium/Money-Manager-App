@@ -3,6 +3,8 @@
 import dbConnect from "@/lib/db";
 import Transaction, { TransactionType } from "@/models/Transaction";
 import Account from "@/models/Account";
+import CreditCard from "@/models/CreditCard";
+import CardStatement from "@/models/CardStatement";
 import User from "@/models/User";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -27,7 +29,9 @@ export async function createTransaction(data: {
   type: TransactionType; 
   amount: number; 
   date: string; 
-  accountId: string; 
+  accountId?: string; 
+  paymentMode?: "cash" | "bank" | "credit_card" | "wallet";
+  creditCardId?: string; 
   categoryId?: string;
   note?: string;
   originalCurrency?: string;
@@ -68,20 +72,57 @@ export async function createTransaction(data: {
   });
 
   // Update Account Balance
-  let balanceChange = 0;
-  if (data.type === "expense" || data.type === "lend") {
-    balanceChange = -finalAmount;
-  } else if (data.type === "income" || data.type === "borrow" || data.type === "settlement") {
-    // For settlement, it depends if it's them paying us or us paying them.
-    // For MVP, income adds to balance.
-    balanceChange = finalAmount;
-  }
+  if (data.paymentMode === "credit_card" && data.creditCardId) {
+    const card = await CreditCard.findOne({ _id: data.creditCardId, userId: session.user.id });
+    if (card) {
+      card.currentOutstanding += finalAmount;
+      card.availableLimit = card.creditLimit - card.currentOutstanding;
+      await card.save();
 
-  if (balanceChange !== 0) {
-    await Account.findOneAndUpdate(
-      { _id: data.accountId, userId: session.user.id },
-      { $inc: { balance: balanceChange } }
-    );
+      const txDate = new Date(data.date);
+      const statementMonth = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      let statement = await CardStatement.findOne({ cardId: card._id, statementMonth });
+      if (!statement) {
+        let dueDate = new Date(txDate);
+        dueDate.setDate(card.paymentDueDay);
+        if (card.paymentDueDay <= card.billingCycleEndDay) {
+          dueDate.setMonth(dueDate.getMonth() + 1);
+        }
+        
+        statement = await CardStatement.create({
+          cardId: card._id,
+          userId: session.user.id,
+          statementMonth,
+          statementDate: new Date(),
+          dueDate,
+          totalAmount: 0,
+          minimumDue: 0,
+          amountPaid: 0,
+          paymentStatus: "unpaid",
+          transactions: []
+        });
+      }
+
+      statement.totalAmount += finalAmount;
+      statement.minimumDue = (statement.totalAmount * card.minimumDuePercent) / 100;
+      statement.transactions.push(transaction._id as any);
+      await statement.save();
+    }
+  } else if (data.accountId) {
+    let balanceChange = 0;
+    if (data.type === "expense" || data.type === "lend") {
+      balanceChange = -finalAmount;
+    } else if (data.type === "income" || data.type === "borrow" || data.type === "settlement") {
+      balanceChange = finalAmount;
+    }
+
+    if (balanceChange !== 0) {
+      await Account.findOneAndUpdate(
+        { _id: data.accountId, userId: session.user.id },
+        { $inc: { balance: balanceChange } }
+      );
+    }
   }
 
   // Update Streak
@@ -129,18 +170,37 @@ export async function deleteTransaction(id: string) {
   if (!transaction) throw new Error("Transaction not found");
 
   // Revert balance
-  let balanceChange = 0;
-  if (transaction.type === "expense" || transaction.type === "lend") {
-    balanceChange = transaction.amount; // Add back
-  } else if (transaction.type === "income" || transaction.type === "borrow" || transaction.type === "settlement") {
-    balanceChange = -transaction.amount; // Remove
-  }
+  if (transaction.paymentMode === "credit_card" && transaction.creditCardId) {
+    const card = await CreditCard.findOne({ _id: transaction.creditCardId, userId: session.user.id });
+    if (card) {
+      card.currentOutstanding = Math.max(0, card.currentOutstanding - transaction.amount);
+      card.availableLimit = card.creditLimit - card.currentOutstanding;
+      await card.save();
+      
+      const txDate = new Date(transaction.date);
+      const statementMonth = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      const statement = await CardStatement.findOne({ cardId: transaction.creditCardId, statementMonth });
+      if (statement) {
+        statement.totalAmount = Math.max(0, statement.totalAmount - transaction.amount);
+        statement.minimumDue = (statement.totalAmount * card.minimumDuePercent) / 100;
+        statement.transactions = statement.transactions.filter((id: any) => id.toString() !== transaction._id.toString());
+        await statement.save();
+      }
+    }
+  } else if (transaction.accountId) {
+    let balanceChange = 0;
+    if (transaction.type === "expense" || transaction.type === "lend") {
+      balanceChange = transaction.amount; // Add back
+    } else if (transaction.type === "income" || transaction.type === "borrow" || transaction.type === "settlement") {
+      balanceChange = -transaction.amount; // Remove
+    }
 
-  if (balanceChange !== 0) {
-    await Account.findOneAndUpdate(
-      { _id: transaction.accountId, userId: session.user.id },
-      { $inc: { balance: balanceChange } }
-    );
+    if (balanceChange !== 0) {
+      await Account.findOneAndUpdate(
+        { _id: transaction.accountId, userId: session.user.id },
+        { $inc: { balance: balanceChange } }
+      );
+    }
   }
 
   await Transaction.deleteOne({ _id: id });

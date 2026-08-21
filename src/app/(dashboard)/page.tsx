@@ -2,8 +2,9 @@ import React from "react";
 import { getAccounts } from "@/actions/account";
 import { getTransactions } from "@/actions/transaction";
 import { getPeople } from "@/actions/person";
+import { getCreditCards } from "@/actions/creditCard";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
-import { ArrowUpRight, ArrowDownRight, Wallet, Users, ChevronRight, Activity, Sparkles } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Wallet, Users, ChevronRight, Activity, Sparkles, CreditCard as CardIcon, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -14,11 +15,14 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [accounts, transactions, people] = await Promise.all([
+  const [accounts, transactions, people, cards] = await Promise.all([
     getAccounts(),
     getTransactions(100), // Get recent 100 for dashboard
     getPeople(),
+    getCreditCards(),
   ]);
+
+  const totalOutstanding = cards.reduce((sum: number, c: any) => sum + c.currentOutstanding, 0);
 
   const totalBalance = accounts.reduce((acc: number, curr: any) => acc + curr.balance, 0);
 
@@ -75,7 +79,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
         <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
@@ -139,6 +143,27 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Link href="/credit-cards" className="block h-full">
+          <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1 h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Credit Cards</CardTitle>
+              <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+                <CardIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">₹{totalOutstanding.toLocaleString("en-IN")}</div>
+              {totalOutstanding > 0 ? (
+                 <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                   <AlertCircle className="w-3 h-3" /> Unpaid dues
+                 </p>
+              ) : (
+                 <p className="text-xs text-muted-foreground mt-1">All clear</p>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-7">

@@ -1,0 +1,103 @@
+"use client";
+
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { payCreditCardStatement } from "@/actions/creditCard";
+import { IndianRupee } from "lucide-react";
+
+export function PayBillModal({ cardId, outstanding, accounts, statements }: { cardId: string, outstanding: number, accounts: any[], statements: any[] }) {
+  const [open, setOpen] = useState(false);
+  const [statementId, setStatementId] = useState(statements[0]?._id || "");
+  const [accountId, setAccountId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handlePay = async () => {
+    setError("");
+    if (!statementId || !accountId || !amount) {
+      setError("Please fill all fields");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await payCreditCardStatement(statementId, accountId, Number(amount));
+      setOpen(false);
+    } catch (err: any) {
+      setError(err.message || "Payment failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={
+        <Button className="w-full gap-2" variant="default" disabled={outstanding === 0}>
+          <IndianRupee className="w-4 h-4" /> Pay Bill
+        </Button>
+      } />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Pay Credit Card Bill</DialogTitle>
+        </DialogHeader>
+        
+        {error && <div className="text-sm text-red-500 p-2 bg-red-500/10 rounded">{error}</div>}
+
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Select Statement / Cycle</Label>
+            <Select value={statementId} onValueChange={(val) => setStatementId(val || "")}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select statement" />
+              </SelectTrigger>
+              <SelectContent>
+                {statements.map(s => (
+                  <SelectItem key={s._id} value={s._id}>
+                    {s.statementMonth} - Due: ₹{(s.totalAmount - s.amountPaid).toLocaleString()}
+                  </SelectItem>
+                ))}
+                {statements.length === 0 && <SelectItem value="none" disabled>No pending statements</SelectItem>}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Pay From Account</Label>
+            <Select value={accountId} onValueChange={(val) => setAccountId(val || "")}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select bank account" />
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map(a => (
+                  <SelectItem key={a._id} value={a._id}>
+                    {a.name} (Bal: ₹{a.balance.toLocaleString()})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Amount (₹)</Label>
+            <Input 
+              type="number" 
+              value={amount} 
+              onChange={e => setAmount(e.target.value)} 
+              placeholder="e.g. 5000" 
+            />
+          </div>
+
+          <Button className="w-full mt-4" onClick={handlePay} disabled={loading || !statementId}>
+            {loading ? "Processing..." : "Confirm Payment"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, PieChart, Users, Wallet, Settings, Flame, ShieldAlert } from "lucide-react";
+import { Home, PieChart, Users, Wallet, Settings, Flame, ShieldAlert, CreditCard } from "lucide-react";
 import { ThemeToggle } from "../theme-toggle";
 import { getUserProfile } from "@/actions/user";
 
@@ -9,6 +9,7 @@ export async function Sidebar() {
   const navItems = [
     { label: "Dashboard", href: "/", icon: Home },
     { label: "Transactions", href: "/transactions", icon: Wallet },
+    { label: "Credit Cards", href: "/credit-cards", icon: CreditCard },
     { label: "Budgets", href: "/budgets", icon: PieChart },
     { label: "People", href: "/people", icon: Users },
     { label: "Settings", href: "/settings", icon: Settings },

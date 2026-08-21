@@ -17,7 +17,9 @@ export interface ITransaction extends Document {
   originalAmount?: number;
   exchangeRate?: number;
   date: Date;
-  accountId: mongoose.Types.ObjectId;
+  accountId?: mongoose.Types.ObjectId;
+  paymentMode?: "cash" | "bank" | "credit_card" | "wallet";
+  creditCardId?: mongoose.Types.ObjectId;
   categoryId?: mongoose.Types.ObjectId;
   personId?: mongoose.Types.ObjectId; // For lend/borrow
   note?: string;
@@ -48,7 +50,13 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     originalAmount: { type: Number },
     exchangeRate: { type: Number },
     date: { type: Date, required: true, default: Date.now },
-    accountId: { type: Schema.Types.ObjectId, ref: "Account", required: true },
+    accountId: { type: Schema.Types.ObjectId, ref: "Account", required: false },
+    paymentMode: { 
+      type: String, 
+      enum: ["cash", "bank", "credit_card", "wallet"],
+      default: "bank"
+    },
+    creditCardId: { type: Schema.Types.ObjectId, ref: "CreditCard" },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
     personId: { type: Schema.Types.ObjectId, ref: "Person" },
     note: { type: String },

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Input, Button, Form, Typography, Alert } from "antd";
+import { signIn } from "next-auth/react";
 import { MailOutlined, LockOutlined, UserOutlined, WalletOutlined, PhoneOutlined, KeyOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -12,6 +13,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,7 @@ export default function RegisterPage() {
 
       if (res.ok && data.step === "verify_otp") {
         setEmail(values.email);
+        setPassword(values.password);
         setSuccess("An OTP has been sent to your email to verify your account.");
         setStep(2);
       } else {
@@ -68,10 +71,23 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (res.ok) {
-        setSuccess("Account verified successfully! Redirecting to login...");
-        setTimeout(() => {
-          router.push("/login?registered=true");
-        }, 2000);
+        setSuccess("Account verified successfully! Logging you in...");
+        
+        const signInResult = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        });
+
+        if (signInResult?.ok && !signInResult?.error) {
+          router.push("/");
+          router.refresh();
+        } else {
+          setError("Failed to login automatically. Redirecting to login page...");
+          setTimeout(() => {
+            router.push("/login?registered=true");
+          }, 2000);
+        }
       } else {
         setError(data.message || "Invalid OTP");
       }

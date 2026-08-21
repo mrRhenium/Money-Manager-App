@@ -62,6 +62,27 @@ export function TransactionTable({
       render: (_: any, record: any) => <span className="whitespace-nowrap">{record.accountId?.name || "-"}</span>,
     },
     {
+      title: "Note/Payee",
+      key: "note",
+      render: (_: any, record: any) => {
+        const isQr = record.paymentSource === "upi_scan" || (record.upiPayeeName && record.upiPayeeVpa);
+        if (isQr) {
+          return (
+            <div className="flex flex-col gap-1 py-1">
+              {record.note && <span className="font-semibold text-sm text-foreground">{record.note}</span>}
+              <div className="inline-flex items-center gap-1.5 bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-lg text-xs w-fit text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-bold">UPI:</span>
+                <span className="font-medium text-foreground opacity-90">{record.upiPayeeName}</span>
+                <span className="text-muted-foreground font-mono">({record.upiPayeeVpa})</span>
+              </div>
+            </div>
+          );
+        }
+        return <span className="text-muted-foreground text-sm">{record.note || "-"}</span>;
+      }
+    },
+    {
       title: "Amount",
       key: "amount",
       align: "right" as const,

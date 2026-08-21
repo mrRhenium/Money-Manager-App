@@ -28,6 +28,8 @@ export interface ITransaction extends Document {
   upiRef?: string;
   paymentSource?: "manual_entry" | "upi_scan" | "upi_manual" | "payee_quickpay";
   status?: "completed" | "pending" | "cancelled" | "awaiting_confirmation";
+  upiPayeeName?: string;
+  upiPayeeVpa?: string;
   createdAt: Date;
 }
 
@@ -75,6 +77,8 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
       enum: ["completed", "pending", "cancelled", "awaiting_confirmation"],
       default: "completed"
     },
+    upiPayeeName: { type: String },
+    upiPayeeVpa: { type: String },
   },
   { timestamps: true }
 );

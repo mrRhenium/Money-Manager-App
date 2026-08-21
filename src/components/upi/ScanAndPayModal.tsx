@@ -251,10 +251,12 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
         accountId,
         paymentMode: "bank", // standard UPI goes through bank account
         categoryId,
-        note: note ? `${note} (to ${payeeName} - ${vpa})` : `UPI Payment to ${payeeName} (${vpa})`,
+        note: note || "UPI Payment",
         paymentSource: "upi_scan",
         status: "awaiting_confirmation",
-        upiRef: vpa
+        upiRef: vpa,
+        upiPayeeName: payeeName,
+        upiPayeeVpa: vpa
       });
 
       setCreatedTxnId(txn._id);

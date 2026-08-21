@@ -16,6 +16,12 @@ export function CreditCardTransactionTable({ transactions, userTimezone }: { tra
           </div>
           <div>
             <p className="font-medium text-foreground whitespace-nowrap">{record.note || record.categoryId?.name || "Expense"}</p>
+            {record.upiPayeeName && (
+              <div className="inline-flex items-center gap-1 bg-primary/5 border border-primary/10 px-1.5 py-0.5 rounded text-[10px] text-primary mt-1">
+                <span className="font-bold">UPI:</span>
+                <span>{record.upiPayeeName} ({record.upiPayeeVpa})</span>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
               {formatDate(record.date, "standard", userTimezone)} • {record.categoryId?.name}
             </p>

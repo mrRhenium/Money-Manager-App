@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createPerson } from "@/actions/person";
-import { Plus, UserPlus, User, Users, Phone } from "lucide-react";
+import { Plus, UserPlus, User, Users, Phone, Smartphone } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -20,6 +20,13 @@ const formSchema = z.object({
 
 export function PersonForm() {
   const [open, setOpen] = useState(false);
+  const [isContactSupported, setIsContactSupported] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window) {
+      setIsContactSupported(true);
+    }
+  }, []);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -39,6 +46,26 @@ export function PersonForm() {
     }
   }
 
+  const handleImportContact = async () => {
+    try {
+      const props = ['name', 'tel'];
+      const opts = { multiple: false };
+      // @ts-ignore
+      const contacts = await navigator.contacts.select(props, opts);
+      if (contacts && contacts.length > 0) {
+        const c = contacts[0];
+        if (c.name && c.name.length > 0) {
+          form.setValue("name", c.name[0]);
+        }
+        if (c.tel && c.tel.length > 0) {
+          form.setValue("phone", c.tel[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to pick contact", err);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
@@ -49,10 +76,18 @@ export function PersonForm() {
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <UserPlus className="w-5 h-5" />
-            <span className="text-foreground">Add New Contact</span>
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <UserPlus className="w-5 h-5" />
+              <span className="text-foreground">Add New Contact</span>
+            </DialogTitle>
+            {isContactSupported && (
+              <Button type="button" variant="outline" size="sm" onClick={handleImportContact} className="gap-2">
+                <Smartphone className="w-4 h-4" />
+                Import
+              </Button>
+            )}
+          </div>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

@@ -138,15 +138,11 @@ export default function ForgotPasswordPage() {
             )}
 
             <Form.Item
-              label="6-Digit OTP"
+              label="Type your 6 digits OTP"
               name="otp"
               rules={[{ required: true, message: 'Please enter the 6-digit OTP!' }]}
             >
-              <Input 
-                placeholder="123456" 
-                maxLength={6}
-                style={{ textAlign: 'center', letterSpacing: '8px', fontWeight: 600, fontSize: '18px' }}
-              />
+              <Input.OTP length={6} size="large" />
             </Form.Item>
 
             <Form.Item

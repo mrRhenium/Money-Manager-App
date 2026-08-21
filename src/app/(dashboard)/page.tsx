@@ -15,6 +15,8 @@ import { formatDate } from "@/lib/helpers";
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  
+  const userTimezone = (session.user as any).timezone || "UTC";
 
   const [accounts, transactions, people, cards] = await Promise.all([
     getAccounts(),
@@ -199,7 +201,7 @@ export default async function DashboardPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{t.categoryId?.name || t.type}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{formatDate(t.date, 'short')} • {t.accountId?.name || 'Account'}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}</p>
                     </div>
                   </div>
                   <div className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>

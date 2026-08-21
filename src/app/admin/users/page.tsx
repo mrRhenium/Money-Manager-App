@@ -1,8 +1,12 @@
 import { getAllUsers } from "@/actions/admin";
 import { UserDeleteButton } from "@/components/admin/UserDeleteButton";
 import { formatDate } from "@/lib/helpers";
+import { auth } from "@/lib/auth";
 
 export default async function AdminUsersPage() {
+  const session = await auth();
+  const userTimezone = (session?.user as any)?.timezone || "UTC";
+  
   const users = await getAllUsers();
 
   return (
@@ -29,7 +33,7 @@ export default async function AdminUsersPage() {
                   <td className="px-6 py-4 font-medium text-foreground">{user.name}</td>
                   <td className="px-6 py-4 text-muted-foreground">{user.email}</td>
                   <td className="px-6 py-4 text-muted-foreground">
-                    {formatDate(user.createdAt, "long")}
+                    {formatDate(user.createdAt, "long", userTimezone)}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <UserDeleteButton userId={user._id} />

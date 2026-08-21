@@ -4,8 +4,12 @@ import { getCategories } from "@/actions/category";
 import { ExportButton } from "@/components/transactions/ExportButton";
 import { TransactionForm } from "@/components/forms/TransactionForm";
 import { formatDate } from "@/lib/helpers";
+import { auth } from "@/lib/auth";
 
 export default async function TransactionsPage() {
+  const session = await auth();
+  const userTimezone = (session?.user as any)?.timezone || "UTC";
+
   const [transactions, accounts, categories] = await Promise.all([
     getTransactions(),
     getAccounts(),
@@ -49,7 +53,7 @@ export default async function TransactionsPage() {
                   transactions.map((t: any) => (
                     <tr key={t._id} className="hover:bg-muted/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {formatDate(t.date)}
+                        {formatDate(t.date, "standard", userTimezone)}
                       </td>
                       <td className="px-6 py-4 capitalize">{t.type}</td>
                       <td className="px-6 py-4">

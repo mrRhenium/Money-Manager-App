@@ -15,3 +15,14 @@ export async function getUserProfile() {
 
   return JSON.parse(JSON.stringify(user));
 }
+
+export async function updateTimezone(timezone: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+  
+  await User.findByIdAndUpdate(session.user.id, { timezone });
+  
+  return { success: true };
+}

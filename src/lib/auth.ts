@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -19,7 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         await dbConnect();
 
-        let user = await User.findOne({ email: credentials.email }).select("+password");
+        const user = await User.findOne({ email: credentials.email }).select("+password");
 
 
         if (!user || !user.password) {
@@ -48,6 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          timezone: user.timezone || "UTC",
         };
       },
     }),
@@ -61,6 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.timezone = (user as any).timezone || "UTC";
       }
       return token;
     },
@@ -68,6 +71,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user && token) {
         session.user.id = token.id as string;
         session.user.role = token.role as "USER" | "ADMIN";
+        (session.user as any).timezone = token.timezone as string;
       }
       return session;
     },

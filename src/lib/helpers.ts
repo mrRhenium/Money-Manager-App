@@ -1,3 +1,10 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 /**
  * Generates a numeric One-Time Password (OTP) of the specified length.
  * @param length The length of the OTP (default is 6)
@@ -12,32 +19,32 @@ export function generateOtp(length: number = 6): string {
 /**
  * Calculates a future expiration date based on the provided minutes.
  * @param minutes The number of minutes until expiration (default is 10)
- * @returns A Date object representing the expiration time
+ * @returns A Date object representing the expiration time in UTC
  */
 export function getExpiryDate(minutes: number = 10): Date {
-  const expiry = new Date();
-  expiry.setMinutes(expiry.getMinutes() + minutes);
-  return expiry;
+  return dayjs.utc().add(minutes, 'minute').toDate();
 }
 
 /**
  * Formats a Date object or string into a standardized, human-readable format.
- * @param date The date to format
+ * @param date The date to format (assumed UTC if from DB)
  * @param formatType 'standard' (MM/DD/YYYY), 'short' (Mon DD), 'long' (Mon DD, YYYY)
+ * @param userTimezone The user's preferred timezone (default is "UTC")
  * @returns The formatted date string
  */
 export function formatDate(
   date: Date | string,
-  formatType: "standard" | "short" | "long" = "standard"
+  formatType: "standard" | "short" | "long" = "standard",
+  userTimezone: string = "UTC"
 ): string {
-  const d = new Date(date);
+  const d = dayjs.utc(date).tz(userTimezone);
   
   if (formatType === "short") {
-    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return d.format("MMM D"); // e.g. Jan 1
   } else if (formatType === "long") {
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return d.format("MMM D, YYYY"); // e.g. Jan 1, 2024
   }
   
   // Default standard format
-  return d.toLocaleDateString();
+  return d.format("M/D/YYYY");
 }

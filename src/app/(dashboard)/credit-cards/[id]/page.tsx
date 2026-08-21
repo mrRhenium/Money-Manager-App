@@ -10,8 +10,12 @@ import { Button } from "@/components/ui/button";
 // A mock PayBillModal component for simplicity. In a real app, this would be a client component form.
 import { PayBillModal } from "./PayBillModal";
 import { formatDate } from "@/lib/helpers";
+import { auth } from "@/lib/auth";
 
 export default async function CreditCardDetailPage({ params }: { params: { id: string } }) {
+  const session = await auth();
+  const userTimezone = (session?.user as any)?.timezone || "UTC";
+
   const data = await getCreditCardById(params.id);
   const accounts = await getAccounts();
   const bankAccounts = accounts.filter((a: any) => a.type === "bank" || a.type === "cash" || a.type === "wallet");
@@ -125,7 +129,7 @@ export default async function CreditCardDetailPage({ params }: { params: { id: s
                         <div>
                           <p className="font-medium text-foreground">{t.note || t.categoryId?.name || "Expense"}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {formatDate(t.date)} • {t.categoryId?.name}
+                            {formatDate(t.date, "standard", userTimezone)} • {t.categoryId?.name}
                           </p>
                         </div>
                       </div>
@@ -157,7 +161,7 @@ export default async function CreditCardDetailPage({ params }: { params: { id: s
                       <div>
                         <p className="font-medium text-foreground">Statement: {s.statementMonth}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Due: {formatDate(s.dueDate)}
+                          Due: {formatDate(s.dueDate, "standard", userTimezone)}
                         </p>
                       </div>
                       <div className="text-right">

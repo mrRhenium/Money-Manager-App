@@ -9,6 +9,7 @@ import { LogOut, User, Bell } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { subscribeUser, sendTestNotification } from "@/actions/push";
+import { TimezonePicker } from "@/components/settings/TimezonePicker";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
 
@@ -96,6 +97,16 @@ export default function SettingsPage() {
             <Input value="Dynamic (Multi-Currency Enabled)" disabled />
             <p className="text-xs text-muted-foreground">Log transactions in any currency, auto-converts to INR.</p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Global Timezone</CardTitle>
+          <CardDescription>All transactions and dates will be displayed according to this timezone.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TimezonePicker initialTimezone={(session?.user as any)?.timezone || "UTC"} />
         </CardContent>
       </Card>
 

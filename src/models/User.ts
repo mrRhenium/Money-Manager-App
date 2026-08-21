@@ -18,6 +18,7 @@ export interface IUser extends Document {
   verificationOtpExpiry?: Date;
   resetOtp?: string;
   resetOtpExpiry?: Date;
+  timezone?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +42,7 @@ const UserSchema: Schema<IUser> = new Schema(
     verificationOtpExpiry: { type: Date },
     resetOtp: { type: String },
     resetOtpExpiry: { type: Date },
+    timezone: { type: String, default: "UTC" },
   },
   { timestamps: true }
 );

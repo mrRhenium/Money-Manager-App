@@ -84,7 +84,7 @@ export async function createTransaction(data: {
       
       let statement = await CardStatement.findOne({ cardId: card._id, statementMonth });
       if (!statement) {
-        let dueDate = new Date(txDate);
+        const dueDate = new Date(txDate);
         dueDate.setDate(card.paymentDueDay);
         if (card.paymentDueDay <= card.billingCycleEndDay) {
           dueDate.setMonth(dueDate.getMonth() + 1);

@@ -3,8 +3,7 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Badge } from "antd";
 import { formatDate } from "@/lib/helpers";
-import { Eye, History, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity } from "lucide-react";
 
 export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezone: string }) {
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
@@ -133,16 +132,15 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
   const changes = selectedLog ? getChangedProperties(selectedLog.previousValue, selectedLog.currentValue) : [];
 
   return (
-    <Card className="border-none shadow-sm">
-      <CardContent className="p-0">
-        <Table
-          columns={columns}
-          dataSource={logs}
-          rowKey="_id"
-          pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
-          className="border-none"
-          locale={{ emptyText: "No audit logs found." }}
-        />
+    <div className="bg-card rounded-2xl overflow-hidden">
+      <Table
+        columns={columns}
+        dataSource={logs}
+        rowKey="_id"
+        pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true, className: "px-4 pb-3" }}
+        className="audit-logs-table"
+        locale={{ emptyText: "No audit logs found." }}
+      />
 
         <Modal
           title={
@@ -154,45 +152,57 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           open={!!selectedLog}
           onCancel={() => setSelectedLog(null)}
           footer={[
-            <Button key="close" onClick={() => setSelectedLog(null)} className="rounded-xl">
+            <Button key="close" onClick={() => setSelectedLog(null)} className="rounded-xl px-5">
               Close
             </Button>
           ]}
-          width={650}
+          width={800}
           className="audit-log-modal"
           centered
         >
           {selectedLog && (
             <div className="space-y-6 pt-4">
               {/* Metadata Grid */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/40 rounded-2xl border border-border/40 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Timestamp</p>
-                  <p className="font-medium text-foreground mt-0.5">{formatDate(selectedLog.createdAt, "standard", userTimezone)}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-5 bg-secondary/30 rounded-2xl border text-sm">
+                <div className="flex gap-2.5 items-start">
+                  <Calendar className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Timestamp</p>
+                    <p className="font-semibold text-foreground mt-0.5">{formatDate(selectedLog.createdAt, "standard", userTimezone)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Entity ID</p>
-                  <p className="font-mono text-xs text-foreground mt-1 break-all">{selectedLog.entityId}</p>
+                <div className="flex gap-2.5 items-start">
+                  <Hash className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Entity ID</p>
+                    <p className="font-mono text-xs text-foreground mt-1 break-all">{selectedLog.entityId}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Entity Type</p>
-                  <p className="mt-0.5">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-secondary text-secondary-foreground border">
-                      {selectedLog.entityType}
-                    </span>
-                  </p>
+                <div className="flex gap-2.5 items-start">
+                  <Layers className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Entity Type</p>
+                    <p className="mt-1">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-secondary text-secondary-foreground border">
+                        {selectedLog.entityType}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Action Type</p>
-                  <p className="mt-0.5">
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                      selectedLog.action === "CREATE" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" :
-                      selectedLog.action === "DELETE" ? "bg-red-500/10 text-red-600 border border-red-500/20" :
-                      "bg-blue-500/10 text-blue-600 border border-blue-500/20"
-                    }`}>
-                      {selectedLog.action}
-                    </span>
-                  </p>
+                <div className="flex gap-2.5 items-start">
+                  <Activity className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Action Type</p>
+                    <p className="mt-1">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                        selectedLog.action === "CREATE" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" :
+                        selectedLog.action === "DELETE" ? "bg-red-500/10 text-red-600 border border-red-500/20" :
+                        "bg-blue-500/10 text-blue-600 border border-blue-500/20"
+                      }`}>
+                        {selectedLog.action}
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -206,20 +216,34 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
 
                 {selectedLog.action === "UPDATE" ? (
                   changes.length > 0 ? (
-                    <div className="border border-border/50 rounded-2xl overflow-hidden">
-                      <div className="grid grid-cols-3 bg-muted/60 p-3 text-xs font-bold text-muted-foreground border-b uppercase tracking-wider">
+                    <div className="border border-border/50 rounded-2xl overflow-hidden shadow-inner">
+                      <div className="grid grid-cols-3 bg-muted/50 p-3.5 text-xs font-bold text-muted-foreground border-b uppercase tracking-wider">
                         <div>Property</div>
                         <div>Previous Value</div>
                         <div>Current Value</div>
                       </div>
-                      <div className="divide-y divide-border/40 max-h-[300px] overflow-y-auto">
+                      <div className="divide-y divide-border/40 max-h-[350px] overflow-y-auto bg-card">
                         {changes.map((c) => (
-                          <div key={c.key} className="grid grid-cols-3 p-3 items-center text-sm gap-2">
-                            <div className="font-medium text-foreground capitalize">{c.key}</div>
-                            <div className="break-all pr-2">{renderValue(c.prev)}</div>
+                          <div key={c.key} className="grid grid-cols-3 p-3.5 items-center text-sm gap-2 hover:bg-secondary/10 transition-colors">
+                            <div className="font-semibold text-foreground capitalize">{c.key}</div>
+                            <div className="break-all pr-2">
+                              {c.prev === undefined || c.prev === null ? (
+                                <span className="text-muted-foreground/50 italic text-xs">None</span>
+                              ) : (
+                                <span className="inline-block px-2.5 py-1.5 rounded-xl text-xs font-mono bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-medium line-through decoration-rose-500/30">
+                                  {typeof c.prev === "object" ? JSON.stringify(c.prev) : String(c.prev)}
+                                </span>
+                              )}
+                            </div>
                             <div className="break-all flex items-center gap-1.5">
                               <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
-                              {renderValue(c.curr)}
+                              {c.curr === undefined || c.curr === null ? (
+                                <span className="text-muted-foreground/50 italic text-xs">None</span>
+                              ) : (
+                                <span className="inline-block px-2.5 py-1.5 rounded-xl text-xs font-mono bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-medium">
+                                  {typeof c.curr === "object" ? JSON.stringify(c.curr) : String(c.curr)}
+                                </span>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -229,17 +253,17 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                     <p className="text-sm text-muted-foreground italic text-center py-6">No properties were modified.</p>
                   )
                 ) : (
-                  <div className="border border-border/50 rounded-2xl overflow-hidden">
-                    <div className="grid grid-cols-2 bg-muted/60 p-3 text-xs font-bold text-muted-foreground border-b uppercase tracking-wider">
+                  <div className="border border-border/50 rounded-2xl overflow-hidden shadow-inner">
+                    <div className="grid grid-cols-2 bg-muted/50 p-3.5 text-xs font-bold text-muted-foreground border-b uppercase tracking-wider">
                       <div>Property</div>
                       <div>Value</div>
                     </div>
-                    <div className="divide-y divide-border/40 max-h-[300px] overflow-y-auto">
+                    <div className="divide-y divide-border/40 max-h-[350px] overflow-y-auto bg-card">
                       {Object.entries(selectedLog.currentValue || selectedLog.previousValue || {}).map(([key, val]) => {
                         if (["_id", "userId", "createdAt", "updatedAt", "__v", "id"].includes(key)) return null;
                         return (
-                          <div key={key} className="grid grid-cols-2 p-3 items-center text-sm gap-2">
-                            <div className="font-medium text-foreground capitalize">{key}</div>
+                          <div key={key} className="grid grid-cols-2 p-3.5 items-center text-sm gap-2 hover:bg-secondary/10 transition-colors">
+                            <div className="font-semibold text-foreground capitalize">{key}</div>
                             <div className="break-all">{renderValue(val)}</div>
                           </div>
                         );
@@ -251,7 +275,6 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
             </div>
           )}
         </Modal>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

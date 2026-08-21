@@ -80,6 +80,22 @@ function SettingsContent() {
     }).catch(console.error);
   }, [session]);
 
+  // Check actual browser push subscription status on mount
+  useEffect(() => {
+    async function checkSubscription() {
+      try {
+        if ("serviceWorker" in navigator && "PushManager" in window) {
+          const registration = await navigator.serviceWorker.ready;
+          const subscription = await registration.pushManager.getSubscription();
+          setIsSubscribed(!!subscription);
+        }
+      } catch {
+        // Silently fail if service worker is not available
+      }
+    }
+    checkSubscription();
+  }, []);
+
   const handleThemeColorChange = async (color: string | null) => {
     try {
       setIsThemeLoading(true);
@@ -415,9 +431,9 @@ function SettingsContent() {
           router.push(window.location.pathname, { scroll: false });
         }
       }}>
-        <DialogContent className="w-[95vw] max-w-lg p-6 rounded-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="pb-2 border-b">
-            <DialogTitle className="text-lg font-bold text-foreground">
+        <DialogContent className="w-[95vw] max-w-lg p-5 rounded-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="pb-1.5 border-b mb-0">
+            <DialogTitle className="text-base font-bold text-foreground">
               {activeTab === "profile" && "Profile Information"}
               {activeTab === "preferences" && "Preferences"}
               {activeTab === "timezone" && "Global Timezone"}
@@ -425,7 +441,7 @@ function SettingsContent() {
               {activeTab === "logout" && "Sign Out"}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-4">
+          <div className="mt-1">
             {activeTab === "profile" && renderProfileCard(true)}
             {activeTab === "preferences" && renderPreferencesCard(true)}
             {activeTab === "timezone" && renderTimezoneCard(true)}

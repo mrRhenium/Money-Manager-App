@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCreditCard, updateCreditCard } from "@/actions/creditCard";
 import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette, PenLine } from "lucide-react";
+import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 
 const formSchema = z.object({
   cardName: z.string().min(2, "Name must be at least 2 characters"),
@@ -19,7 +20,10 @@ const formSchema = z.object({
   cardNetwork: z.enum(["Visa", "Mastercard", "RuPay", "Amex", "Other"]),
   last4Digits: z.string().regex(/^\d{4}$/, "Must be exactly 4 digits"),
   cardholderName: z.string().min(2, "Cardholder name required"),
-  creditLimit: z.coerce.number().min(1, "Credit limit required"),
+  creditLimit: z.string().refine(val => {
+    const num = parseIndianNumber(val);
+    return !isNaN(num) && num > 0;
+  }, "Credit limit must be a positive number"),
   startingDate: z.string().min(1, "Starting date required"),
   expiryDate: z.string().min(1, "Expiry date required"),
   billingCycleStartDay: z.coerce.number().min(1).max(31),
@@ -40,7 +44,7 @@ export function CreditCardForm({ card }: { card?: any }) {
       cardNetwork: card?.cardNetwork || "Visa",
       last4Digits: card?.last4Digits || "",
       cardholderName: card?.cardholderName || "",
-      creditLimit: card?.creditLimit || 0,
+      creditLimit: card?.creditLimit ? formatIndianNumber(card.creditLimit) : "",
       startingDate: card?.startingDate ? new Date(card.startingDate).toISOString().slice(0, 16) : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
       expiryDate: card?.expiryDate ? new Date(card.expiryDate).toISOString().slice(0, 16) : "",
       billingCycleStartDay: card?.billingCycleStartDay || 1,
@@ -62,10 +66,15 @@ export function CreditCardForm({ card }: { card?: any }) {
     }
 
     try {
+      const parsedPayload = {
+        ...values,
+        creditLimit: parseIndianNumber(values.creditLimit),
+      };
+
       if (card?._id) {
-        await updateCreditCard(card._id, values);
+        await updateCreditCard(card._id, parsedPayload);
       } else {
-        await createCreditCard(values);
+        await createCreditCard(parsedPayload);
       }
       setOpen(false);
       form.reset();
@@ -153,12 +162,12 @@ export function CreditCardForm({ card }: { card?: any }) {
               <FormField control={form.control} name="creditLimit" render={({ field }) => (
                 <FormItem><FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Credit Limit (₹)</FormLabel><FormControl>
                   <Input 
-                    type="number" 
-                    min="0"
-                    onKeyDown={(e) => {
-                      if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                    type="text" 
+                    placeholder="e.g. 5,00,000"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(formatIndianNumber(e.target.value));
                     }}
-                    {...field} 
                   />
                 </FormControl><FormMessage /></FormItem>
               )} />

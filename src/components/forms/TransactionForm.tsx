@@ -16,10 +16,14 @@ import { useRef } from "react";
 import Tesseract from "tesseract.js";
 import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users, PenLine } from "lucide-react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
+import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 
 const formSchema = z.object({
   type: z.enum(["income", "expense", "lend", "borrow", "settlement"]),
-  amount: z.coerce.number().positive(),
+  amount: z.string().refine(val => {
+    const num = parseIndianNumber(val);
+    return !isNaN(num) && num > 0;
+  }, "Amount must be a positive number"),
   originalCurrency: z.string().default("INR"),
   accountId: z.string().min(1, "Account is required"),
   categoryId: z.string().optional(),
@@ -46,7 +50,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
       type: transaction?.type || "expense",
-      amount: transaction?.amount || 0,
+      amount: transaction?.amount ? formatIndianNumber(transaction.amount) : "",
       originalCurrency: transaction?.originalCurrency || "INR",
       accountId: transaction?.accountId?._id || transaction?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
       categoryId: transaction?.categoryId?._id || transaction?.categoryId || "",
@@ -81,7 +85,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
         const maxAmount = numbers.length > 0 ? Math.max(...numbers) : 0;
         
         if (maxAmount > 0) {
-          form.setValue("amount", maxAmount);
+          form.setValue("amount", formatIndianNumber(maxAmount));
           form.setValue("note", "Scanned from receipt");
         }
       }
@@ -95,18 +99,17 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const parsedPayload = {
+        ...values,
+        amount: parseIndianNumber(values.amount),
+        categoryId: values.categoryId || undefined,
+        personId: values.personId || undefined,
+      };
+
       if (transaction?._id) {
-        await updateTransaction(transaction._id, {
-          ...values,
-          categoryId: values.categoryId || undefined,
-          personId: values.personId || undefined,
-        });
+        await updateTransaction(transaction._id, parsedPayload);
       } else {
-        await createTransaction({
-          ...values,
-          categoryId: values.categoryId || undefined,
-          personId: values.personId || undefined,
-        });
+        await createTransaction(parsedPayload);
       }
       setOpen(false);
       form.reset();
@@ -269,13 +272,12 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
                     <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                        onKeyDown={(e) => {
-                          if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                        type="text" 
+                        placeholder="e.g. 1,50,000"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(formatIndianNumber(e.target.value));
                         }}
-                        {...field} 
                       />
                     </FormControl>
                     <FormMessage />

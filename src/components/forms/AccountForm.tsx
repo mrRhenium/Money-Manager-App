@@ -11,11 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createAccount, updateAccount } from "@/actions/account";
 import { Plus, Landmark, PenLine, List, Banknote } from "lucide-react";
+import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   type: z.enum(["bank", "cash", "card", "wallet"]),
-  balance: z.coerce.number(),
+  balance: z.string().refine(val => {
+    const num = parseIndianNumber(val);
+    return !isNaN(num);
+  }, "Balance must be a valid number"),
 });
 
 export function AccountForm({ account }: { account?: any }) {
@@ -25,16 +29,20 @@ export function AccountForm({ account }: { account?: any }) {
     defaultValues: {
       name: account?.name || "",
       type: account?.type || "bank",
-      balance: account?.balance || 0,
+      balance: account?.balance !== undefined ? formatIndianNumber(account.balance) : "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const parsedPayload = {
+        ...values,
+        balance: parseIndianNumber(values.balance),
+      };
       if (account?._id) {
-        await updateAccount(account._id, values);
+        await updateAccount(account._id, parsedPayload);
       } else {
-        await createAccount(values);
+        await createAccount(parsedPayload);
       }
       setOpen(false);
       form.reset();
@@ -112,13 +120,12 @@ export function AccountForm({ account }: { account?: any }) {
                   <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Initial Balance</FormLabel>
                   <FormControl>
                     <Input 
-                      type="number" 
-                      step="0.01" 
-                      min="0"
-                      onKeyDown={(e) => {
-                        if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                      type="text" 
+                      placeholder="e.g. 10,000"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(formatIndianNumber(e.target.value));
                       }}
-                      {...field} 
                     />
                   </FormControl>
                   <FormMessage />

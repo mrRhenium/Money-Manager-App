@@ -12,11 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { upsertBudget, updateBudget } from "@/actions/budget";
 import { Plus, Target, Folder, Banknote, CalendarDays, PenLine } from "lucide-react";
+import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   month: z.string().regex(/^\d{4}-\d{2}$/, "Format must be YYYY-MM"),
-  amount: z.coerce.number().positive("Must be greater than 0"),
+  amount: z.string().refine(val => {
+    const num = parseIndianNumber(val);
+    return !isNaN(num) && num > 0;
+  }, "Amount must be a positive number"),
   rollover: z.boolean().default(false),
 });
 
@@ -35,7 +39,7 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
     defaultValues: {
       categoryId: budget?.categoryId?._id || budget?.categoryId || "",
       month: budget?.month || currentMonth,
-      amount: budget?.amount || 0,
+      amount: budget?.amount ? formatIndianNumber(budget.amount) : "",
       rollover: budget?.rollover || false,
     },
   });
@@ -44,10 +48,14 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const parsedAmount = parseIndianNumber(values.amount);
       if (budget?._id) {
-        await updateBudget(budget._id, { amount: values.amount, categoryId: values.categoryId });
+        await updateBudget(budget._id, { amount: parsedAmount, categoryId: values.categoryId });
       } else {
-        await upsertBudget(values);
+        await upsertBudget({
+          ...values,
+          amount: parsedAmount,
+        });
       }
       setOpen(false);
       form.reset();
@@ -109,13 +117,12 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
                     <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                        onKeyDown={(e) => {
-                          if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                        type="text" 
+                        placeholder="e.g. 5,000"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(formatIndianNumber(e.target.value));
                         }}
-                        {...field} 
                       />
                     </FormControl>
                     <FormMessage />

@@ -13,6 +13,7 @@ import { savePersonVpa } from "@/actions/person";
 import { useToast } from "@/hooks/useToast";
 import { Camera, AlertCircle, CheckCircle, Smartphone, Loader2, Landmark, Tag } from "lucide-react";
 import { Select } from "antd";
+import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 
 interface ScanAndPayModalProps {
   open: boolean;
@@ -161,7 +162,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     setNote(parsed.tn);
 
     if (parsed.am !== null) {
-      setAmount(parsed.am.toString());
+      setAmount(formatIndianNumber(parsed.am));
       setIsAmountReadOnly(true);
     } else {
       setAmount("");
@@ -219,7 +220,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
   // Submit and Create Pending Transaction
   const handleProceedToPay = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    const parsedAmount = parseIndianNumber(amount);
+    if (!amount || parsedAmount <= 0) {
       toast.error("Please enter a valid amount");
       return;
     }
@@ -243,7 +245,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       // Create transaction immediately with awaiting_confirmation status
       const txn = await createTransaction({
         type: "expense",
-        amount: parseFloat(amount),
+        amount: parsedAmount,
         date: new Date().toISOString(),
         accountId,
         paymentMode: "bank", // standard UPI goes through bank account
@@ -260,7 +262,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       const upiParams = new URLSearchParams({
         pa: vpa,
         pn: payeeName,
-        am: amount,
+        am: parsedAmount.toString(),
         cu: "INR",
         tn: note || "Money Manager Scan & Pay"
       });
@@ -427,10 +429,10 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                   <span className="absolute left-3 top-2.5 font-bold text-muted-foreground">₹</span>
                   <Input
                     id="amount"
-                    type="number"
+                    type="text"
                     placeholder="0.00"
                     value={amount}
-                    onChange={e => setAmount(e.target.value)}
+                    onChange={e => setAmount(formatIndianNumber(e.target.value))}
                     disabled={isAmountReadOnly}
                     className="pl-7 font-bold text-lg"
                   />

@@ -134,15 +134,9 @@ function SettingsContent() {
     setIsSubscribed(true);
   }
 
-  const renderProfileCard = () => (
-    <Card className="border-0 shadow-none md:border md:shadow-sm">
-      {!isMobile && (
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Update your account details here.</CardDescription>
-        </CardHeader>
-      )}
-      <CardContent className="space-y-4 pt-4 md:pt-0">
+  const renderProfileCard = (isMobileView = false) => {
+    const content = (
+      <div className="space-y-4">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground text-2xl">
             <User className="w-8 h-8" />
@@ -169,19 +163,25 @@ function SettingsContent() {
         <Button className="mt-4 w-full md:w-auto" onClick={handleProfileSave} disabled={isProfileLoading}>
           {isProfileLoading ? "Saving..." : "Save Changes"}
         </Button>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
 
-  const renderPreferencesCard = () => (
-    <Card className="border-0 shadow-none md:border md:shadow-sm">
-      {!isMobile && (
+    if (isMobileView) return content;
+
+    return (
+      <Card>
         <CardHeader>
-          <CardTitle>Preferences</CardTitle>
-          <CardDescription>Customize your Money Manager experience.</CardDescription>
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>Update your account details here.</CardDescription>
         </CardHeader>
-      )}
-      <CardContent className="space-y-6 pt-4 md:pt-0">
+        <CardContent>{content}</CardContent>
+      </Card>
+    );
+  };
+
+  const renderPreferencesCard = (isMobileView = false) => {
+    const content = (
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label>Portal Theme Color</Label>
           <div className="flex items-center gap-4">
@@ -219,33 +219,43 @@ function SettingsContent() {
           <Input value="Dynamic (Multi-Currency Enabled)" disabled />
           <p className="text-xs text-muted-foreground">Log transactions in any currency, auto-converts to INR.</p>
         </div>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
 
-  const renderTimezoneCard = () => (
-    <Card className="border-0 shadow-none md:border md:shadow-sm">
-      {!isMobile && (
+    if (isMobileView) return content;
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferences</CardTitle>
+          <CardDescription>Customize your Money Manager experience.</CardDescription>
+        </CardHeader>
+        <CardContent>{content}</CardContent>
+      </Card>
+    );
+  };
+
+  const renderTimezoneCard = (isMobileView = false) => {
+    const content = (
+      <TimezonePicker initialTimezone={(session?.user as any)?.timezone || "UTC"} noBorder={isMobileView} />
+    );
+
+    if (isMobileView) return content;
+
+    return (
+      <Card>
         <CardHeader>
           <CardTitle>Global Timezone</CardTitle>
           <CardDescription>All transactions and dates will be displayed according to this timezone.</CardDescription>
         </CardHeader>
-      )}
-      <CardContent className="pt-4 md:pt-0">
-        <TimezonePicker initialTimezone={(session?.user as any)?.timezone || "UTC"} />
-      </CardContent>
-    </Card>
-  );
+        <CardContent>{content}</CardContent>
+      </Card>
+    );
+  };
 
-  const renderNotificationsCard = () => (
-    <Card className="border-0 shadow-none md:border md:shadow-sm">
-      {!isMobile && (
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>Receive web push notifications for bill reminders and alerts.</CardDescription>
-        </CardHeader>
-      )}
-      <CardContent className="space-y-4 pt-4 md:pt-0">
+  const renderNotificationsCard = (isMobileView = false) => {
+    const content = (
+      <div className="space-y-4">
         <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSubscribed ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
@@ -279,13 +289,25 @@ function SettingsContent() {
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
 
-  const renderLogoutCard = () => (
-    <Card className="border-red-500/20 border-0 shadow-none md:border md:shadow-sm">
-      <CardContent className="flex items-center justify-between p-6">
+    if (isMobileView) return content;
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Notifications</CardTitle>
+          <CardDescription>Receive web push notifications for bill reminders and alerts.</CardDescription>
+        </CardHeader>
+        <CardContent>{content}</CardContent>
+      </Card>
+    );
+  };
+
+  const renderLogoutCard = (isMobileView = false) => {
+    const content = (
+      <div className="flex items-center justify-between">
         <div>
           <p className="font-semibold text-foreground">Sign Out</p>
           <p className="text-sm text-muted-foreground mt-0.5">Sign out of your account on this device.</p>
@@ -294,9 +316,17 @@ function SettingsContent() {
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
         </Button>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
+
+    if (isMobileView) return content;
+
+    return (
+      <Card className="border-red-500/20">
+        <CardContent className="p-6">{content}</CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -396,11 +426,11 @@ function SettingsContent() {
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            {activeTab === "profile" && renderProfileCard()}
-            {activeTab === "preferences" && renderPreferencesCard()}
-            {activeTab === "timezone" && renderTimezoneCard()}
-            {activeTab === "notifications" && renderNotificationsCard()}
-            {activeTab === "logout" && renderLogoutCard()}
+            {activeTab === "profile" && renderProfileCard(true)}
+            {activeTab === "preferences" && renderPreferencesCard(true)}
+            {activeTab === "timezone" && renderTimezoneCard(true)}
+            {activeTab === "notifications" && renderNotificationsCard(true)}
+            {activeTab === "logout" && renderLogoutCard(true)}
           </div>
         </DialogContent>
       </Dialog>

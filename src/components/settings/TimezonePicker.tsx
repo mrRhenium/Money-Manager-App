@@ -10,7 +10,7 @@ import { AdvancedTimezonePicker } from "./AdvancedTimezonePicker";
 import { Globe } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 
-export function TimezonePicker({ initialTimezone }: { initialTimezone: string }) {
+export function TimezonePicker({ initialTimezone, noBorder = false }: { initialTimezone: string; noBorder?: boolean }) {
   const { update } = useSession();
   const router = useRouter();
   const { toast } = useToast();
@@ -39,10 +39,10 @@ export function TimezonePicker({ initialTimezone }: { initialTimezone: string })
   };
 
   return (
-    <div className="space-y-4">
-      <div className="p-4 border rounded-xl bg-card flex items-center justify-between">
+    <div className={noBorder ? "" : "space-y-4"}>
+      <div className={noBorder ? "flex items-center justify-between py-1 bg-transparent" : "p-4 border rounded-xl bg-card flex items-center justify-between"}>
         <div>
-          <h4 className="font-semibold mb-1">Current Timezone</h4>
+          <h4 className={noBorder ? "text-sm font-semibold" : "font-semibold mb-1"}>Current Timezone</h4>
           <p className="text-sm text-muted-foreground">{selectedTimezone}</p>
         </div>
         

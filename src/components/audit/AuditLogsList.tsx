@@ -137,7 +137,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
         columns={columns}
         dataSource={logs}
         rowKey="_id"
-        pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true, className: "px-4 pb-3" }}
+        pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
         className="audit-logs-table"
         locale={{ emptyText: "No audit logs found." }}
       />

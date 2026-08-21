@@ -432,7 +432,7 @@ function SettingsContent() {
         }
       }}>
         <DialogContent className="w-[95vw] max-w-lg p-5 rounded-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="pb-1.5 border-b mb-0">
+          <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               {activeTab === "profile" && "Profile Information"}
               {activeTab === "preferences" && "Preferences"}
@@ -441,7 +441,7 @@ function SettingsContent() {
               {activeTab === "logout" && "Sign Out"}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-1">
+          <div className="pt-1">
             {activeTab === "profile" && renderProfileCard(true)}
             {activeTab === "preferences" && renderPreferencesCard(true)}
             {activeTab === "timezone" && renderTimezoneCard(true)}

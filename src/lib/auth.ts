@@ -21,19 +21,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         let user = await User.findOne({ email: credentials.email }).select("+password");
 
-        // Auto-provision admin user if it doesn't exist and credentials match environment config
-        const initialAdminEmail = process.env.INITIAL_ADMIN_EMAIL;
-        const initialAdminPass = process.env.INITIAL_ADMIN_PASSWORD;
-
-        if (!user && initialAdminEmail && initialAdminPass && credentials.email === initialAdminEmail && credentials.password === initialAdminPass) {
-          const hashedPassword = await bcrypt.hash(initialAdminPass, 10);
-          user = await User.create({
-            name: "Admin",
-            email: initialAdminEmail,
-            password: hashedPassword,
-            role: "ADMIN",
-          });
-        }
 
         if (!user || !user.password) {
           throw new Error("Invalid credentials");

@@ -3,6 +3,7 @@
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
+import { sendEmail } from "@/lib/mailer";
 
 export async function sendResetOtp(email: string) {
   await dbConnect();
@@ -23,11 +24,26 @@ export async function sendResetOtp(email: string) {
   user.resetOtpExpiry = expiry;
   await user.save();
 
-  // For development without SMTP setup, log to server console securely
+  // For development, log to server console securely as a fallback/record
   console.log(`\n\n[DEV-OTP] 🔐 Password Reset OTP for ${email}: ${otp}\n\n`);
 
-  // To implement real email, you would add nodemailer here:
-  // await sendEmail({ to: email, subject: "Reset Password", html: `Your OTP is ${otp}` });
+  // Send real email via SMTP
+  await sendEmail({
+    to: email,
+    subject: "Money Manager - Password Reset OTP",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #1890ff; text-align: center;">Money Manager</h2>
+        <p>Hello,</p>
+        <p>We received a request to reset your password. Here is your 6-digit verification code:</p>
+        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;">
+          <h1 style="margin: 0; letter-spacing: 5px; color: #333;">${otp}</h1>
+        </div>
+        <p>This code will expire in <strong>10 minutes</strong>. If you did not request a password reset, please ignore this email.</p>
+        <p style="color: #888; font-size: 12px; margin-top: 30px; text-align: center;">&copy; ${new Date().getFullYear()} Money Manager. All rights reserved.</p>
+      </div>
+    `
+  });
 
   return { success: true };
 }

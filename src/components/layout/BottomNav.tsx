@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, PieChart, PlusCircle, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings } from "lucide-react";

@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut, User, Bell } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { subscribeUser, sendTestNotification } from "@/actions/push";
+import { getUserProfile, updateProfile } from "@/actions/user";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
@@ -27,6 +28,32 @@ function urlBase64ToUint8Array(base64String: string) {
 export default function SettingsPage() {
   const { data: session } = useSession();
   const [isSubscribed, setIsSubscribed] = useState(false);
+  
+  const [name, setName] = useState(session?.user?.name || "");
+  const [mobile, setMobile] = useState("");
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+
+  useEffect(() => {
+    if (session?.user?.name) {
+      setName(session.user.name);
+    }
+    getUserProfile().then(user => {
+      if (user.name) setName(user.name);
+      if (user.mobile) setMobile(user.mobile);
+    }).catch(console.error);
+  }, [session]);
+
+  const handleProfileSave = async () => {
+    try {
+      setIsProfileLoading(true);
+      await updateProfile({ name, mobile });
+      alert("Profile updated successfully!");
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsProfileLoading(false);
+    }
+  };
 
   async function handleSubscribe() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -75,14 +102,20 @@ export default function SettingsPage() {
           
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" defaultValue={session?.user?.name || ""} />
+            <Input id="name" value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="mobile">Mobile Phone (Optional)</Label>
+            <Input id="mobile" placeholder="e.g. +1 234 567 8900" value={mobile} onChange={e => setMobile(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" defaultValue={session?.user?.email || ""} disabled />
             <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
           </div>
-          <Button className="mt-4">Save Changes</Button>
+          <Button className="mt-4" onClick={handleProfileSave} disabled={isProfileLoading}>
+            {isProfileLoading ? "Saving..." : "Save Changes"}
+          </Button>
         </CardContent>
       </Card>
 

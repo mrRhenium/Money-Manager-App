@@ -26,3 +26,27 @@ export async function updateTimezone(timezone: string) {
   
   return { success: true };
 }
+
+export async function updateProfile(data: { name: string; mobile: string }) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+  
+  try {
+    const updateData: any = { name: data.name };
+    if (data.mobile) {
+      updateData.mobile = data.mobile;
+    } else {
+      updateData.$unset = { mobile: 1 };
+    }
+
+    await User.findByIdAndUpdate(session.user.id, updateData, { new: true, runValidators: true });
+    return { success: true };
+  } catch (error: any) {
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.mobile) {
+      throw new Error("This mobile number is already registered to another account.");
+    }
+    throw new Error(error.message || "Failed to update profile");
+  }
+}

@@ -46,6 +46,8 @@ export async function getPeople() {
   return JSON.parse(JSON.stringify(peopleWithBalances));
 }
 
+import { logAuditEvent } from "@/actions/auditLog";
+
 export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Other"; phone?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -56,6 +58,8 @@ export async function createPerson(data: { name: string; relation: "Friend" | "F
     ...data,
     userId: session.user.id,
   });
+
+  await logAuditEvent("Person", person._id.toString(), "CREATE", undefined, person);
 
   revalidatePath("/people");
   
@@ -75,7 +79,11 @@ export async function deletePerson(id: string) {
       return { success: false, error: `This Person cannot be deleted because they are used in ${txCount} transaction(s).` };
     }
 
-    await Person.findOneAndDelete({ _id: id, userId: session.user.id });
+    const person = await Person.findOne({ _id: id, userId: session.user.id });
+    if (person) {
+      await logAuditEvent("Person", id, "DELETE", person, undefined);
+      await Person.deleteOne({ _id: id });
+    }
 
     revalidatePath("/people");
     return { success: true };
@@ -91,13 +99,17 @@ export async function savePersonVpa(name: string, vpa: string) {
   await dbConnect();
 
   let person = await Person.findOne({ userId: session.user.id, vpa });
+  let oldPersonSnapshot = person ? JSON.parse(JSON.stringify(person)) : null;
+
   if (!person) {
     person = await Person.findOne({ userId: session.user.id, name });
+    oldPersonSnapshot = person ? JSON.parse(JSON.stringify(person)) : null;
   }
 
   if (person) {
     person.vpa = vpa;
     await person.save();
+    await logAuditEvent("Person", person._id.toString(), "UPDATE", oldPersonSnapshot, person);
   } else {
     person = await Person.create({
       userId: session.user.id,
@@ -105,6 +117,7 @@ export async function savePersonVpa(name: string, vpa: string) {
       vpa,
       relation: "Other"
     });
+    await logAuditEvent("Person", person._id.toString(), "CREATE", undefined, person);
   }
 
   revalidatePath("/people");
@@ -117,11 +130,17 @@ export async function updatePerson(id: string, data: { name: string; relation: s
 
   await dbConnect();
 
+  const oldPerson = await Person.findOne({ _id: id, userId: session.user.id });
+
   const person = await Person.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: { name: data.name, relation: data.relation, vpa: data.vpa } },
     { new: true }
   );
+
+  if (person) {
+    await logAuditEvent("Person", id, "UPDATE", oldPerson, person);
+  }
 
   revalidatePath("/people");
   revalidatePath("/");

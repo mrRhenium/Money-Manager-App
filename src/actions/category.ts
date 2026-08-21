@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Category from "@/models/Category";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getCategories() {
   const session = await auth();
@@ -45,6 +46,8 @@ export async function createCategory(data: { name: string; type: "expense" | "in
     isSystem: false,
   });
 
+  await logAuditEvent("Category", category._id.toString(), "CREATE", undefined, category);
+
   revalidatePath("/categories");
   revalidatePath("/transactions");
   revalidatePath("/");
@@ -74,8 +77,12 @@ export async function deleteCategory(id: string) {
       return { success: false, error: `This Category cannot be deleted because it is used in ${budgetCount} budget(s).` };
     }
 
-    // Prevent deleting system categories or categories belonging to other users
-    await Category.findOneAndDelete({ _id: id, userId: session.user.id, isSystem: false });
+    // Fetch before delete
+    const category = await Category.findOne({ _id: id, userId: session.user.id, isSystem: false });
+    if (category) {
+      await logAuditEvent("Category", id, "DELETE", category, undefined);
+      await Category.deleteOne({ _id: id });
+    }
 
     revalidatePath("/categories");
     revalidatePath("/transactions");
@@ -106,11 +113,17 @@ export async function updateCategory(id: string, data: { name: string; type: "ex
     }
   }
 
+  const oldCategory = await Category.findOne({ _id: id, userId: session.user.id, isSystem: false });
+
   const category = await Category.findOneAndUpdate(
     { _id: id, userId: session.user.id, isSystem: false },
     { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon } },
     { new: true }
   );
+
+  if (category) {
+    await logAuditEvent("Category", id, "UPDATE", oldCategory, category);
+  }
 
   revalidatePath("/categories");
   revalidatePath("/transactions");

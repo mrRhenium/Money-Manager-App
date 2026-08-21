@@ -9,6 +9,7 @@ import User from "@/models/User";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { parseToDate, getStatementMonth, calculateCreditCardDueDate, getCurrentDate, getStartOfDay, getDaysDifference } from "@/lib/dateTimeHelper";
+import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getTransactions(limit = 50) {
   const session = await auth();
@@ -79,6 +80,8 @@ export async function createTransaction(data: {
     userId: session.user.id,
     status,
   });
+
+  await logAuditEvent("Transaction", transaction._id.toString(), "CREATE", undefined, transaction);
 
   // Update Account Balance ONLY if status is completed
   if (status === "completed") {
@@ -206,6 +209,8 @@ export async function deleteTransaction(id: string) {
     }
   }
 
+  await logAuditEvent("Transaction", id, "DELETE", transaction, undefined);
+
   await Transaction.deleteOne({ _id: id });
 
   revalidatePath("/transactions");
@@ -222,10 +227,14 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
   if (!transaction) throw new Error("Transaction not found");
 
   if (transaction.status === status) return JSON.parse(JSON.stringify(transaction));
+
+  const oldTxnSnapshot = JSON.parse(JSON.stringify(transaction));
   
   const oldStatus = transaction.status;
   transaction.status = status;
   await transaction.save();
+
+  await logAuditEvent("Transaction", id, "UPDATE", oldTxnSnapshot, transaction);
 
   // If transitioned to completed, apply balance adjustments
   if (status === "completed" && (oldStatus === "awaiting_confirmation" || oldStatus === "pending")) {
@@ -307,6 +316,8 @@ export async function updateTransaction(
 
   const oldTxn = await Transaction.findOne({ _id: id, userId: session.user.id });
   if (!oldTxn) throw new Error("Transaction not found");
+
+  const oldTxnSnapshot = JSON.parse(JSON.stringify(oldTxn));
 
   // 1. Revert the impact of the old transaction if it was completed
   if (oldTxn.status === "completed") {
@@ -416,6 +427,8 @@ export async function updateTransaction(
       }
     }
   }
+
+  await logAuditEvent("Transaction", id, "UPDATE", oldTxnSnapshot, oldTxn);
 
   revalidatePath("/transactions");
   revalidatePath("/");

@@ -8,6 +8,7 @@ import Category from "@/models/Category";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { getStartOfMonth, getEndOfMonth } from "@/lib/dateTimeHelper";
+import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getBudgetsWithProgress(month: string) {
   const session = await auth();
@@ -62,12 +63,16 @@ export async function upsertBudget(data: { categoryId: string; month: string; am
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
+
+  const oldBudget = await Budget.findOne({ userId: session.user.id, categoryId: data.categoryId, month: data.month });
   
   const budget = await Budget.findOneAndUpdate(
     { userId: session.user.id, categoryId: data.categoryId, month: data.month },
     { ...data, userId: session.user.id },
     { new: true, upsert: true }
   );
+
+  await logAuditEvent("Budget", budget._id.toString(), oldBudget ? "UPDATE" : "CREATE", oldBudget, budget);
 
   revalidatePath("/budgets");
   
@@ -80,8 +85,12 @@ export async function deleteBudget(id: string) {
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
     await dbConnect();
-    
-    await Budget.findOneAndDelete({ _id: id, userId: session.user.id });
+
+    const budget = await Budget.findOne({ _id: id, userId: session.user.id });
+    if (budget) {
+      await logAuditEvent("Budget", id, "DELETE", budget, undefined);
+      await Budget.deleteOne({ _id: id });
+    }
 
     revalidatePath("/budgets");
     return { success: true };
@@ -96,11 +105,17 @@ export async function updateBudget(id: string, data: { amount: number; categoryI
 
   await dbConnect();
 
+  const oldBudget = await Budget.findOne({ _id: id, userId: session.user.id });
+
   const budget = await Budget.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: { amount: data.amount, categoryId: data.categoryId } },
     { new: true }
   );
+
+  if (budget) {
+    await logAuditEvent("Budget", id, "UPDATE", oldBudget, budget);
+  }
 
   revalidatePath("/budgets");
   revalidatePath("/");

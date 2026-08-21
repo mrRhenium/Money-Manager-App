@@ -8,6 +8,7 @@ import Account from "@/models/Account";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { getCurrentDate } from "@/lib/dateTimeHelper";
+import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getCreditCards() {
   const session = await auth();
@@ -83,6 +84,8 @@ export async function createCreditCard(data: any) {
     currentOutstanding: 0,
   });
 
+  await logAuditEvent("CreditCard", card._id.toString(), "CREATE", undefined, card);
+
   revalidatePath("/credit-cards");
   return JSON.parse(JSON.stringify(card));
 }
@@ -101,14 +104,18 @@ export async function deleteCreditCard(id: string) {
       return { success: false, error: "Cannot delete a card with an unpaid outstanding balance." };
     }
 
+    const cardSnapshot = JSON.parse(JSON.stringify(card));
+
     // Soft delete or status closed
     const txCount = await Transaction.countDocuments({ creditCardId: id });
     if (txCount > 0) {
       card.status = "closed";
       await card.save();
+      await logAuditEvent("CreditCard", id, "UPDATE", cardSnapshot, card);
     } else {
       await CreditCard.deleteOne({ _id: id });
       await CardStatement.deleteMany({ cardId: id });
+      await logAuditEvent("CreditCard", id, "DELETE", cardSnapshot, undefined);
     }
 
     revalidatePath("/credit-cards");
@@ -194,6 +201,8 @@ export async function updateCreditCard(
   const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
   if (!card) throw new Error("Credit Card not found");
 
+  const oldCard = JSON.parse(JSON.stringify(card));
+
   // Validate unique color code
   if (data.color) {
     const standardizedColor = data.color.toLowerCase();
@@ -224,6 +233,8 @@ export async function updateCreditCard(
   card.availableLimit = data.creditLimit - card.currentOutstanding;
 
   await card.save();
+
+  await logAuditEvent("CreditCard", id, "UPDATE", oldCard, card);
 
   revalidatePath("/credit-cards");
   revalidatePath(`/credit-cards/${card._id}`);

@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Account from "@/models/Account";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getAccounts() {
   const session = await auth();
@@ -30,6 +31,8 @@ export async function createAccount(data: { name: string; type: "bank" | "cash" 
     userId: session.user.id,
   });
 
+  await logAuditEvent("Account", account._id.toString(), "CREATE", undefined, account);
+
   revalidatePath("/accounts");
   revalidatePath("/transactions");
   revalidatePath("/");
@@ -52,7 +55,11 @@ export async function deleteAccount(id: string) {
       return { success: false, error: `This Account cannot be deleted because it is used in ${txCount} transaction(s).` };
     }
 
-    await Account.findOneAndDelete({ _id: id, userId: session.user.id });
+    const account = await Account.findOne({ _id: id, userId: session.user.id });
+    if (account) {
+      await logAuditEvent("Account", id, "DELETE", account, undefined);
+      await Account.deleteOne({ _id: id });
+    }
 
     revalidatePath("/accounts");
     revalidatePath("/transactions");
@@ -69,11 +76,17 @@ export async function updateAccount(id: string, data: { name: string; type: "ban
 
   await dbConnect();
 
+  const oldAccount = await Account.findOne({ _id: id, userId: session.user.id });
+
   const account = await Account.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: { name: data.name, type: data.type, balance: data.balance || 0 } },
     { new: true }
   );
+
+  if (account) {
+    await logAuditEvent("Account", id, "UPDATE", oldAccount, account);
+  }
 
   revalidatePath("/accounts");
   revalidatePath("/transactions");

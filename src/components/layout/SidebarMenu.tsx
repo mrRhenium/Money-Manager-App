@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   Landmark,
   Tags,
-  TrendingUp
+  TrendingUp,
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
     { href: "/budgets", icon: PieChart, label: "Budgets" },
     { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/people", icon: Users, label: "People" },
+    { href: "/audit-logs", icon: History, label: "Audit Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
 

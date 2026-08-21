@@ -109,18 +109,28 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
       } />
       <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between pr-8">
-            <div className="flex items-center gap-2 text-primary">
-              <ReceiptText className="w-5 h-5" />
-              <span className="text-foreground">Log Transaction</span>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isScanning}>
-              {isScanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
-              {isScanning ? "Scanning..." : "Scan Receipt"}
-            </Button>
-            <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+          <DialogTitle className="flex items-center gap-2 text-primary">
+            <ReceiptText className="w-5 h-5" />
+            <span className="text-foreground">Log Transaction</span>
           </DialogTitle>
         </DialogHeader>
+        
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg text-primary">
+              <Camera className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm text-foreground">Smart Scan</h4>
+              <p className="text-xs text-muted-foreground">Upload a receipt to auto-fill the amount</p>
+            </div>
+          </div>
+          <Button variant="secondary" className="w-full sm:w-auto shadow-sm" onClick={() => fileInputRef.current?.click()} disabled={isScanning}>
+            {isScanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
+            {isScanning ? "Scanning..." : "Upload Receipt"}
+          </Button>
+          <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">

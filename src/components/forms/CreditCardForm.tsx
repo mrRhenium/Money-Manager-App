@@ -78,7 +78,7 @@ export function CreditCardForm() {
           Add Credit Card
         </Button>
       } />
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CardIcon className="w-5 h-5 text-primary" />
@@ -207,7 +207,7 @@ export function CreditCardForm() {
 
             <FormField control={form.control} name="color" render={({ field }) => (
               <FormItem><FormLabel className="flex items-center gap-2"><Palette className="w-4 h-4 text-muted-foreground" /> Card Visual Color</FormLabel><FormControl>
-                <div className="flex gap-2"><Input type="color" className="w-12 h-10 p-1" {...field} /><Input {...field} /></div>
+                <div className="flex gap-2"><Input type="color" id="creditCardColorInput" className="w-12 h-10 p-1" {...field} /><Input {...field} onClick={() => document.getElementById("creditCardColorInput")?.click()} /></div>
               </FormControl><FormMessage /></FormItem>
             )} />
 

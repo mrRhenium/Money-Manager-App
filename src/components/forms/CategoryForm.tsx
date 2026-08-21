@@ -100,8 +100,8 @@ export function CategoryForm() {
                   <FormLabel className="flex items-center gap-2"><Palette className="w-4 h-4 text-muted-foreground" /> Color (Hex)</FormLabel>
                   <FormControl>
                     <div className="flex gap-2">
-                      <Input type="color" className="w-12 h-10 p-1" {...field} />
-                      <Input placeholder="#RRGGBB" {...field} />
+                      <Input type="color" id="categoryColorInput" className="w-12 h-10 p-1" {...field} />
+                      <Input placeholder="#RRGGBB" {...field} onClick={() => document.getElementById("categoryColorInput")?.click()} />
                     </div>
                   </FormControl>
                   <FormMessage />

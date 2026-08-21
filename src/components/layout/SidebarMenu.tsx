@@ -10,7 +10,10 @@ import {
   PieChart, 
   Users, 
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  Landmark,
+  Tags,
+  TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +22,12 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
 
   const items = [
     { href: "/", icon: Home, label: "Dashboard" },
+    { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/transactions", icon: Wallet, label: "Transactions" },
+    { href: "/categories", icon: Tags, label: "Categories" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/budgets", icon: PieChart, label: "Budgets" },
+    { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/people", icon: Users, label: "People" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];

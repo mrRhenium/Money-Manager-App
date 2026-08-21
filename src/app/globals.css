@@ -152,3 +152,13 @@
 .ant-tooltip-arrow::before, .ant-tooltip-arrow::after {
   background-color: #0ea5e9 !important;
 }
+
+/* Reset default anchor tag styles to inherit color so Tailwind text colors work */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+a:hover {
+  color: inherit;
+  text-decoration: none;
+}

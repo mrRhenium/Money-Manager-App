@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCategory } from "@/actions/category";
-import { Plus } from "lucide-react";
+import { Plus, FolderPlus, Type, List, Palette } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -49,7 +49,10 @@ export function CategoryForm() {
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Category</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-primary">
+            <FolderPlus className="w-5 h-5" />
+            <span className="text-foreground">Create New Category</span>
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -58,7 +61,7 @@ export function CategoryForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><Type className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Groceries" {...field} />
                   </FormControl>
@@ -71,7 +74,7 @@ export function CategoryForm() {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Type</FormLabel>
                   <FormControl>
                     <Select
                       showSearch
@@ -94,7 +97,7 @@ export function CategoryForm() {
               name="color"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Color (Hex)</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><Palette className="w-4 h-4 text-muted-foreground" /> Color (Hex)</FormLabel>
                   <FormControl>
                     <div className="flex gap-2">
                       <Input type="color" className="w-12 h-10 p-1" {...field} />

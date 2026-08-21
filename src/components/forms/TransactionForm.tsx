@@ -8,12 +8,13 @@ import * as z from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createTransaction } from "@/actions/transaction";
 import { useRef } from "react";
 import Tesseract from "tesseract.js";
-import { Camera, Loader2, Plus } from "lucide-react";
+import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText } from "lucide-react";
 
 const formSchema = z.object({
   type: z.enum(["income", "expense", "lend", "borrow", "settlement"]),
@@ -44,7 +45,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
       accountId: accounts.length > 0 ? accounts[0]._id : "",
       categoryId: "",
       note: "",
-      date: getCurrentFormatted("YYYY-MM-DD"),
+      date: getCurrentFormatted("YYYY-MM-DDTHH:mm"),
     },
   });
 
@@ -109,7 +110,10 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
       <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between pr-8">
-            Log Transaction
+            <div className="flex items-center gap-2 text-primary">
+              <ReceiptText className="w-5 h-5" />
+              <span className="text-foreground">Log Transaction</span>
+            </div>
             <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isScanning}>
               {isScanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
               {isScanning ? "Scanning..." : "Scan Receipt"}
@@ -125,7 +129,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Type</FormLabel>
+                    <FormLabel className="flex items-center gap-2"><Tags className="w-4 h-4 text-muted-foreground" /> Type</FormLabel>
                     <FormControl>
                       <Select
                         showSearch
@@ -152,7 +156,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                   name="amount"
                   render={({ field }) => (
                     <FormItem className="col-span-2">
-                      <FormLabel>Amount</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -173,7 +177,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                   name="originalCurrency"
                   render={({ field }) => (
                     <FormItem className="col-span-1">
-                      <FormLabel>Currency</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Coins className="w-4 h-4 text-muted-foreground" /> Currency</FormLabel>
                       <FormControl>
                         <Select
                           showSearch
@@ -200,7 +204,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
               name="accountId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Account</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Account</FormLabel>
                   <FormControl>
                     <Select
                       showSearch
@@ -222,7 +226,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                 name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel className="flex items-center gap-2"><Folder className="w-4 h-4 text-muted-foreground" /> Category</FormLabel>
                     <FormControl>
                       <Select
                         showSearch
@@ -245,9 +249,9 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /> Date</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="datetime-local" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -258,9 +262,9 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                 name="note"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Note (Optional)</FormLabel>
+                    <FormLabel className="flex items-center gap-2"><AlignLeft className="w-4 h-4 text-muted-foreground" /> Note (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Description" {...field} />
+                      <Textarea placeholder="Description" className="resize-none" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

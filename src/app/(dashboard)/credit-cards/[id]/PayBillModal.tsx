@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "antd";
 import { payCreditCardStatement } from "@/actions/creditCard";
-import { IndianRupee } from "lucide-react";
+import { IndianRupee, Banknote, FileText, Landmark } from "lucide-react";
 
 export function PayBillModal({ cardId, outstanding, accounts, statements }: { cardId: string, outstanding: number, accounts: any[], statements: any[] }) {
   const [open, setOpen] = useState(false);
@@ -44,14 +44,17 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
       } />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Pay Credit Card Bill</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-primary">
+            <Banknote className="w-5 h-5" />
+            <span className="text-foreground">Pay Credit Card Bill</span>
+          </DialogTitle>
         </DialogHeader>
         
         {error && <div className="text-sm text-red-500 p-2 bg-red-500/10 rounded">{error}</div>}
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Select Statement / Cycle</Label>
+            <Label className="flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" /> Select Statement / Cycle</Label>
             <Select 
               value={statementId} 
               onChange={(val) => setStatementId(val || "")}
@@ -67,7 +70,7 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
           </div>
 
           <div className="space-y-2">
-            <Label>Pay From Account</Label>
+            <Label className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Pay From Account</Label>
             <Select 
               value={accountId} 
               onChange={(val) => setAccountId(val || "")}
@@ -83,7 +86,7 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
           </div>
 
           <div className="space-y-2">
-            <Label>Amount (₹)</Label>
+            <Label className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount (₹)</Label>
             <Input 
               type="number" 
               value={amount} 

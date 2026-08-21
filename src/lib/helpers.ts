@@ -40,11 +40,11 @@ export function formatDate(
   const d = dayjs.utc(date).tz(userTimezone);
   
   if (formatType === "short") {
-    return d.format("MMM D"); // e.g. Jan 1
+    return d.format("MMM D, h:mm A"); // e.g. Jan 1, 3:00 PM
   } else if (formatType === "long") {
-    return d.format("MMM D, YYYY"); // e.g. Jan 1, 2024
+    return d.format("MMM D, YYYY, h:mm A"); // e.g. Jan 1, 2024, 3:00 PM
   }
   
   // Default standard format
-  return d.format("M/D/YYYY");
+  return d.format("M/D/YYYY, h:mm A");
 }

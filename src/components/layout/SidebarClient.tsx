@@ -41,7 +41,6 @@ export function SidebarClient({ user }: { user: any }) {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
-            <span className="relative z-10">M</span>
           </div>
           <div className={cn(
             "overflow-hidden transition-all duration-300 ease-in-out",

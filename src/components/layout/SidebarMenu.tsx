@@ -50,9 +50,6 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
               {isActive && (
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50" />
               )}
-              {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full shadow-[0_0_8px_hsl(var(--primary))]" />
-              )}
               <Icon className={cn("w-5 h-5 shrink-0 transition-transform duration-300", isActive && "scale-110 drop-shadow-sm")} />
               
               {!isCollapsed && (
@@ -69,7 +66,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300 relative group overflow-hidden",
+                    "flex items-center justify-center w-10 h-10 mx-auto rounded-xl transition-all duration-300 relative group overflow-hidden",
                     isActive 
                       ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20"
                       : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground hover:scale-[1.02]"
@@ -79,12 +76,9 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
                 {isActive && (
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50" />
                 )}
-                {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full shadow-[0_0_8px_hsl(var(--primary))]" />
-                )}
                 <Icon className={cn("w-5 h-5 shrink-0 transition-transform duration-300", isActive && "scale-110 drop-shadow-sm")} />
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#0ea5e9] text-white font-semibold rounded-lg shadow-lg border-0 py-2 px-4 text-[14px]">
+              <TooltipContent side="right" sideOffset={15} arrowClassName="bg-[#0ea5e9] fill-[#0ea5e9]" className="bg-[#0ea5e9] text-white font-semibold rounded-lg shadow-lg border-0 py-2 px-4 text-[14px]">
                 {item.label}
               </TooltipContent>
             </Tooltip>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createPerson } from "@/actions/person";
-import { Plus } from "lucide-react";
+import { Plus, UserPlus, User, Users, Phone } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -49,7 +49,10 @@ export function PersonForm() {
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Contact</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-primary">
+            <UserPlus className="w-5 h-5" />
+            <span className="text-foreground">Add New Contact</span>
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -58,7 +61,7 @@ export function PersonForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><User className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Enter Name" {...field} />
                   </FormControl>
@@ -71,7 +74,7 @@ export function PersonForm() {
               name="relation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Relation</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><Users className="w-4 h-4 text-muted-foreground" /> Relation</FormLabel>
                   <FormControl>
                     <Select
                       showSearch
@@ -96,7 +99,7 @@ export function PersonForm() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number (Optional)</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /> Phone Number (Optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="+91 9876543210" {...field} />
                   </FormControl>

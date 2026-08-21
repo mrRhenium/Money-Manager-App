@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createAccount } from "@/actions/account";
-import { Plus } from "lucide-react";
+import { Plus, Landmark, PenLine, List, Banknote } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -49,7 +49,10 @@ export function AccountForm() {
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Account</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-primary">
+            <Landmark className="w-5 h-5" />
+            <span className="text-foreground">Create New Account</span>
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -58,7 +61,7 @@ export function AccountForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><PenLine className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. HDFC Bank" {...field} />
                   </FormControl>
@@ -71,7 +74,7 @@ export function AccountForm() {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Type</FormLabel>
                   <FormControl>
                     <Select
                       showSearch
@@ -96,7 +99,7 @@ export function AccountForm() {
               name="balance"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Initial Balance</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Initial Balance</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 

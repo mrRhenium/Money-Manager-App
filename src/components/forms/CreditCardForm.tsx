@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCreditCard } from "@/actions/creditCard";
-import { Plus, CreditCard as CardIcon } from "lucide-react";
+import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette } from "lucide-react";
 
 const formSchema = z.object({
   cardName: z.string().min(2, "Name must be at least 2 characters"),
@@ -41,7 +41,7 @@ export function CreditCardForm() {
       last4Digits: "",
       cardholderName: "",
       creditLimit: 0,
-      startingDate: getCurrentFormatted("YYYY-MM-DD"),
+      startingDate: getCurrentFormatted("YYYY-MM-DDTHH:mm"),
       expiryDate: "",
       billingCycleStartDay: 1,
       billingCycleEndDay: 30,
@@ -92,20 +92,20 @@ export function CreditCardForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="bankName" render={({ field }) => (
-                <FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input placeholder="e.g. HDFC Bank" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Bank Name</FormLabel><FormControl><Input placeholder="e.g. HDFC Bank" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="cardName" render={({ field }) => (
-                <FormItem><FormLabel>Card Nickname</FormLabel><FormControl><Input placeholder="e.g. Regalia Gold" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="flex items-center gap-2"><Tag className="w-4 h-4 text-muted-foreground" /> Card Nickname</FormLabel><FormControl><Input placeholder="e.g. Regalia Gold" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="cardholderName" render={({ field }) => (
-                <FormItem><FormLabel>Name on Card</FormLabel><FormControl><Input placeholder="Enter name on card" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="flex items-center gap-2"><User className="w-4 h-4 text-muted-foreground" /> Name on Card</FormLabel><FormControl><Input placeholder="Enter name on card" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="cardNetwork" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Network</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><CardIcon className="w-4 h-4 text-muted-foreground" /> Network</FormLabel>
                   <FormControl>
                     <Select
                       showSearch
@@ -126,7 +126,7 @@ export function CreditCardForm() {
                 </FormItem>
               )} />
               <FormField control={form.control} name="last4Digits" render={({ field }) => (
-                <FormItem><FormLabel>Last 4 Digits</FormLabel><FormControl>
+                <FormItem><FormLabel className="flex items-center gap-2"><Hash className="w-4 h-4 text-muted-foreground" /> Last 4 Digits</FormLabel><FormControl>
                   <Input 
                     placeholder="1234" 
                     maxLength={4} 
@@ -141,7 +141,7 @@ export function CreditCardForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="creditLimit" render={({ field }) => (
-                <FormItem><FormLabel>Credit Limit (₹)</FormLabel><FormControl>
+                <FormItem><FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Credit Limit (₹)</FormLabel><FormControl>
                   <Input 
                     type="number" 
                     min="0"
@@ -153,10 +153,10 @@ export function CreditCardForm() {
                 </FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="startingDate" render={({ field }) => (
-                <FormItem><FormLabel>Issue Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /> Issue Date</FormLabel><FormControl><Input type="datetime-local" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="expiryDate" render={({ field }) => (
-                <FormItem><FormLabel>Expiry Date</FormLabel><FormControl><Input type="month" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="flex items-center gap-2"><CalendarClock className="w-4 h-4 text-muted-foreground" /> Expiry Date</FormLabel><FormControl><Input type="month" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
@@ -165,7 +165,7 @@ export function CreditCardForm() {
                 <h4 className="text-sm font-semibold">Billing Cycle (Days of Month)</h4>
               </div>
               <FormField control={form.control} name="billingCycleStartDay" render={({ field }) => (
-                <FormItem><FormLabel>Start Day</FormLabel><FormControl>
+                <FormItem><FormLabel className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" /> Start Day</FormLabel><FormControl>
                   <Input 
                     type="number" 
                     min={1} 
@@ -178,7 +178,7 @@ export function CreditCardForm() {
                 </FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="billingCycleEndDay" render={({ field }) => (
-                <FormItem><FormLabel>End/Statement Day</FormLabel><FormControl>
+                <FormItem><FormLabel className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" /> End/Statement Day</FormLabel><FormControl>
                   <Input 
                     type="number" 
                     min={1} 
@@ -191,7 +191,7 @@ export function CreditCardForm() {
                 </FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="paymentDueDay" render={({ field }) => (
-                <FormItem><FormLabel>Due Date</FormLabel><FormControl>
+                <FormItem><FormLabel className="flex items-center gap-2"><CalendarCheck className="w-4 h-4 text-muted-foreground" /> Due Date</FormLabel><FormControl>
                   <Input 
                     type="number" 
                     min={1} 
@@ -206,7 +206,7 @@ export function CreditCardForm() {
             </div>
 
             <FormField control={form.control} name="color" render={({ field }) => (
-              <FormItem><FormLabel>Card Visual Color</FormLabel><FormControl>
+              <FormItem><FormLabel className="flex items-center gap-2"><Palette className="w-4 h-4 text-muted-foreground" /> Card Visual Color</FormLabel><FormControl>
                 <div className="flex gap-2"><Input type="color" className="w-12 h-10 p-1" {...field} /><Input {...field} /></div>
               </FormControl><FormMessage /></FormItem>
             )} />

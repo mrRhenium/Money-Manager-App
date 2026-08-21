@@ -11,6 +11,7 @@ export interface IUser extends Document {
   currency: string;
   monthlyIncome?: number;
   pushSubscription?: any;
+  role: "USER" | "ADMIN";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,7 @@ const UserSchema: Schema<IUser> = new Schema(
     currency: { type: String, default: "INR" },
     monthlyIncome: { type: Number, default: 0 },
     pushSubscription: { type: Schema.Types.Mixed },
+    role: { type: String, enum: ["USER", "ADMIN"], default: "USER" },
   },
   { timestamps: true }
 );

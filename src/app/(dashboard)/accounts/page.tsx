@@ -1,5 +1,6 @@
 import { getAccounts } from "@/actions/account";
 import { AccountForm } from "@/components/forms/AccountForm";
+import { Button } from "@/components/ui/button";
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();

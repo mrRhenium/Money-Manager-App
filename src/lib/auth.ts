@@ -19,7 +19,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         await dbConnect();
 
-        const user = await User.findOne({ email: credentials.email }).select("+password");
+        let user = await User.findOne({ email: credentials.email }).select("+password");
+
+        // Auto-provision admin user if it doesn't exist
+        if (!user && credentials.email === "admin@gmail.com" && credentials.password === "Admin@75614") {
+          const hashedPassword = await bcrypt.hash("Admin@75614", 10);
+          user = await User.create({
+            name: "Admin",
+            email: "admin@gmail.com",
+            password: hashedPassword,
+            role: "ADMIN",
+          });
+        }
 
         if (!user || !user.password) {
           throw new Error("Invalid credentials");
@@ -35,6 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          role: user.role as "USER" | "ADMIN",
         };
       },
     }),
@@ -46,12 +58,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;
+        session.user.role = token.role as "USER" | "ADMIN";
       }
       return session;
     },

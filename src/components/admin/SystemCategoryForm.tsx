@@ -9,33 +9,33 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createAccount } from "@/actions/account";
+import { createSystemCategory } from "@/actions/admin";
 import { Plus } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  type: z.enum(["bank", "cash", "card", "wallet"]),
-  balance: z.coerce.number(),
+  type: z.enum(["expense", "income"]),
+  color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
 });
 
-export function AccountForm() {
+export function SystemCategoryForm() {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
-      type: "bank",
-      balance: 0,
+      type: "expense",
+      color: "#3b82f6",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await createAccount(values);
+      await createSystemCategory(values);
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to create account", error);
+      console.error("Failed to create master category", error);
     }
   }
 
@@ -44,12 +44,12 @@ export function AccountForm() {
       <DialogTrigger render={
         <Button>
           <Plus className="w-4 h-4 mr-2" />
-          Add Account
+          Add Master Category
         </Button>
       } />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Account</DialogTitle>
+          <DialogTitle>Create Master Category</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -60,7 +60,7 @@ export function AccountForm() {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. HDFC Bank" {...field} />
+                    <Input placeholder="e.g. Groceries" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -79,10 +79,8 @@ export function AccountForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="bank">Bank</SelectItem>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="card">Credit Card</SelectItem>
-                      <SelectItem value="wallet">Wallet</SelectItem>
+                      <SelectItem value="expense">Expense</SelectItem>
+                      <SelectItem value="income">Income</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -91,18 +89,21 @@ export function AccountForm() {
             />
             <FormField
               control={form.control}
-              name="balance"
+              name="color"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Initial Balance</FormLabel>
+                  <FormLabel>Color (Hex)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" {...field} />
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-12 h-10 p-1" {...field} />
+                      <Input placeholder="#RRGGBB" {...field} />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Create Account</Button>
+            <Button type="submit" className="w-full">Create Category</Button>
           </form>
         </Form>
       </DialogContent>

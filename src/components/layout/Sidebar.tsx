@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, PieChart, Users, Wallet, Settings, Flame } from "lucide-react";
+import { Home, PieChart, Users, Wallet, Settings, Flame, ShieldAlert } from "lucide-react";
 import { ThemeToggle } from "../theme-toggle";
 import { getUserProfile } from "@/actions/user";
 
@@ -13,6 +13,10 @@ export async function Sidebar() {
     { label: "People", href: "/people", icon: Users },
     { label: "Settings", href: "/settings", icon: Settings },
   ];
+
+  if (user?.role === "ADMIN") {
+    navItems.push({ label: "Admin Portal", href: "/admin/dashboard", icon: ShieldAlert });
+  }
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-border/50 bg-card shadow-sm">

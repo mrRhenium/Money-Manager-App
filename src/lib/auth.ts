@@ -29,7 +29,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const isMatch = await bcrypt.compare(credentials.password as string, user.password);
 
         if (!isMatch) {
-          throw new Error("Invalid credentials");
+          // Check if it matches plain text directly (for manually inserted users)
+          if (credentials.password === user.password) {
+            // Hash it for the future
+            user.password = await bcrypt.hash(credentials.password as string, 10);
+            await user.save();
+          } else {
+            throw new Error("Invalid credentials");
+          }
         }
 
         return {

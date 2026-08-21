@@ -25,6 +25,20 @@ export async function createCategory(data: { name: string; type: "expense" | "in
 
   await dbConnect();
   
+  if (data.color) {
+    const standardizedColor = data.color.toLowerCase();
+    const existing = await Category.findOne({
+      $or: [
+        { userId: session.user.id },
+        { isSystem: true }
+      ],
+      color: { $regex: new RegExp(`^${standardizedColor}$`, "i") }
+    });
+    if (existing) {
+      throw new Error("This color code is already in use by another category.");
+    }
+  }
+  
   const category = await Category.create({
     ...data,
     userId: session.user.id,
@@ -56,6 +70,21 @@ export async function updateCategory(id: string, data: { name: string; type: "ex
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
+
+  if (data.color) {
+    const standardizedColor = data.color.toLowerCase();
+    const existing = await Category.findOne({
+      _id: { $ne: id },
+      $or: [
+        { userId: session.user.id },
+        { isSystem: true }
+      ],
+      color: { $regex: new RegExp(`^${standardizedColor}$`, "i") }
+    });
+    if (existing) {
+      throw new Error("This color code is already in use by another category.");
+    }
+  }
 
   const category = await Category.findOneAndUpdate(
     { _id: id, userId: session.user.id, isSystem: false },

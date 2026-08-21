@@ -64,6 +64,18 @@ export async function createCreditCard(data: any) {
     throw new Error(`A credit card from ${data.bankName} ending in ${data.last4Digits} already exists.`);
   }
 
+  // Validate unique color code
+  if (data.color) {
+    const standardizedColor = data.color.toLowerCase();
+    const existingColor = await CreditCard.findOne({
+      userId: session.user.id,
+      color: { $regex: new RegExp(`^${standardizedColor}$`, "i") }
+    });
+    if (existingColor) {
+      throw new Error("This color code is already in use by another credit card.");
+    }
+  }
+
   const card = await CreditCard.create({
     ...data,
     userId: session.user.id,
@@ -176,6 +188,19 @@ export async function updateCreditCard(
 
   const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
   if (!card) throw new Error("Credit Card not found");
+
+  // Validate unique color code
+  if (data.color) {
+    const standardizedColor = data.color.toLowerCase();
+    const existingColor = await CreditCard.findOne({
+      _id: { $ne: id },
+      userId: session.user.id,
+      color: { $regex: new RegExp(`^${standardizedColor}$`, "i") }
+    });
+    if (existingColor) {
+      throw new Error("This color code is already in use by another credit card.");
+    }
+  }
 
   card.bankName = data.bankName;
   card.cardName = data.cardName;

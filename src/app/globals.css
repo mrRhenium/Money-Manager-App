@@ -152,3 +152,9 @@
 .ant-tooltip-arrow::before, .ant-tooltip-arrow::after {
   background-color: #0ea5e9 !important;
 }
+
+/* Increase size of the React Timezone Map Modal (MUI Dialog) */
+.MuiDialog-paper {
+  max-width: 800px !important;
+  width: 90vw !important;
+}

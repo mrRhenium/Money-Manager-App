@@ -126,7 +126,7 @@ export function BudgetForm({ categories }: BudgetFormProps) {
               />
             </div>
 
-            <Button type="submit" className="w-full">Save Budget</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Save Budget</Button>
           </form>
         </Form>
       </DialogContent>

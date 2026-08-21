@@ -282,7 +282,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
               />
             </div>
 
-            <Button type="submit" className="w-full">Save Transaction</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Save Transaction</Button>
           </form>
         </Form>
       </DialogContent>

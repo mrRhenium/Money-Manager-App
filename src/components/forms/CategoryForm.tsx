@@ -108,7 +108,7 @@ export function CategoryForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Create Category</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Create Category</Button>
           </form>
         </Form>
       </DialogContent>

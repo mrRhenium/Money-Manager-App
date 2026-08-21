@@ -211,7 +211,7 @@ export function CreditCardForm() {
               </FormControl><FormMessage /></FormItem>
             )} />
 
-            <Button type="submit" className="w-full">Register Card</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Register Card</Button>
           </form>
         </Form>
       </DialogContent>

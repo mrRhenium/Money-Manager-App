@@ -20,13 +20,6 @@ const formSchema = z.object({
 
 export function PersonForm() {
   const [open, setOpen] = useState(false);
-  const [isContactSupported, setIsContactSupported] = useState(false);
-
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window) {
-      setIsContactSupported(true);
-    }
-  }, []);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -47,6 +40,11 @@ export function PersonForm() {
   }
 
   const handleImportContact = async () => {
+    if (typeof navigator === 'undefined' || !('contacts' in navigator) || !('ContactsManager' in window)) {
+      alert("The Contact Picker is only supported on mobile devices (like Chrome on Android or Safari on iOS).");
+      return;
+    }
+
     try {
       const props = ['name', 'tel'];
       const opts = { multiple: false };
@@ -81,12 +79,10 @@ export function PersonForm() {
               <UserPlus className="w-5 h-5" />
               <span className="text-foreground">Add New Contact</span>
             </DialogTitle>
-            {isContactSupported && (
-              <Button type="button" variant="outline" size="sm" onClick={handleImportContact} className="gap-2">
-                <Smartphone className="w-4 h-4" />
-                Import
-              </Button>
-            )}
+            <Button type="button" variant="outline" size="sm" onClick={handleImportContact} className="gap-2">
+              <Smartphone className="w-4 h-4" />
+              Import
+            </Button>
           </div>
         </DialogHeader>
         <Form {...form}>
@@ -142,7 +138,7 @@ export function PersonForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Add Contact</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Add Contact</Button>
           </form>
         </Form>
       </DialogContent>

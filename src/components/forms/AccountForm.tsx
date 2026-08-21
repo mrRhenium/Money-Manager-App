@@ -115,7 +115,7 @@ export function AccountForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Create Account</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Create Account</Button>
           </form>
         </Form>
       </DialogContent>

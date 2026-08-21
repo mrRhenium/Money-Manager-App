@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { createAccount } from "@/actions/account";
+import { createAccount, updateAccount } from "@/actions/account";
 import { Plus, Landmark, PenLine, List, Banknote } from "lucide-react";
 
 const formSchema = z.object({
@@ -18,40 +18,50 @@ const formSchema = z.object({
   balance: z.coerce.number(),
 });
 
-export function AccountForm() {
+export function AccountForm({ account }: { account?: any }) {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      name: "",
-      type: "bank",
-      balance: 0,
+      name: account?.name || "",
+      type: account?.type || "bank",
+      balance: account?.balance || 0,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await createAccount(values);
+      if (account?._id) {
+        await updateAccount(account._id, values);
+      } else {
+        await createAccount(values);
+      }
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to create account", error);
+      console.error("Failed to save account", error);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Account
-        </Button>
+        account ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+            <PenLine className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Account
+          </Button>
+        )
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Landmark className="w-5 h-5" />
-            <span className="text-foreground">Create New Account</span>
+            <span className="text-foreground">{account ? "Edit Account" : "Create New Account"}</span>
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -115,7 +125,7 @@ export function AccountForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Create Account</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{account ? "Save Changes" : "Create Account"}</Button>
           </form>
         </Form>
       </DialogContent>

@@ -10,8 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { upsertBudget } from "@/actions/budget";
-import { Plus, Target, Folder, Banknote, CalendarDays } from "lucide-react";
+import { upsertBudget, updateBudget } from "@/actions/budget";
+import { Plus, Target, Folder, Banknote, CalendarDays, PenLine } from "lucide-react";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
@@ -22,9 +22,10 @@ const formSchema = z.object({
 
 interface BudgetFormProps {
   categories: any[];
+  budget?: any;
 }
 
-export function BudgetForm({ categories }: BudgetFormProps) {
+export function BudgetForm({ categories, budget }: BudgetFormProps) {
   const [open, setOpen] = useState(false);
   
   const currentMonth = getCurrentFormatted("YYYY-MM");
@@ -32,10 +33,10 @@ export function BudgetForm({ categories }: BudgetFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      categoryId: "",
-      month: currentMonth,
-      amount: 0,
-      rollover: false,
+      categoryId: budget?.categoryId?._id || budget?.categoryId || "",
+      month: budget?.month || currentMonth,
+      amount: budget?.amount || 0,
+      rollover: budget?.rollover || false,
     },
   });
 
@@ -43,27 +44,37 @@ export function BudgetForm({ categories }: BudgetFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await upsertBudget(values);
+      if (budget?._id) {
+        await updateBudget(budget._id, { amount: values.amount, categoryId: values.categoryId });
+      } else {
+        await upsertBudget(values);
+      }
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to set budget", error);
+      console.error("Failed to save budget", error);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Set Budget
-        </Button>
+        budget ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+            <PenLine className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Set Budget
+          </Button>
+        )
       } />
       <DialogContent className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Target className="w-5 h-5" />
-            <span className="text-foreground">Set Category Budget</span>
+            <span className="text-foreground">{budget ? "Edit Category Budget" : "Set Category Budget"}</span>
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -126,7 +137,7 @@ export function BudgetForm({ categories }: BudgetFormProps) {
               />
             </div>
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Save Budget</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{budget ? "Save Changes" : "Save Budget"}</Button>
           </form>
         </Form>
       </DialogContent>

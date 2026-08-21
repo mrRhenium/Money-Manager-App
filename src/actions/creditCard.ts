@@ -151,3 +151,53 @@ export async function payCreditCardStatement(statementId: string, sourceAccountI
   
   return JSON.parse(JSON.stringify({ tx, statement, card }));
 }
+
+export async function updateCreditCard(
+  id: string,
+  data: {
+    bankName: string;
+    cardName: string;
+    cardNetwork: "Visa" | "Mastercard" | "RuPay" | "Amex" | "Other";
+    last4Digits: string;
+    cardholderName: string;
+    creditLimit: number;
+    startingDate: string;
+    expiryDate: string;
+    billingCycleStartDay: number;
+    billingCycleEndDay: number;
+    paymentDueDay: number;
+    color: string;
+  }
+) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
+  if (!card) throw new Error("Credit Card not found");
+
+  card.bankName = data.bankName;
+  card.cardName = data.cardName;
+  card.cardNetwork = data.cardNetwork;
+  card.last4Digits = data.last4Digits;
+  card.cardholderName = data.cardholderName;
+  card.creditLimit = data.creditLimit;
+  card.startingDate = new Date(data.startingDate);
+  card.expiryDate = new Date(data.expiryDate);
+  card.billingCycleStartDay = data.billingCycleStartDay;
+  card.billingCycleEndDay = data.billingCycleEndDay;
+  card.paymentDueDay = data.paymentDueDay;
+  card.color = data.color;
+
+  // Recalculate available limit based on existing outstanding balance
+  card.availableLimit = data.creditLimit - card.currentOutstanding;
+
+  await card.save();
+
+  revalidatePath("/credit-cards");
+  revalidatePath(`/credit-cards/${card._id}`);
+  revalidatePath("/");
+
+  return JSON.parse(JSON.stringify(card));
+}

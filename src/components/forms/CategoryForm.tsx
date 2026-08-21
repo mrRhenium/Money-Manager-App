@@ -9,8 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { createCategory } from "@/actions/category";
-import { Plus, FolderPlus, Type, List, Palette } from "lucide-react";
+import { createCategory, updateCategory } from "@/actions/category";
+import { Plus, FolderPlus, Type, List, Palette, PenLine } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -18,40 +18,50 @@ const formSchema = z.object({
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
 });
 
-export function CategoryForm() {
+export function CategoryForm({ category }: { category?: any }) {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      name: "",
-      type: "expense",
-      color: "#8884d8",
+      name: category?.name || "",
+      type: category?.type || "expense",
+      color: category?.color || "#8884d8",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await createCategory(values);
+      if (category?._id) {
+        await updateCategory(category._id, values);
+      } else {
+        await createCategory(values);
+      }
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to create category", error);
+      console.error("Failed to save category", error);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Category
-        </Button>
+        category ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+            <PenLine className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Category
+          </Button>
+        )
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <FolderPlus className="w-5 h-5" />
-            <span className="text-foreground">Create New Category</span>
+            <span className="text-foreground">{category ? "Edit Category" : "Create New Category"}</span>
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -108,7 +118,7 @@ export function CategoryForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Create Category</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{category ? "Save Changes" : "Create Category"}</Button>
           </form>
         </Form>
       </DialogContent>

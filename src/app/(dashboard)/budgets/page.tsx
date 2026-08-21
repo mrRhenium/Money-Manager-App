@@ -22,7 +22,7 @@ export default async function BudgetsPage() {
         <BudgetForm categories={categories} />
       </div>
 
-      <BudgetList budgets={budgets} />
+      <BudgetList budgets={budgets} categories={categories} />
     </div>
   );
 }

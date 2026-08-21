@@ -31,7 +31,7 @@ export default async function TransactionsPage() {
         </div>
       </div>
 
-      <TransactionTable transactions={transactions} userTimezone={userTimezone} />
+      <TransactionTable transactions={transactions} userTimezone={userTimezone} accounts={accounts} categories={categories} people={people} />
     </div>
   );
 }

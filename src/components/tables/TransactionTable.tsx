@@ -1,9 +1,25 @@
 "use client";
 
-import { Table } from "antd";
+import { Table, Popconfirm } from "antd";
 import { formatDate } from "@/lib/helpers";
+import { Button } from "@/components/ui/button";
+import { TransactionForm } from "../forms/TransactionForm";
+import { deleteTransaction } from "@/actions/transaction";
+import { Trash } from "lucide-react";
 
-export function TransactionTable({ transactions, userTimezone }: { transactions: any[], userTimezone: string }) {
+export function TransactionTable({
+  transactions,
+  userTimezone,
+  accounts,
+  categories,
+  people = [],
+}: {
+  transactions: any[];
+  userTimezone: string;
+  accounts: any[];
+  categories: any[];
+  people?: any[];
+}) {
   const columns = [
     {
       title: "Date",
@@ -59,6 +75,27 @@ export function TransactionTable({ transactions, userTimezone }: { transactions:
         );
       },
       sorter: (a: any, b: any) => a.amount - b.amount,
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      align: "center" as const,
+      render: (_: any, record: any) => (
+        <div className="flex items-center justify-center gap-1.5">
+          <TransactionForm accounts={accounts} categories={categories} people={people} transaction={record} />
+          <Popconfirm
+            title="Delete Transaction"
+            description="Are you sure you want to delete this transaction?"
+            onConfirm={() => deleteTransaction(record._id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+              <Trash className="w-4 h-4" />
+            </Button>
+          </Popconfirm>
+        </div>
+      ),
     }
   ];
 

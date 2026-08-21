@@ -99,3 +99,21 @@ export async function savePersonVpa(name: string, vpa: string) {
   revalidatePath("/people");
   return JSON.parse(JSON.stringify(person));
 }
+
+export async function updatePerson(id: string, data: { name: string; relation: string; vpa?: string }) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  const person = await Person.findOneAndUpdate(
+    { _id: id, userId: session.user.id },
+    { $set: { name: data.name, relation: data.relation, vpa: data.vpa } },
+    { new: true }
+  );
+
+  revalidatePath("/people");
+  revalidatePath("/");
+
+  return JSON.parse(JSON.stringify(person));
+}

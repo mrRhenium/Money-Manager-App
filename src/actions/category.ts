@@ -50,3 +50,22 @@ export async function deleteCategory(id: string) {
   revalidatePath("/categories");
   revalidatePath("/transactions");
 }
+
+export async function updateCategory(id: string, data: { name: string; type: "expense" | "income"; color: string }) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  const category = await Category.findOneAndUpdate(
+    { _id: id, userId: session.user.id, isSystem: false },
+    { $set: { name: data.name, type: data.type, color: data.color } },
+    { new: true }
+  );
+
+  revalidatePath("/categories");
+  revalidatePath("/transactions");
+  revalidatePath("/");
+
+  return JSON.parse(JSON.stringify(category));
+}

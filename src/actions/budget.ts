@@ -84,3 +84,21 @@ export async function deleteBudget(id: string) {
 
   revalidatePath("/budgets");
 }
+
+export async function updateBudget(id: string, data: { amount: number; categoryId: string }) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  const budget = await Budget.findOneAndUpdate(
+    { _id: id, userId: session.user.id },
+    { $set: { amount: data.amount, categoryId: data.categoryId } },
+    { new: true }
+  );
+
+  revalidatePath("/budgets");
+  revalidatePath("/");
+
+  return JSON.parse(JSON.stringify(budget));
+}

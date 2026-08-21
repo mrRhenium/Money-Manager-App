@@ -1,6 +1,10 @@
 "use client";
 
-import { List } from "antd";
+import { List, Popconfirm } from "antd";
+import { Button } from "@/components/ui/button";
+import { CategoryForm } from "../forms/CategoryForm";
+import { deleteCategory } from "@/actions/category";
+import { Trash } from "lucide-react";
 
 export function CategoryList({ expenseCategories, incomeCategories }: { expenseCategories: any[], incomeCategories: any[] }) {
   const renderCategoryItem = (cat: any) => (
@@ -9,6 +13,24 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
         <div className="flex items-center gap-3">
           <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color }} />
           <span className="font-medium">{cat.name}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {!cat.isSystem && (
+            <>
+              <CategoryForm category={cat} />
+              <Popconfirm
+                title="Delete Category"
+                description="Are you sure you want to delete this category?"
+                onConfirm={() => deleteCategory(cat._id)}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                  <Trash className="w-4 h-4" />
+                </Button>
+              </Popconfirm>
+            </>
+          )}
         </div>
       </div>
     </List.Item>

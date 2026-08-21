@@ -1,9 +1,12 @@
 "use client";
 
-import { List } from "antd";
+import { List, Popconfirm } from "antd";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CreditCardForm } from "../forms/CreditCardForm";
+import { deleteCreditCard } from "@/actions/creditCard";
 
 export function CreditCardList({ cards }: { cards: any[] }) {
   if (cards.length === 0) {
@@ -32,8 +35,22 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                       <h3 className="font-bold text-lg opacity-90">{card.bankName}</h3>
                       <p className="text-sm opacity-80">{card.cardName}</p>
                     </div>
-                    <div className="bg-white/20 px-2 py-1 rounded text-xs font-semibold uppercase backdrop-blur-md">
-                      {card.cardNetwork}
+                    <div className="flex items-center gap-1 z-10" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                      <CreditCardForm card={card} />
+                      <Popconfirm
+                        title="Delete Credit Card"
+                        description="Are you sure you want to delete this credit card?"
+                        onConfirm={() => deleteCreditCard(card._id)}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      </Popconfirm>
+                      <div className="bg-white/25 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
+                        {card.cardNetwork}
+                      </div>
                     </div>
                   </div>
 

@@ -9,35 +9,41 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { createPerson } from "@/actions/person";
-import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser } from "lucide-react";
+import { createPerson, updatePerson } from "@/actions/person";
+import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser, PenLine, QrCode } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   relation: z.enum(["Friend", "Family", "Colleague", "Other"]),
   phone: z.string().optional(),
+  vpa: z.string().optional(),
 });
 
-export function PersonForm() {
+export function PersonForm({ person }: { person?: any }) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      name: "",
-      relation: "Friend",
-      phone: "",
+      name: person?.name || "",
+      relation: person?.relation || "Friend",
+      phone: person?.phone || "",
+      vpa: person?.vpa || "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await createPerson(values);
+      if (person?._id) {
+        await updatePerson(person._id, values);
+      } else {
+        await createPerson(values);
+      }
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to add person", error);
+      console.error("Failed to save person", error);
     }
   }
 
@@ -69,16 +75,22 @@ export function PersonForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Person
-        </Button>
+        person ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+            <PenLine className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Person
+          </Button>
+        )
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <UserPlus className="w-5 h-5" />
-            <span className="text-foreground">Add New Contact</span>
+            <span className="text-foreground">{person ? "Edit Contact" : "Add New Contact"}</span>
           </DialogTitle>
         </DialogHeader>
         
@@ -150,7 +162,20 @@ export function PersonForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Add Contact</Button>
+            <FormField
+              control={form.control}
+              name="vpa"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2"><QrCode className="w-4 h-4 text-muted-foreground" /> UPI VPA (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. name@bank" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{person ? "Save Changes" : "Add Contact"}</Button>
           </form>
         </Form>
       </DialogContent>

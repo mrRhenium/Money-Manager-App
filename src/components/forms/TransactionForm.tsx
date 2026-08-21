@@ -11,10 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { createTransaction } from "@/actions/transaction";
+import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { useRef } from "react";
 import Tesseract from "tesseract.js";
-import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users } from "lucide-react";
+import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users, PenLine } from "lucide-react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 
 const formSchema = z.object({
@@ -33,9 +33,10 @@ interface TransactionFormProps {
   categories: any[];
   people?: any[];
   triggerClassName?: string;
+  transaction?: any;
 }
 
-export function TransactionForm({ accounts, categories, people = [], triggerClassName }: TransactionFormProps) {
+export function TransactionForm({ accounts, categories, people = [], triggerClassName, transaction }: TransactionFormProps) {
   const [open, setOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanPayOpen, setScanPayOpen] = useState(false);
@@ -44,14 +45,14 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      type: "expense",
-      amount: 0,
-      originalCurrency: "INR",
-      accountId: accounts.length > 0 ? accounts[0]._id : "",
-      categoryId: "",
-      personId: "",
-      note: "",
-      date: getCurrentFormatted("YYYY-MM-DDTHH:mm"),
+      type: transaction?.type || "expense",
+      amount: transaction?.amount || 0,
+      originalCurrency: transaction?.originalCurrency || "INR",
+      accountId: transaction?.accountId?._id || transaction?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
+      categoryId: transaction?.categoryId?._id || transaction?.categoryId || "",
+      personId: transaction?.personId?._id || transaction?.personId || "",
+      note: transaction?.note || "",
+      date: transaction?.date ? new Date(transaction.date).toISOString().slice(0, 16) : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
     },
   });
 
@@ -94,31 +95,45 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await createTransaction({
-        ...values,
-        categoryId: values.categoryId || undefined,
-        personId: values.personId || undefined,
-      });
+      if (transaction?._id) {
+        await updateTransaction(transaction._id, {
+          ...values,
+          categoryId: values.categoryId || undefined,
+          personId: values.personId || undefined,
+        });
+      } else {
+        await createTransaction({
+          ...values,
+          categoryId: values.categoryId || undefined,
+          personId: values.personId || undefined,
+        });
+      }
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to create transaction", error);
+      console.error("Failed to save transaction", error);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button className={triggerClassName}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Transaction
-        </Button>
+        transaction ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+            <PenLine className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button className={triggerClassName}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Transaction
+          </Button>
+        )
       } />
       <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <ReceiptText className="w-5 h-5" />
-            <span className="text-foreground">Log Transaction</span>
+            <span className="text-foreground">{transaction ? "Edit Transaction" : "Log Transaction"}</span>
           </DialogTitle>
         </DialogHeader>
         
@@ -321,7 +336,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
               )}
             />
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Save Transaction</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{transaction ? "Save Changes" : "Save Transaction"}</Button>
           </form>
         </Form>
       </DialogContent>

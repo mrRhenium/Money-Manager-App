@@ -1,7 +1,10 @@
 "use client";
 
-import { List } from "antd";
+import { List, Popconfirm } from "antd";
 import { Button } from "@/components/ui/button";
+import { AccountForm } from "../forms/AccountForm";
+import { deleteAccount } from "@/actions/account";
+import { Trash } from "lucide-react";
 
 export function AccountList({ accounts }: { accounts: any[] }) {
   if (accounts.length === 0) {
@@ -20,13 +23,29 @@ export function AccountList({ accounts }: { accounts: any[] }) {
         pagination={{ pageSize: 12, position: "bottom", align: "end" }}
         renderItem={(account: any) => (
           <List.Item>
-            <div className="rounded-xl border bg-card text-card-foreground shadow p-6 h-full">
-              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <h3 className="tracking-tight text-sm font-medium capitalize">{account.name}</h3>
-                <span className="text-xs text-muted-foreground uppercase bg-secondary px-2 py-1 rounded-md">{account.type}</span>
+            <div className="rounded-xl border bg-card text-card-foreground shadow p-6 h-full flex flex-col justify-between">
+              <div>
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <h3 className="tracking-tight text-sm font-medium capitalize">{account.name}</h3>
+                  <span className="text-xs text-muted-foreground uppercase bg-secondary px-2 py-1 rounded-md">{account.type}</span>
+                </div>
+                <div className="pt-2">
+                  <div className="text-2xl font-bold">₹{account.balance.toLocaleString('en-IN')}</div>
+                </div>
               </div>
-              <div className="pt-2">
-                <div className="text-2xl font-bold">₹{account.balance.toLocaleString('en-IN')}</div>
+              <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+                <AccountForm account={account} />
+                <Popconfirm
+                  title="Delete Account"
+                  description="Are you sure you want to delete this account?"
+                  onConfirm={() => deleteAccount(account._id)}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                    <Trash className="w-4 h-4" />
+                  </Button>
+                </Popconfirm>
               </div>
             </div>
           </List.Item>

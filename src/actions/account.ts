@@ -51,3 +51,22 @@ export async function deleteAccount(id: string) {
   revalidatePath("/transactions");
   revalidatePath("/");
 }
+
+export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet"; balance?: number }) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  const account = await Account.findOneAndUpdate(
+    { _id: id, userId: session.user.id },
+    { $set: { name: data.name, type: data.type, balance: data.balance || 0 } },
+    { new: true }
+  );
+
+  revalidatePath("/accounts");
+  revalidatePath("/transactions");
+  revalidatePath("/");
+
+  return JSON.parse(JSON.stringify(account));
+}

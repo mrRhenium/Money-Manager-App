@@ -278,6 +278,142 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
   return JSON.parse(JSON.stringify(transaction));
 }
 
+export async function updateTransaction(
+  id: string,
+  data: {
+    type: TransactionType;
+    amount: number;
+    date: string;
+    accountId?: string;
+    paymentMode?: "cash" | "bank" | "credit_card" | "wallet";
+    creditCardId?: string;
+    categoryId?: string;
+    personId?: string;
+    note?: string;
+    originalCurrency?: string;
+    status?: "completed" | "pending" | "cancelled" | "awaiting_confirmation";
+  }
+) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  const oldTxn = await Transaction.findOne({ _id: id, userId: session.user.id });
+  if (!oldTxn) throw new Error("Transaction not found");
+
+  // 1. Revert the impact of the old transaction if it was completed
+  if (oldTxn.status === "completed") {
+    if (oldTxn.paymentMode === "credit_card" && oldTxn.creditCardId) {
+      const card = await CreditCard.findOne({ _id: oldTxn.creditCardId, userId: session.user.id });
+      if (card) {
+        card.currentOutstanding = Math.max(0, card.currentOutstanding - oldTxn.amount);
+        card.availableLimit = card.creditLimit - card.currentOutstanding;
+        await card.save();
+
+        const statementMonth = getStatementMonth(oldTxn.date.toISOString());
+        const statement = await CardStatement.findOne({ cardId: oldTxn.creditCardId, statementMonth });
+        if (statement) {
+          statement.totalAmount = Math.max(0, statement.totalAmount - oldTxn.amount);
+          statement.minimumDue = (statement.totalAmount * card.minimumDuePercent) / 100;
+          statement.transactions = statement.transactions.filter(
+            (tId: any) => tId.toString() !== oldTxn._id.toString()
+          );
+          await statement.save();
+        }
+      }
+    } else if (oldTxn.accountId) {
+      let balanceChange = 0;
+      if (oldTxn.type === "expense" || oldTxn.type === "lend") {
+        balanceChange = oldTxn.amount; // Revert: add back
+      } else if (oldTxn.type === "income" || oldTxn.type === "borrow" || oldTxn.type === "settlement") {
+        balanceChange = -oldTxn.amount; // Revert: subtract
+      }
+
+      if (balanceChange !== 0) {
+        await Account.findOneAndUpdate(
+          { _id: oldTxn.accountId, userId: session.user.id },
+          { $inc: { balance: balanceChange } }
+        );
+      }
+    }
+  }
+
+  // 2. Save the updated transaction fields
+  oldTxn.type = data.type;
+  oldTxn.amount = data.amount;
+  oldTxn.originalCurrency = data.originalCurrency || "INR";
+  oldTxn.date = new Date(data.date);
+  oldTxn.accountId = (data.accountId as any) || undefined;
+  oldTxn.categoryId = (data.categoryId as any) || undefined;
+  oldTxn.personId = (data.personId as any) || undefined;
+  oldTxn.note = data.note || "";
+  oldTxn.paymentMode = data.paymentMode || "bank";
+  oldTxn.creditCardId = (data.creditCardId as any) || undefined;
+  oldTxn.status = data.status || "completed";
+
+  await oldTxn.save();
+
+  // 3. Apply the impact of the updated transaction if the new status is completed
+  if (oldTxn.status === "completed") {
+    if (oldTxn.paymentMode === "credit_card" && oldTxn.creditCardId) {
+      const card = await CreditCard.findOne({ _id: oldTxn.creditCardId, userId: session.user.id });
+      if (card) {
+        card.currentOutstanding += oldTxn.amount;
+        card.availableLimit = card.creditLimit - card.currentOutstanding;
+        await card.save();
+
+        const statementMonth = getStatementMonth(oldTxn.date.toISOString());
+        let statement = await CardStatement.findOne({ cardId: card._id, statementMonth });
+        if (!statement) {
+          const dueDate = calculateCreditCardDueDate(
+            oldTxn.date.toISOString(),
+            card.paymentDueDay,
+            card.billingCycleEndDay
+          );
+          statement = await CardStatement.create({
+            cardId: card._id,
+            userId: session.user.id,
+            statementMonth,
+            statementDate: getCurrentDate(),
+            dueDate,
+            totalAmount: 0,
+            minimumDue: 0,
+            amountPaid: 0,
+            paymentStatus: "unpaid",
+            transactions: [],
+          });
+        }
+        statement.totalAmount += oldTxn.amount;
+        statement.minimumDue = (statement.totalAmount * card.minimumDuePercent) / 100;
+        if (!statement.transactions.some((tId: any) => tId.toString() === oldTxn._id.toString())) {
+          statement.transactions.push(oldTxn._id as any);
+        }
+        await statement.save();
+      }
+    } else if (oldTxn.accountId) {
+      let balanceChange = 0;
+      if (oldTxn.type === "expense" || oldTxn.type === "lend") {
+        balanceChange = -oldTxn.amount;
+      } else if (oldTxn.type === "income" || oldTxn.type === "borrow" || oldTxn.type === "settlement") {
+        balanceChange = oldTxn.amount;
+      }
+
+      if (balanceChange !== 0) {
+        await Account.findOneAndUpdate(
+          { _id: oldTxn.accountId, userId: session.user.id },
+          { $inc: { balance: balanceChange } }
+        );
+      }
+    }
+  }
+
+  revalidatePath("/transactions");
+  revalidatePath("/");
+
+  return JSON.parse(JSON.stringify(oldTxn));
+}
+
 export async function getAwaitingTransactions() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");

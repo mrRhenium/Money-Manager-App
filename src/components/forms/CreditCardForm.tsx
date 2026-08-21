@@ -10,8 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { createCreditCard } from "@/actions/creditCard";
-import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette } from "lucide-react";
+import { createCreditCard, updateCreditCard } from "@/actions/creditCard";
+import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette, PenLine } from "lucide-react";
 
 const formSchema = z.object({
   cardName: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,25 +28,25 @@ const formSchema = z.object({
   color: z.string(),
 });
 
-export function CreditCardForm() {
+export function CreditCardForm({ card }: { card?: any }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      cardName: "",
-      bankName: "",
-      cardNetwork: "Visa",
-      last4Digits: "",
-      cardholderName: "",
-      creditLimit: 0,
-      startingDate: getCurrentFormatted("YYYY-MM-DDTHH:mm"),
-      expiryDate: "",
-      billingCycleStartDay: 1,
-      billingCycleEndDay: 30,
-      paymentDueDay: 15,
-      color: "#0ea5e9",
+      cardName: card?.cardName || "",
+      bankName: card?.bankName || "",
+      cardNetwork: card?.cardNetwork || "Visa",
+      last4Digits: card?.last4Digits || "",
+      cardholderName: card?.cardholderName || "",
+      creditLimit: card?.creditLimit || 0,
+      startingDate: card?.startingDate ? new Date(card.startingDate).toISOString().slice(0, 16) : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
+      expiryDate: card?.expiryDate ? new Date(card.expiryDate).toISOString().slice(0, 16) : "",
+      billingCycleStartDay: card?.billingCycleStartDay || 1,
+      billingCycleEndDay: card?.billingCycleEndDay || 30,
+      paymentDueDay: card?.paymentDueDay || 15,
+      color: card?.color || "#0ea5e9",
     },
   });
 
@@ -62,27 +62,37 @@ export function CreditCardForm() {
     }
 
     try {
-      await createCreditCard(values);
+      if (card?._id) {
+        await updateCreditCard(card._id, values);
+      } else {
+        await createCreditCard(values);
+      }
       setOpen(false);
       form.reset();
     } catch (err: any) {
-      setError(err.message || "Failed to create credit card");
+      setError(err.message || "Failed to save credit card");
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button className="gap-2 rounded-xl">
-          <Plus className="w-4 h-4" />
-          Add Credit Card
-        </Button>
+        card ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+            <PenLine className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button className="gap-2 rounded-xl">
+            <Plus className="w-4 h-4" />
+            Add Credit Card
+          </Button>
+        )
       } />
       <DialogContent className="sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CardIcon className="w-5 h-5 text-primary" />
-            Register Credit Card
+            {card ? "Edit Credit Card" : "Register Credit Card"}
           </DialogTitle>
         </DialogHeader>
 
@@ -211,7 +221,7 @@ export function CreditCardForm() {
               </FormControl><FormMessage /></FormItem>
             )} />
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">Register Card</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{card ? "Save Changes" : "Register Card"}</Button>
           </form>
         </Form>
       </DialogContent>

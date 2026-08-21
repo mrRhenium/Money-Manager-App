@@ -1,7 +1,10 @@
 "use client";
 
-import { List } from "antd";
-import { User as UserIcon } from "lucide-react";
+import { List, Popconfirm } from "antd";
+import { User as UserIcon, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PersonForm } from "../forms/PersonForm";
+import { deletePerson } from "@/actions/person";
 
 export function PersonList({ people }: { people: any[] }) {
   if (people.length === 0) {
@@ -30,6 +33,20 @@ export function PersonList({ people }: { people: any[] }) {
                     <h3 className="font-semibold">{person.name}</h3>
                     <p className="text-xs text-muted-foreground">{person.relation}</p>
                   </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <PersonForm person={person} />
+                  <Popconfirm
+                    title="Delete Contact"
+                    description="Are you sure you want to delete this contact?"
+                    onConfirm={() => deletePerson(person._id)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                      <Trash className="w-4 h-4" />
+                    </Button>
+                  </Popconfirm>
                 </div>
               </div>
               <div className="pt-2 border-t flex items-center justify-between mt-auto">

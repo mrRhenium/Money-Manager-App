@@ -80,7 +80,7 @@ export async function deleteCategory(id: string) {
   revalidatePath("/transactions");
 }
 
-export async function updateCategory(id: string, data: { name: string; type: "expense" | "income"; color: string }) {
+export async function updateCategory(id: string, data: { name: string; type: "expense" | "income"; color: string; icon?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -103,7 +103,7 @@ export async function updateCategory(id: string, data: { name: string; type: "ex
 
   const category = await Category.findOneAndUpdate(
     { _id: id, userId: session.user.id, isSystem: false },
-    { $set: { name: data.name, type: data.type, color: data.color } },
+    { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon } },
     { new: true }
   );
 

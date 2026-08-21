@@ -10,12 +10,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCategory, updateCategory } from "@/actions/category";
-import { Plus, FolderPlus, Type, List, Palette, PenLine } from "lucide-react";
+import { Plus, FolderPlus, Type, List, Palette, PenLine, Sparkles } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+
+const AVAILABLE_ICONS = [
+  { name: "ShoppingBag", icon: LucideIcons.ShoppingBag, label: "Shopping" },
+  { name: "Utensils", icon: LucideIcons.Utensils, label: "Food" },
+  { name: "Car", icon: LucideIcons.Car, label: "Transport" },
+  { name: "Home", icon: LucideIcons.Home, label: "Housing" },
+  { name: "Zap", icon: LucideIcons.Zap, label: "Utilities" },
+  { name: "HeartPulse", icon: LucideIcons.HeartPulse, label: "Medical" },
+  { name: "GraduationCap", icon: LucideIcons.GraduationCap, label: "Education" },
+  { name: "Tv", icon: LucideIcons.Tv, label: "Entertainment" },
+  { name: "DollarSign", icon: LucideIcons.DollarSign, label: "Salary" },
+  { name: "TrendingUp", icon: LucideIcons.TrendingUp, label: "Investment" },
+  { name: "Gift", icon: LucideIcons.Gift, label: "Gifts" },
+  { name: "Circle", icon: LucideIcons.Circle, label: "Other" },
+];
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   type: z.enum(["expense", "income"]),
   color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
+  icon: z.string().default("Circle"),
 });
 
 export function CategoryForm({ category }: { category?: any }) {
@@ -26,6 +43,7 @@ export function CategoryForm({ category }: { category?: any }) {
       name: category?.name || "",
       type: category?.type || "expense",
       color: category?.color || "#8884d8",
+      icon: category?.icon || "Circle",
     },
   });
 
@@ -112,6 +130,41 @@ export function CategoryForm({ category }: { category?: any }) {
                     <div className="flex gap-2">
                       <Input type="color" id="categoryColorInput" className="w-12 h-10 p-1" {...field} />
                       <Input placeholder="#RRGGBB" {...field} onClick={() => document.getElementById("categoryColorInput")?.click()} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-muted-foreground" /> Select Icon
+                  </FormLabel>
+                  <FormControl>
+                    <div className="grid grid-cols-4 gap-2 p-2 border rounded-xl bg-muted/10 max-h-[160px] overflow-y-auto">
+                      {AVAILABLE_ICONS.map((item) => {
+                        const IconComponent = item.icon;
+                        const isSelected = field.value === item.name;
+                        return (
+                          <button
+                            key={item.name}
+                            type="button"
+                            onClick={() => field.onChange(item.name)}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all ${
+                              isSelected
+                                ? "bg-primary text-white border-primary shadow-sm"
+                                : "bg-card text-muted-foreground hover:bg-muted border-transparent"
+                            }`}
+                          >
+                            <IconComponent className="w-5 h-5 mb-1" />
+                            <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </FormControl>
                   <FormMessage />

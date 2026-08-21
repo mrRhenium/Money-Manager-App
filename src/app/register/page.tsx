@@ -164,7 +164,14 @@ export default function RegisterPage() {
                 { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit mobile number!' }
               ]}
             >
-              <Input prefix={<PhoneOutlined className="site-form-item-icon text-gray-400" />} placeholder="Enter 10-digit mobile number" maxLength={10} />
+              <Input 
+                prefix={<PhoneOutlined className="site-form-item-icon text-gray-400" />} 
+                placeholder="Enter 10-digit mobile number" 
+                maxLength={10} 
+                onKeyPress={(e) => {
+                  if (!/[0-9]/.test(e.key)) e.preventDefault();
+                }}
+              />
             </Form.Item>
 
             <Form.Item

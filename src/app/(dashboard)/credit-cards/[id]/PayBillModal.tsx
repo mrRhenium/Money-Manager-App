@@ -88,6 +88,10 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
             <Input 
               type="number" 
               value={amount} 
+              min="0"
+              onKeyDown={(e) => {
+                if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+              }}
               onChange={e => setAmount(e.target.value)} 
               placeholder="e.g. 5000" 
             />

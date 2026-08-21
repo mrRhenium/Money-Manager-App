@@ -120,13 +120,31 @@ export function CreditCardForm() {
                 </FormItem>
               )} />
               <FormField control={form.control} name="last4Digits" render={({ field }) => (
-                <FormItem><FormLabel>Last 4 Digits</FormLabel><FormControl><Input placeholder="1234" maxLength={4} {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Last 4 Digits</FormLabel><FormControl>
+                  <Input 
+                    placeholder="1234" 
+                    maxLength={4} 
+                    onKeyPress={(e) => {
+                      if (!/[0-9]/.test(e.key)) e.preventDefault();
+                    }}
+                    {...field} 
+                  />
+                </FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="creditLimit" render={({ field }) => (
-                <FormItem><FormLabel>Credit Limit (₹)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Credit Limit (₹)</FormLabel><FormControl>
+                  <Input 
+                    type="number" 
+                    min="0"
+                    onKeyDown={(e) => {
+                      if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                    }}
+                    {...field} 
+                  />
+                </FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="startingDate" render={({ field }) => (
                 <FormItem><FormLabel>Issue Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
@@ -141,13 +159,43 @@ export function CreditCardForm() {
                 <h4 className="text-sm font-semibold">Billing Cycle (Days of Month)</h4>
               </div>
               <FormField control={form.control} name="billingCycleStartDay" render={({ field }) => (
-                <FormItem><FormLabel>Start Day</FormLabel><FormControl><Input type="number" min={1} max={31} {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Start Day</FormLabel><FormControl>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    max={31} 
+                    onKeyDown={(e) => {
+                      if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                    }}
+                    {...field} 
+                  />
+                </FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="billingCycleEndDay" render={({ field }) => (
-                <FormItem><FormLabel>End/Statement Day</FormLabel><FormControl><Input type="number" min={1} max={31} {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>End/Statement Day</FormLabel><FormControl>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    max={31} 
+                    onKeyDown={(e) => {
+                      if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                    }}
+                    {...field} 
+                  />
+                </FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="paymentDueDay" render={({ field }) => (
-                <FormItem><FormLabel>Due Date</FormLabel><FormControl><Input type="number" min={1} max={31} {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Due Date</FormLabel><FormControl>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    max={31} 
+                    onKeyDown={(e) => {
+                      if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                    }}
+                    {...field} 
+                  />
+                </FormControl><FormMessage /></FormItem>
               )} />
             </div>
 

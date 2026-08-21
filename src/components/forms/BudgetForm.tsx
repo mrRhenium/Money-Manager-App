@@ -96,7 +96,15 @@ export function BudgetForm({ categories }: BudgetFormProps) {
                   <FormItem>
                     <FormLabel>Amount</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        min="0"
+                        onKeyDown={(e) => {
+                          if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                        }}
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

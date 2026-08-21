@@ -47,7 +47,7 @@ export function PersonForm() {
           Add Person
         </Button>
       } />
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Contact</DialogTitle>
         </DialogHeader>

@@ -47,7 +47,7 @@ export function AccountForm() {
           Add Account
         </Button>
       } />
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Account</DialogTitle>
         </DialogHeader>

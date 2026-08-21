@@ -105,7 +105,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
           Add Transaction
         </Button>
       } />
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             Log Transaction

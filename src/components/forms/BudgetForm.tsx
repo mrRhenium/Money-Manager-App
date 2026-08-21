@@ -59,7 +59,7 @@ export function BudgetForm({ categories }: BudgetFormProps) {
           Set Budget
         </Button>
       } />
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Set Category Budget</DialogTitle>
         </DialogHeader>

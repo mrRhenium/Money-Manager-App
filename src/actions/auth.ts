@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "@/lib/mailer";
+import { generateOtp, getExpiryDate } from "@/lib/helpers";
 
 export async function sendResetOtp(email: string) {
   try {
@@ -15,11 +16,10 @@ export async function sendResetOtp(email: string) {
     }
 
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp();
     
     // Set expiry to 10 minutes from now
-    const expiry = new Date();
-    expiry.setMinutes(expiry.getMinutes() + 10);
+    const expiry = getExpiryDate();
 
     user.resetOtp = await bcrypt.hash(otp, 10);
     user.resetOtpExpiry = expiry;

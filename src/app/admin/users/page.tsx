@@ -1,5 +1,6 @@
 import { getAllUsers } from "@/actions/admin";
 import { UserDeleteButton } from "@/components/admin/UserDeleteButton";
+import { formatDate } from "@/lib/helpers";
 
 export default async function AdminUsersPage() {
   const users = await getAllUsers();
@@ -28,7 +29,7 @@ export default async function AdminUsersPage() {
                   <td className="px-6 py-4 font-medium text-foreground">{user.name}</td>
                   <td className="px-6 py-4 text-muted-foreground">{user.email}</td>
                   <td className="px-6 py-4 text-muted-foreground">
-                    {new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    {formatDate(user.createdAt, "long")}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <UserDeleteButton userId={user._id} />

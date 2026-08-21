@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 
 // A mock PayBillModal component for simplicity. In a real app, this would be a client component form.
 import { PayBillModal } from "./PayBillModal";
+import { formatDate } from "@/lib/helpers";
 
 export default async function CreditCardDetailPage({ params }: { params: { id: string } }) {
   const data = await getCreditCardById(params.id);
@@ -124,7 +125,7 @@ export default async function CreditCardDetailPage({ params }: { params: { id: s
                         <div>
                           <p className="font-medium text-foreground">{t.note || t.categoryId?.name || "Expense"}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {new Date(t.date).toLocaleDateString()} • {t.categoryId?.name}
+                            {formatDate(t.date)} • {t.categoryId?.name}
                           </p>
                         </div>
                       </div>
@@ -156,7 +157,7 @@ export default async function CreditCardDetailPage({ params }: { params: { id: s
                       <div>
                         <p className="font-medium text-foreground">Statement: {s.statementMonth}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Due: {new Date(s.dueDate).toLocaleDateString()}
+                          Due: {formatDate(s.dueDate)}
                         </p>
                       </div>
                       <div className="text-right">

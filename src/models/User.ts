@@ -13,6 +13,9 @@ export interface IUser extends Document {
   monthlyIncome?: number;
   pushSubscription?: any;
   role: "USER" | "ADMIN";
+  isVerified?: boolean;
+  verificationOtp?: string;
+  verificationOtpExpiry?: Date;
   resetOtp?: string;
   resetOtpExpiry?: Date;
   createdAt: Date;
@@ -33,6 +36,9 @@ const UserSchema: Schema<IUser> = new Schema(
     monthlyIncome: { type: Number, default: 0 },
     pushSubscription: { type: Schema.Types.Mixed },
     role: { type: String, enum: ["USER", "ADMIN"], default: "USER" },
+    isVerified: { type: Boolean, default: false },
+    verificationOtp: { type: String },
+    verificationOtpExpiry: { type: Date },
     resetOtp: { type: String },
     resetOtpExpiry: { type: Date },
   },

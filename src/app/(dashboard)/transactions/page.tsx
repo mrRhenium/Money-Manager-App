@@ -3,6 +3,7 @@ import { getAccounts } from "@/actions/account";
 import { getCategories } from "@/actions/category";
 import { ExportButton } from "@/components/transactions/ExportButton";
 import { TransactionForm } from "@/components/forms/TransactionForm";
+import { formatDate } from "@/lib/helpers";
 
 export default async function TransactionsPage() {
   const [transactions, accounts, categories] = await Promise.all([
@@ -48,7 +49,7 @@ export default async function TransactionsPage() {
                   transactions.map((t: any) => (
                     <tr key={t._id} className="hover:bg-muted/50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {new Date(t.date).toLocaleDateString()}
+                        {formatDate(t.date)}
                       </td>
                       <td className="px-6 py-4 capitalize">{t.type}</td>
                       <td className="px-6 py-4">

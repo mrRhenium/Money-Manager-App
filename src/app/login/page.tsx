@@ -57,7 +57,6 @@ export default function LoginPage() {
           layout="vertical"
           onFinish={onFinish}
           size="large"
-          requiredMark={false}
         >
           {error && (
             <Form.Item>

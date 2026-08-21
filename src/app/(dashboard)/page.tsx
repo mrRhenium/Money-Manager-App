@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/helpers";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -198,7 +199,7 @@ export default async function DashboardPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{t.categoryId?.name || t.type}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {t.accountId?.name || 'Account'}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatDate(t.date, 'short')} • {t.accountId?.name || 'Account'}</p>
                     </div>
                   </div>
                   <div className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>

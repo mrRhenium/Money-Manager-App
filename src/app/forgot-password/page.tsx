@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
       }
       
       setEmail(values.email);
-      setSuccess("If an account exists, an OTP has been sent (Check server console for DEV).");
+      setSuccess("A 6-digit OTP has been sent to your email address.");
       setStep(2);
     } catch (err: any) {
       setError("An unexpected error occurred while sending OTP.");
@@ -107,7 +107,6 @@ export default function ForgotPasswordPage() {
             layout="vertical"
             onFinish={handleSendOtp}
             size="large"
-            requiredMark={false}
           >
             {error && (
               <Form.Item>
@@ -136,7 +135,6 @@ export default function ForgotPasswordPage() {
             layout="vertical"
             onFinish={handleResetPassword}
             size="large"
-            requiredMark={false}
           >
             {error && (
               <Form.Item>

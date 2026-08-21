@@ -4,14 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, PieChart, PlusCircle, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
+import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [scanOpen, setScanOpen] = useState(false);
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
     { label: "Wallets", href: "/transactions", icon: Wallet },
-    { label: "Add", href: "/add", icon: PlusCircle, isMain: true },
+    { label: "Add", href: "#", icon: PlusCircle, isMain: true },
     { label: "Budgets", href: "/budgets", icon: PieChart },
     { label: "Menu", href: "#", icon: Menu, isMenu: true },
   ];
@@ -83,6 +86,16 @@ export function BottomNav() {
             );
           }
 
+          if (item.isMain) {
+            return (
+              <li key="add" className="flex-1 flex justify-center h-full">
+                <button onClick={() => setScanOpen(true)} className="w-full h-full outline-none focus:outline-none">
+                  {NavItemContent}
+                </button>
+              </li>
+            );
+          }
+
           return (
             <li key={item.href} className="flex-1 flex justify-center h-full">
               <Link href={item.href} className="w-full h-full">
@@ -92,6 +105,7 @@ export function BottomNav() {
           );
         })}
       </ul>
+      <ScanAndPayModal open={scanOpen} onOpenChange={setScanOpen} />
     </nav>
   );
 }

@@ -12,7 +12,7 @@ export function DashboardScanTrigger() {
     <>
       <Button 
         onClick={() => setOpen(true)}
-        className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6 shadow-md hover:shadow-lg transition-all h-10 gap-1.5 font-semibold"
+        className="hidden md:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6 shadow-md hover:shadow-lg transition-all h-10 gap-1.5 font-semibold"
       >
         <QrCode className="w-4 h-4 mr-1" />
         Scan QR

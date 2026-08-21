@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import TimezoneSelect from "react-timezone-select";
-import TimezoneMap from "react-timezone-map-select";
+import { TimeZoneSelectDialog as TimezoneMap } from "react-timezone-map-select";
 import { updateTimezone } from "@/actions/user";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
@@ -12,22 +12,23 @@ import { useRouter } from "next/navigation";
 export function TimezonePicker({ initialTimezone }: { initialTimezone: string }) {
   const { update } = useSession();
   const router = useRouter();
-  
+
   const [selectedTimezone, setSelectedTimezone] = useState<{ value: string; label: string } | string>(
     initialTimezone
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const tz = typeof selectedTimezone === "string" ? selectedTimezone : selectedTimezone.value;
       await updateTimezone(tz);
-      
+
       // Force session refresh so new timezone is recognized globally
       await update({ timezone: tz });
       router.refresh();
-      
+
       alert("Timezone updated successfully!");
     } catch {
       alert("Failed to update timezone.");
@@ -44,13 +45,20 @@ export function TimezonePicker({ initialTimezone }: { initialTimezone: string })
     <div className="space-y-6">
       <div className="space-y-2">
         <label className="text-sm font-medium leading-none">Interactive Map Selection</label>
-        <p className="text-xs text-muted-foreground mb-4">Click anywhere on the map to set your timezone.</p>
-        <div className="border rounded-xl overflow-hidden bg-white/5 p-4 flex justify-center">
-          {/* @ts-expect-error - third party component missing valid React 19 type definitions */}
+        <p className="text-xs text-muted-foreground mb-4">Click the button below to visually pick your timezone on a world map.</p>
+        <div>
+          <Button type="button" variant="outline" onClick={() => setIsMapOpen(true)}>
+            Open Interactive Map
+          </Button>
           <TimezoneMap
-            onSelect={handleMapChange}
-            timezone={typeof selectedTimezone === "string" ? selectedTimezone : selectedTimezone.value}
-            width={600}
+            open={isMapOpen}
+            onClose={(newTz: any) => {
+              setIsMapOpen(false);
+              if (newTz && typeof newTz === "string") {
+                handleMapChange(newTz);
+              }
+            }}
+            timeZoneName={typeof selectedTimezone === "string" ? selectedTimezone : selectedTimezone.value}
           />
         </div>
       </div>

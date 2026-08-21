@@ -56,28 +56,33 @@ import Transaction from "@/models/Transaction";
 import Budget from "@/models/Budget";
 
 export async function deleteCategory(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-  await dbConnect();
-  
-  // Check if category is used in any transactions
-  const txCount = await Transaction.countDocuments({ categoryId: id });
-  if (txCount > 0) {
-    throw new Error(`This Category cannot be deleted because it is used in ${txCount} transaction(s).`);
+    await dbConnect();
+    
+    // Check if category is used in any active transactions
+    const txCount = await Transaction.countDocuments({ categoryId: id });
+    if (txCount > 0) {
+      return { success: false, error: `This Category cannot be deleted because it is used in ${txCount} transaction(s).` };
+    }
+
+    // Check if category is used in any budgets
+    const budgetCount = await Budget.countDocuments({ categoryId: id });
+    if (budgetCount > 0) {
+      return { success: false, error: `This Category cannot be deleted because it is used in ${budgetCount} budget(s).` };
+    }
+
+    // Prevent deleting system categories or categories belonging to other users
+    await Category.findOneAndDelete({ _id: id, userId: session.user.id, isSystem: false });
+
+    revalidatePath("/categories");
+    revalidatePath("/transactions");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete category" };
   }
-
-  // Check if category is used in any budgets
-  const budgetCount = await Budget.countDocuments({ categoryId: id });
-  if (budgetCount > 0) {
-    throw new Error(`This Category cannot be deleted because it is used in ${budgetCount} budget(s).`);
-  }
-
-  // Prevent deleting system categories or categories belonging to other users
-  await Category.findOneAndDelete({ _id: id, userId: session.user.id, isSystem: false });
-
-  revalidatePath("/categories");
-  revalidatePath("/transactions");
 }
 
 export async function updateCategory(id: string, data: { name: string; type: "expense" | "income"; color: string; icon?: string }) {

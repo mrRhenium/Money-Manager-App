@@ -58,11 +58,6 @@ export function SidebarClient({ user }: { user: any }) {
       </div>
 
       <div className="p-4 border-t border-border/40 flex flex-col gap-4 overflow-hidden shrink-0 bg-secondary/10 backdrop-blur-md">
-        {user && user.currentStreak > 0 && !isCollapsed && (
-          <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-500/10 to-amber-500/10 text-orange-600 dark:text-orange-400 rounded-xl border border-orange-500/20 shadow-inner">
-            <span className="font-bold text-sm whitespace-nowrap tracking-wide drop-shadow-sm">🔥 {user.currentStreak} Day Streak!</span>
-          </div>
-        )}
         <div className={cn(
           "flex items-center rounded-2xl transition-all duration-300",
           isCollapsed ? "justify-center p-2" : "justify-between bg-card/60 backdrop-blur-md border border-border/50 p-2 shadow-sm"

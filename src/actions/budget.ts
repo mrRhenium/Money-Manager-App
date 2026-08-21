@@ -75,14 +75,19 @@ export async function upsertBudget(data: { categoryId: string; month: string; am
 }
 
 export async function deleteBudget(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-  await dbConnect();
-  
-  await Budget.findOneAndDelete({ _id: id, userId: session.user.id });
+    await dbConnect();
+    
+    await Budget.findOneAndDelete({ _id: id, userId: session.user.id });
 
-  revalidatePath("/budgets");
+    revalidatePath("/budgets");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete budget" };
+  }
 }
 
 export async function updateBudget(id: string, data: { amount: number; categoryId: string }) {

@@ -39,7 +39,14 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                         description="Are you sure you want to delete this budget?"
                         onConfirm={async () => {
                           try {
-                            await deleteBudget(budget._id);
+                            const res = await deleteBudget(budget._id);
+                            if (res && !res.success) {
+                              Modal.error({
+                                title: "Cannot Delete Budget",
+                                content: res.error || "An error occurred while deleting the budget.",
+                                okText: "Close",
+                              });
+                            }
                           } catch (err: any) {
                             Modal.error({
                               title: "Cannot Delete Budget",

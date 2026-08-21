@@ -41,7 +41,14 @@ export function PersonList({ people }: { people: any[] }) {
                     description="Are you sure you want to delete this contact?"
                     onConfirm={async () => {
                       try {
-                        await deletePerson(person._id);
+                        const res = await deletePerson(person._id);
+                        if (res && !res.success) {
+                          Modal.error({
+                            title: "Cannot Delete Contact",
+                            content: res.error || "This contact is in use elsewhere.",
+                            okText: "Close",
+                          });
+                        }
                       } catch (err: any) {
                         Modal.error({
                           title: "Cannot Delete Contact",

@@ -23,7 +23,14 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
                 description="Are you sure you want to delete this category?"
                 onConfirm={async () => {
                   try {
-                    await deleteCategory(cat._id);
+                    const res = await deleteCategory(cat._id);
+                    if (res && !res.success) {
+                      Modal.error({
+                        title: "Cannot Delete Category",
+                        content: res.error || "This category is in use elsewhere.",
+                        okText: "Close",
+                      });
+                    }
                   } catch (err: any) {
                     Modal.error({
                       title: "Cannot Delete Category",

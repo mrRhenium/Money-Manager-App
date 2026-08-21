@@ -40,22 +40,27 @@ export async function createAccount(data: { name: string; type: "bank" | "cash" 
 import Transaction from "@/models/Transaction";
 
 export async function deleteAccount(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-  await dbConnect();
-  
-  // Check if account is used in any transactions
-  const txCount = await Transaction.countDocuments({ accountId: id });
-  if (txCount > 0) {
-    throw new Error(`This Account cannot be deleted because it is used in ${txCount} transaction(s).`);
+    await dbConnect();
+    
+    // Check if account is used in any transactions
+    const txCount = await Transaction.countDocuments({ accountId: id });
+    if (txCount > 0) {
+      return { success: false, error: `This Account cannot be deleted because it is used in ${txCount} transaction(s).` };
+    }
+
+    await Account.findOneAndDelete({ _id: id, userId: session.user.id });
+
+    revalidatePath("/accounts");
+    revalidatePath("/transactions");
+    revalidatePath("/");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete account" };
   }
-
-  await Account.findOneAndDelete({ _id: id, userId: session.user.id });
-
-  revalidatePath("/accounts");
-  revalidatePath("/transactions");
-  revalidatePath("/");
 }
 
 export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet"; balance?: number }) {

@@ -60,12 +60,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.timezone = (user as any).timezone || "UTC";
         token.themeColor = (user as any).themeColor || null;
+      }
+      if (trigger === "update") {
+        if (session?.themeColor !== undefined) {
+          token.themeColor = session.themeColor;
+        }
+        if (session?.timezone !== undefined) {
+          token.timezone = session.timezone;
+        }
+        if (session?.name !== undefined) {
+          token.name = session.name;
+        }
+        
+        try {
+          const dbConnect = (await import("./db")).default;
+          const User = (await import("@/models/User")).default;
+          await dbConnect();
+          const dbUser = await User.findById(token.id).select("timezone themeColor name");
+          if (dbUser) {
+            token.timezone = dbUser.timezone || "UTC";
+            token.themeColor = dbUser.themeColor || null;
+            token.name = dbUser.name;
+          }
+        } catch (e) {
+          console.error("Failed to sync database on update", e);
+        }
       }
       return token;
     },

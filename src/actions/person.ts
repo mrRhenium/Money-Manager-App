@@ -63,20 +63,25 @@ export async function createPerson(data: { name: string; relation: "Friend" | "F
 }
 
 export async function deletePerson(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-  await dbConnect();
-  
-  // Check if person is used in any transactions
-  const txCount = await Transaction.countDocuments({ personId: id });
-  if (txCount > 0) {
-    throw new Error(`This Person cannot be deleted because they are used in ${txCount} transaction(s).`);
+    await dbConnect();
+    
+    // Check if person is used in any transactions
+    const txCount = await Transaction.countDocuments({ personId: id });
+    if (txCount > 0) {
+      return { success: false, error: `This Person cannot be deleted because they are used in ${txCount} transaction(s).` };
+    }
+
+    await Person.findOneAndDelete({ _id: id, userId: session.user.id });
+
+    revalidatePath("/people");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete contact" };
   }
-
-  await Person.findOneAndDelete({ _id: id, userId: session.user.id });
-
-  revalidatePath("/people");
 }
 
 export async function savePersonVpa(name: string, vpa: string) {

@@ -88,29 +88,34 @@ export async function createCreditCard(data: any) {
 }
 
 export async function deleteCreditCard(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-  await dbConnect();
-  
-  const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
-  if (!card) throw new Error("Card not found");
+    await dbConnect();
+    
+    const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
+    if (!card) return { success: false, error: "Card not found" };
 
-  if (card.currentOutstanding > 0) {
-    throw new Error("Cannot delete a card with an unpaid outstanding balance.");
+    if (card.currentOutstanding > 0) {
+      return { success: false, error: "Cannot delete a card with an unpaid outstanding balance." };
+    }
+
+    // Soft delete or status closed
+    const txCount = await Transaction.countDocuments({ creditCardId: id });
+    if (txCount > 0) {
+      card.status = "closed";
+      await card.save();
+    } else {
+      await CreditCard.deleteOne({ _id: id });
+      await CardStatement.deleteMany({ cardId: id });
+    }
+
+    revalidatePath("/credit-cards");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete credit card" };
   }
-
-  // Soft delete or status closed
-  const txCount = await Transaction.countDocuments({ creditCardId: id });
-  if (txCount > 0) {
-    card.status = "closed";
-    await card.save();
-  } else {
-    await CreditCard.deleteOne({ _id: id });
-    await CardStatement.deleteMany({ cardId: id });
-  }
-
-  revalidatePath("/credit-cards");
 }
 
 export async function payCreditCardStatement(statementId: string, sourceAccountId: string, amountToPay: number) {

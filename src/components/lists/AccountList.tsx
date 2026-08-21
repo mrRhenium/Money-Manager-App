@@ -40,7 +40,14 @@ export function AccountList({ accounts }: { accounts: any[] }) {
                   description="Are you sure you want to delete this account?"
                   onConfirm={async () => {
                     try {
-                      await deleteAccount(account._id);
+                      const res = await deleteAccount(account._id);
+                      if (res && !res.success) {
+                        Modal.error({
+                          title: "Cannot Delete Account",
+                          content: res.error || "This account is in use elsewhere.",
+                          okText: "Close",
+                        });
+                      }
                     } catch (err: any) {
                       Modal.error({
                         title: "Cannot Delete Account",

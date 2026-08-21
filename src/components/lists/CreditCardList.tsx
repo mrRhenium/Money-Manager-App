@@ -42,7 +42,14 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                         description="Are you sure you want to delete this credit card?"
                         onConfirm={async () => {
                           try {
-                            await deleteCreditCard(card._id);
+                            const res = await deleteCreditCard(card._id);
+                            if (res && !res.success) {
+                              Modal.error({
+                                title: "Cannot Delete Credit Card",
+                                content: res.error || "This credit card has outstanding balance or other issues.",
+                                okText: "Close",
+                              });
+                            }
                           } catch (err: any) {
                             Modal.error({
                               title: "Cannot Delete Credit Card",

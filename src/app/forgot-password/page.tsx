@@ -149,13 +149,16 @@ export default function ForgotPasswordPage() {
               </Form.Item>
             )}
 
-            <Form.Item
-              label="Type your 6 digits OTP"
-              name="otp"
-              rules={[{ required: true, message: 'Please enter the 6-digit OTP!' }]}
-            >
-              <Input.OTP length={6} size="large" />
-            </Form.Item>
+            <div className="flex flex-col items-center justify-center mb-6">
+              <span className="mb-2 text-sm text-foreground">Type your 6 digits OTP</span>
+              <Form.Item
+                name="otp"
+                rules={[{ required: true, message: 'Please enter the 6-digit OTP!' }]}
+                style={{ margin: 0 }}
+              >
+                <Input.OTP length={6} size="large" />
+              </Form.Item>
+            </div>
 
             <Form.Item
               label="New Password"

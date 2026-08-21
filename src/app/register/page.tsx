@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Input, Button, Form, Typography, Alert } from "antd";
-import { MailOutlined, LockOutlined, UserOutlined, WalletOutlined } from "@ant-design/icons";
+import { MailOutlined, LockOutlined, UserOutlined, WalletOutlined, PhoneOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -24,6 +24,7 @@ export default function RegisterPage() {
         body: JSON.stringify({
           name: values.name,
           email: values.email,
+          mobile: values.mobile,
           password: values.password,
         }),
       });
@@ -82,6 +83,17 @@ export default function RegisterPage() {
             rules={[{ required: true, message: 'Please enter your email!' }, { type: 'email', message: 'Please enter a valid email!' }]}
           >
             <Input prefix={<MailOutlined className="site-form-item-icon text-gray-400" />} placeholder="Enter email address" />
+          </Form.Item>
+
+          <Form.Item
+            label="Mobile Number"
+            name="mobile"
+            rules={[
+              { required: true, message: 'Please enter your mobile number!' },
+              { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit mobile number!' }
+            ]}
+          >
+            <Input prefix={<PhoneOutlined className="site-form-item-icon text-gray-400" />} placeholder="Enter 10-digit mobile number" maxLength={10} />
           </Form.Item>
 
           <Form.Item

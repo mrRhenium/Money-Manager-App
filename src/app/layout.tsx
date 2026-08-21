@@ -41,8 +41,7 @@ export default function RootLayout({
       <body className="h-[100dvh] w-full relative flex flex-col">
         <Providers
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
           disableTransitionOnChange
         >
           {children}

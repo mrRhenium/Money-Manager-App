@@ -100,7 +100,7 @@ export function CreditCardForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="cardholderName" render={({ field }) => (
-                <FormItem><FormLabel>Name on Card</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Name on Card</FormLabel><FormControl><Input placeholder="Enter name on card" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="cardNetwork" render={({ field }) => (
                 <FormItem>

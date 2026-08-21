@@ -73,7 +73,7 @@ export default function RegisterPage() {
             name="name"
             rules={[{ required: true, message: 'Please enter your name!' }]}
           >
-            <Input prefix={<UserOutlined className="site-form-item-icon text-gray-400" />} placeholder="John Doe" />
+            <Input prefix={<UserOutlined className="site-form-item-icon text-gray-400" />} placeholder="Enter name" />
           </Form.Item>
 
           <Form.Item
@@ -81,7 +81,7 @@ export default function RegisterPage() {
             name="email"
             rules={[{ required: true, message: 'Please enter your email!' }, { type: 'email', message: 'Please enter a valid email!' }]}
           >
-            <Input prefix={<MailOutlined className="site-form-item-icon text-gray-400" />} placeholder="name@example.com" />
+            <Input prefix={<MailOutlined className="site-form-item-icon text-gray-400" />} placeholder="Enter email address" />
           </Form.Item>
 
           <Form.Item

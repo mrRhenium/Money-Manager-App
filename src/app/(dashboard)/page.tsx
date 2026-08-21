@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/helpers";
 import { isSameMonthAndYear, getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
+import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -76,13 +77,7 @@ export default async function DashboardPage() {
             Here is your financial overview for {getCurrentFormatted('MMMM YYYY')}.
           </p>
         </div>
-        <Button 
-          nativeButton={false} 
-          render={<Link href="/add" />} 
-          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6 shadow-md hover:shadow-lg transition-all"
-        >
-          Add Transaction
-        </Button>
+        <DashboardScanTrigger />
       </div>
 
       <PendingConfirmationsWidget />

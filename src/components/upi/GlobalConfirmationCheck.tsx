@@ -89,9 +89,7 @@ export function GlobalConfirmationCheck() {
     <Dialog open={true} onOpenChange={() => {}}>
       <DialogContent 
         className="sm:max-w-md p-6 rounded-2xl z-[9999]" 
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
+        showCloseButton={false}
       >
         <DialogHeader className="text-center flex flex-col items-center">
           <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center animate-bounce mb-2">

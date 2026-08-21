@@ -14,7 +14,7 @@ import { Select } from "antd";
 import { createTransaction } from "@/actions/transaction";
 import { useRef } from "react";
 import Tesseract from "tesseract.js";
-import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, Smartphone, Users } from "lucide-react";
+import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users } from "lucide-react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 
 const formSchema = z.object({
@@ -32,9 +32,10 @@ interface TransactionFormProps {
   accounts: any[];
   categories: any[];
   people?: any[];
+  triggerClassName?: string;
 }
 
-export function TransactionForm({ accounts, categories, people = [] }: TransactionFormProps) {
+export function TransactionForm({ accounts, categories, people = [], triggerClassName }: TransactionFormProps) {
   const [open, setOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanPayOpen, setScanPayOpen] = useState(false);
@@ -108,7 +109,7 @@ export function TransactionForm({ accounts, categories, people = [] }: Transacti
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button>
+        <Button className={triggerClassName}>
           <Plus className="w-4 h-4 mr-2" />
           Add Transaction
         </Button>
@@ -137,7 +138,7 @@ export function TransactionForm({ accounts, categories, people = [] }: Transacti
               {isScanning ? "Scanning..." : "Upload Receipt"}
             </Button>
             <Button variant="outline" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3 border-primary/20 hover:bg-primary/5 hover:text-primary" onClick={() => setScanPayOpen(true)}>
-              <Smartphone className="w-4 h-4 mr-2" />
+              <QrCode className="w-4 h-4 mr-2" />
               Scan QR Pay
             </Button>
           </div>
@@ -145,7 +146,7 @@ export function TransactionForm({ accounts, categories, people = [] }: Transacti
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Row 1: Type and Amount */}
+            {/* Row 1: Type and Category / People */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -166,92 +167,6 @@ export function TransactionForm({ accounts, categories, people = [] }: Transacti
                           { label: 'Borrow', value: 'borrow' },
                           { label: 'Settlement', value: 'settlement' },
                         ]}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
-                        min="0"
-                        onKeyDown={(e) => {
-                          if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
-                        }}
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Row 2: Currency and Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="originalCurrency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Coins className="w-4 h-4 text-muted-foreground" /> Currency</FormLabel>
-                    <FormControl>
-                      <Select
-                        showSearch
-                        className="w-full h-10"
-                        optionFilterProp="label"
-                        options={[
-                          { label: 'INR', value: 'INR' },
-                          { label: 'USD', value: 'USD' },
-                          { label: 'EUR', value: 'EUR' },
-                          { label: 'GBP', value: 'GBP' },
-                        ]}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /> Date</FormLabel>
-                    <FormControl>
-                      <Input type="datetime-local" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            {/* Row 3: Account & Category OR Account & Person */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="accountId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Account</FormLabel>
-                    <FormControl>
-                      <Select
-                        showSearch
-                        placeholder="Select account"
-                        className="w-full h-10"
-                        optionFilterProp="label"
-                        options={accounts.map(acc => ({ label: acc.name, value: acc._id }))}
                         {...field}
                       />
                     </FormControl>
@@ -305,7 +220,93 @@ export function TransactionForm({ accounts, categories, people = [] }: Transacti
               )}
             </div>
 
-            {/* Row 4: Dedicated Note (Optional) Row */}
+            {/* Row 2: Currency and Amount */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="originalCurrency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Coins className="w-4 h-4 text-muted-foreground" /> Currency</FormLabel>
+                    <FormControl>
+                      <Select
+                        showSearch
+                        className="w-full h-10"
+                        optionFilterProp="label"
+                        options={[
+                          { label: 'INR', value: 'INR' },
+                          { label: 'USD', value: 'USD' },
+                          { label: 'EUR', value: 'EUR' },
+                          { label: 'GBP', value: 'GBP' },
+                        ]}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        min="0"
+                        onKeyDown={(e) => {
+                          if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                        }}
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Row 3: Account and Date */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="accountId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Account</FormLabel>
+                    <FormControl>
+                      <Select
+                        showSearch
+                        placeholder="Select account"
+                        className="w-full h-10"
+                        optionFilterProp="label"
+                        options={accounts.map(acc => ({ label: acc.name, value: acc._id }))}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /> Date</FormLabel>
+                    <FormControl>
+                      <Input type="datetime-local" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Row 4: Dedicated Note Row */}
             <FormField
               control={form.control}
               name="note"

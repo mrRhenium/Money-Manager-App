@@ -23,7 +23,8 @@ interface ScanAndPayModalProps {
 export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [step, setStep] = useState<"scan" | "confirm" | "ios_relay" | "confirmation_dialog">("scan");
   const [scanning, setScanning] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -42,7 +43,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   // Options loaded from DB
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
-  
+
   // States
   const [loading, setLoading] = useState(false);
   const [createdTxnId, setCreatedTxnId] = useState<string | null>(null);
@@ -95,7 +96,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
               handleScanSuccess(result.data);
             },
             {
-              onDecodeError: () => {},
+              onDecodeError: () => { },
               highlightScanRegion: true,
               highlightCodeOutline: true,
             }
@@ -158,7 +159,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     setVpa(parsed.pa);
     setPayeeName(parsed.pn);
     setNote(parsed.tn);
-    
+
     if (parsed.am !== null) {
       setAmount(parsed.am.toString());
       setIsAmountReadOnly(true);
@@ -179,6 +180,23 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     setStep("confirm");
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    import("qr-scanner").then(({ default: QrScannerClass }) => {
+      QrScannerClass.scanImage(file)
+        .then((result) => {
+          const rawText = typeof result === "string" ? result : (result as any).data;
+          handleScanSuccess(rawText);
+        })
+        .catch((err) => {
+          console.error("QR Code scanning from image failed", err);
+          toast.error("No valid UPI QR code found in this image. Please try another one.");
+        });
+    });
+  };
+
   // Manual Trigger for scan parsing (when typed or fallback)
   const handleManualProceed = () => {
     if (!vpa || !vpa.includes("@")) {
@@ -188,7 +206,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     if (!payeeName) {
       setPayeeName("Manual Payee");
     }
-    
+
     const uncategorized = categories.find(c => c.name.toLowerCase() === "uncategorized" || c.name.toLowerCase() === "others");
     if (uncategorized) {
       setCategoryId(uncategorized._id);
@@ -255,7 +273,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       } else {
         // Trigger intent immediately for Android / Standard devices
         window.location.href = upiUrl;
-        
+
         // Brief timeout then proceed to mandatory confirmation
         setTimeout(() => {
           setStep("confirmation_dialog");
@@ -275,7 +293,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     try {
       setLoading(true);
       await confirmTransaction(createdTxnId, status);
-      
+
       if (status === "completed") {
         toast.success("Payment marked as successful!");
       } else if (status === "cancelled") {
@@ -339,28 +357,39 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                     <AlertCircle className="w-4 h-4" /> Camera access denied or unavailable.
                   </p>
                 )}
-                <Button variant="outline" size="sm" onClick={() => setManualEntry(true)}>
-                  Enter UPI ID Manually
-                </Button>
+                <div className="flex gap-2 w-full max-w-[280px]">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => setManualEntry(true)}>
+                    Enter UPI ID
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => fileInputRef.current?.click()}>
+                    From Gallery
+                  </Button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                  />
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="manual-vpa">UPI VPA (Virtual Payment Address)</Label>
-                  <Input 
-                    id="manual-vpa" 
-                    placeholder="e.g. merchant@ybl, recipient@okaxis" 
-                    value={vpa} 
-                    onChange={e => setVpa(e.target.value)} 
+                  <Input
+                    id="manual-vpa"
+                    placeholder="e.g. merchant@ybl, recipient@okaxis"
+                    value={vpa}
+                    onChange={e => setVpa(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="manual-name">Recipient Name (Optional)</Label>
-                  <Input 
-                    id="manual-name" 
-                    placeholder="e.g. John Doe" 
-                    value={payeeName} 
-                    onChange={e => setPayeeName(e.target.value)} 
+                  <Input
+                    id="manual-name"
+                    value={payeeName}
+                    onChange={e => setPayeeName(e.target.value)}
                   />
                 </div>
                 <div className="flex gap-3">
@@ -390,12 +419,12 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 <Label htmlFor="amount">Amount (₹)</Label>
                 <div className="relative mt-1">
                   <span className="absolute left-3 top-2.5 font-bold text-muted-foreground">₹</span>
-                  <Input 
-                    id="amount" 
+                  <Input
+                    id="amount"
                     type="number"
-                    placeholder="0.00" 
-                    value={amount} 
-                    onChange={e => setAmount(e.target.value)} 
+                    placeholder="0.00"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
                     disabled={isAmountReadOnly}
                     className="pl-7 font-bold text-lg"
                   />
@@ -435,21 +464,21 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
               <div>
                 <Label htmlFor="note">Transaction Note (Optional)</Label>
-                <Input 
-                  id="note" 
-                  placeholder="e.g. Grocery dinner, cab fare" 
-                  value={note} 
-                  onChange={e => setNote(e.target.value)} 
+                <Input
+                  id="note"
+                  placeholder="e.g. Grocery dinner, cab fare"
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
                   className="mt-1"
                 />
               </div>
 
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border mt-2">
                 <span className="text-xs font-semibold text-muted-foreground">Save to Payee Book</span>
-                <input 
-                  type="checkbox" 
-                  checked={savePayee} 
-                  onChange={e => setSavePayee(e.target.checked)} 
+                <input
+                  type="checkbox"
+                  checked={savePayee}
+                  onChange={e => setSavePayee(e.target.checked)}
                   className="w-4 h-4 rounded border-gray-300 accent-primary"
                 />
               </div>
@@ -501,14 +530,14 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
             </div>
 
             <div className="flex flex-col gap-2 pt-2">
-              <Button 
+              <Button
                 className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
                 onClick={() => handleFinalConfirm("completed")}
                 disabled={loading}
               >
                 Yes, Paid Successfully
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 className="w-full font-bold"
                 onClick={() => handleFinalConfirm("cancelled")}
@@ -516,7 +545,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
               >
                 No, Failed / Cancelled
               </Button>
-              <Button 
+              <Button
                 variant="secondary"
                 className="w-full font-bold"
                 onClick={() => handleFinalConfirm("pending")}

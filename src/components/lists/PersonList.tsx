@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Popconfirm } from "antd";
+import { List, Popconfirm, Modal } from "antd";
 import { User as UserIcon, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PersonForm } from "../forms/PersonForm";
@@ -39,7 +39,17 @@ export function PersonList({ people }: { people: any[] }) {
                   <Popconfirm
                     title="Delete Contact"
                     description="Are you sure you want to delete this contact?"
-                    onConfirm={() => deletePerson(person._id)}
+                    onConfirm={async () => {
+                      try {
+                        await deletePerson(person._id);
+                      } catch (err: any) {
+                        Modal.error({
+                          title: "Cannot Delete Contact",
+                          content: err.message || "This contact is in use elsewhere.",
+                          okText: "Close",
+                        });
+                      }
+                    }}
                     okText="Yes"
                     cancelText="No"
                   >

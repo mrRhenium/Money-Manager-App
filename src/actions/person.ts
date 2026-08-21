@@ -68,6 +68,12 @@ export async function deletePerson(id: string) {
 
   await dbConnect();
   
+  // Check if person is used in any transactions
+  const txCount = await Transaction.countDocuments({ personId: id });
+  if (txCount > 0) {
+    throw new Error(`This Person cannot be deleted because they are used in ${txCount} transaction(s).`);
+  }
+
   await Person.findOneAndDelete({ _id: id, userId: session.user.id });
 
   revalidatePath("/people");

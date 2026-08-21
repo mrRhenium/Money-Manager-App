@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Popconfirm } from "antd";
+import { List, Popconfirm, Modal } from "antd";
 import { Button } from "@/components/ui/button";
 import { CategoryForm } from "../forms/CategoryForm";
 import { deleteCategory } from "@/actions/category";
@@ -21,7 +21,17 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
               <Popconfirm
                 title="Delete Category"
                 description="Are you sure you want to delete this category?"
-                onConfirm={() => deleteCategory(cat._id)}
+                onConfirm={async () => {
+                  try {
+                    await deleteCategory(cat._id);
+                  } catch (err: any) {
+                    Modal.error({
+                      title: "Cannot Delete Category",
+                      content: err.message || "This category is in use elsewhere.",
+                      okText: "Close",
+                    });
+                  }
+                }}
                 okText="Yes"
                 cancelText="No"
               >

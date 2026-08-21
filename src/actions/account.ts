@@ -37,14 +37,20 @@ export async function createAccount(data: { name: string; type: "bank" | "cash" 
   return JSON.parse(JSON.stringify(account));
 }
 
+import Transaction from "@/models/Transaction";
+
 export async function deleteAccount(id: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
   
-  // Need to ensure there are no transactions tied to this account ideally,
-  // or cascade delete them. For now, simple delete.
+  // Check if account is used in any transactions
+  const txCount = await Transaction.countDocuments({ accountId: id });
+  if (txCount > 0) {
+    throw new Error(`This Account cannot be deleted because it is used in ${txCount} transaction(s).`);
+  }
+
   await Account.findOneAndDelete({ _id: id, userId: session.user.id });
 
   revalidatePath("/accounts");

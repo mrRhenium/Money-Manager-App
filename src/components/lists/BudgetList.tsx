@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Popconfirm } from "antd";
+import { List, Popconfirm, Modal } from "antd";
 import { Button } from "@/components/ui/button";
 import { BudgetForm } from "../forms/BudgetForm";
 import { deleteBudget } from "@/actions/budget";
@@ -37,7 +37,17 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                       <Popconfirm
                         title="Delete Budget"
                         description="Are you sure you want to delete this budget?"
-                        onConfirm={() => deleteBudget(budget._id)}
+                        onConfirm={async () => {
+                          try {
+                            await deleteBudget(budget._id);
+                          } catch (err: any) {
+                            Modal.error({
+                              title: "Cannot Delete Budget",
+                              content: err.message || "An error occurred while deleting the budget.",
+                              okText: "Close",
+                            });
+                          }
+                        }}
                         okText="Yes"
                         cancelText="No"
                       >

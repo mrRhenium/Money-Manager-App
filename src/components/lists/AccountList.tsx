@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Popconfirm } from "antd";
+import { List, Popconfirm, Modal } from "antd";
 import { Button } from "@/components/ui/button";
 import { AccountForm } from "../forms/AccountForm";
 import { deleteAccount } from "@/actions/account";
@@ -38,7 +38,17 @@ export function AccountList({ accounts }: { accounts: any[] }) {
                 <Popconfirm
                   title="Delete Account"
                   description="Are you sure you want to delete this account?"
-                  onConfirm={() => deleteAccount(account._id)}
+                  onConfirm={async () => {
+                    try {
+                      await deleteAccount(account._id);
+                    } catch (err: any) {
+                      Modal.error({
+                        title: "Cannot Delete Account",
+                        content: err.message || "This account is in use elsewhere.",
+                        okText: "Close",
+                      });
+                    }
+                  }}
                   okText="Yes"
                   cancelText="No"
                 >

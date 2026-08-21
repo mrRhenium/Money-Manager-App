@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Popconfirm } from "antd";
+import { List, Popconfirm, Modal } from "antd";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, Trash } from "lucide-react";
@@ -40,7 +40,17 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                       <Popconfirm
                         title="Delete Credit Card"
                         description="Are you sure you want to delete this credit card?"
-                        onConfirm={() => deleteCreditCard(card._id)}
+                        onConfirm={async () => {
+                          try {
+                            await deleteCreditCard(card._id);
+                          } catch (err: any) {
+                            Modal.error({
+                              title: "Cannot Delete Credit Card",
+                              content: err.message || "This credit card has outstanding balance or other issues.",
+                              okText: "Close",
+                            });
+                          }
+                        }}
                         okText="Yes"
                         cancelText="No"
                       >

@@ -39,6 +39,7 @@ export async function createTransaction(data: {
   paymentSource?: "manual_entry" | "upi_scan" | "upi_manual" | "payee_quickpay";
   status?: "completed" | "pending" | "cancelled" | "awaiting_confirmation";
   personId?: string;
+  upiRef?: string;
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -292,6 +293,7 @@ export async function updateTransaction(
     note?: string;
     originalCurrency?: string;
     status?: "completed" | "pending" | "cancelled" | "awaiting_confirmation";
+    upiRef?: string;
   }
 ) {
   const session = await auth();
@@ -351,6 +353,7 @@ export async function updateTransaction(
   oldTxn.paymentMode = data.paymentMode || "bank";
   oldTxn.creditCardId = (data.creditCardId as any) || undefined;
   oldTxn.status = data.status || "completed";
+  oldTxn.upiRef = data.upiRef;
 
   await oldTxn.save();
 

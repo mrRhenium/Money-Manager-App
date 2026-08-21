@@ -248,9 +248,10 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
         accountId,
         paymentMode: "bank", // standard UPI goes through bank account
         categoryId,
-        note: note || `UPI Payment to ${payeeName}`,
+        note: note ? `${note} (to ${payeeName} - ${vpa})` : `UPI Payment to ${payeeName} (${vpa})`,
         paymentSource: "upi_scan",
-        status: "awaiting_confirmation"
+        status: "awaiting_confirmation",
+        upiRef: vpa
       });
 
       setCreatedTxnId(txn._id);
@@ -326,12 +327,17 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => {
-      // Prevent closing when in confirmation dialog (Never Skip requirement)
-      if (step === "confirmation_dialog") return;
-      resetModal();
-      onOpenChange(val);
-    }}>
+    <Dialog 
+      open={open} 
+      onOpenChange={
+        step === "confirmation_dialog" 
+          ? undefined 
+          : (val) => {
+              resetModal();
+              onOpenChange(val);
+            }
+      }
+    >
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-6 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary font-bold text-lg">

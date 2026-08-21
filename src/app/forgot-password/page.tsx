@@ -26,12 +26,18 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      await sendResetOtp(values.email);
+      const result = await sendResetOtp(values.email);
+      if (!result.success) {
+        setError(result.error || "Failed to send OTP");
+        setLoading(false);
+        return;
+      }
+      
       setEmail(values.email);
       setSuccess("If an account exists, an OTP has been sent (Check server console for DEV).");
       setStep(2);
     } catch (err: any) {
-      setError(err.message || "Failed to send OTP");
+      setError("An unexpected error occurred while sending OTP.");
     } finally {
       setLoading(false);
     }
@@ -57,13 +63,19 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      await resetPassword(email, otp, newPassword);
+      const result = await resetPassword(email, otp, newPassword);
+      if (!result.success) {
+        setError(result.error || "Failed to reset password");
+        setLoading(false);
+        return;
+      }
+
       setSuccess("Password has been reset successfully! Redirecting...");
       setTimeout(() => {
         router.push("/login");
       }, 2000);
     } catch (err: any) {
-      setError(err.message || "Failed to reset password");
+      setError("An unexpected error occurred while resetting password.");
     } finally {
       setLoading(false);
     }

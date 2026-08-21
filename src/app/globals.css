@@ -130,3 +130,25 @@
     @apply font-sans;
   }
 }
+
+/* Hide scrollbar globally but allow scrolling */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Ant Design Tooltip Styling for Sidebar */
+.ant-tooltip-inner {
+  background-color: #0ea5e9 !important; /* Tailwind sky-500 */
+  color: white !important;
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+.ant-tooltip-arrow::before, .ant-tooltip-arrow::after {
+  background-color: #0ea5e9 !important;
+}

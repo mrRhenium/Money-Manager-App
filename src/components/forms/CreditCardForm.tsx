@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "antd";
 import { createCreditCard } from "@/actions/creditCard";
 import { Plus, CreditCard as CardIcon } from "lucide-react";
 
@@ -106,16 +106,22 @@ export function CreditCardForm() {
               <FormField control={form.control} name="cardNetwork" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Network</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select network" /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      <SelectItem value="Visa">Visa</SelectItem>
-                      <SelectItem value="Mastercard">Mastercard</SelectItem>
-                      <SelectItem value="RuPay">RuPay</SelectItem>
-                      <SelectItem value="Amex">Amex</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Select
+                      showSearch
+                      placeholder="Select network"
+                      className="w-full h-10"
+                      optionFilterProp="label"
+                      options={[
+                        { label: 'Visa', value: 'Visa' },
+                        { label: 'Mastercard', value: 'Mastercard' },
+                        { label: 'RuPay', value: 'RuPay' },
+                        { label: 'Amex', value: 'Amex' },
+                        { label: 'Other', value: 'Other' },
+                      ]}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

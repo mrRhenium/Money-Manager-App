@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "antd";
 import { createCategory } from "@/actions/category";
 import { Plus } from "lucide-react";
 
@@ -72,17 +72,19 @@ export function CategoryForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="expense">Expense</SelectItem>
-                      <SelectItem value="income">Income</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Select
+                      showSearch
+                      placeholder="Select type"
+                      className="w-full h-10"
+                      optionFilterProp="label"
+                      options={[
+                        { label: 'Expense', value: 'expense' },
+                        { label: 'Income', value: 'income' },
+                      ]}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

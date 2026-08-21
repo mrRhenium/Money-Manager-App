@@ -1,0 +1,87 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { ThemeToggle } from "../theme-toggle";
+import { SidebarMenu } from "./SidebarMenu";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export function SidebarClient({ user }: { user: any }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  return (
+    <aside 
+      style={{ 
+        width: isCollapsed ? '88px' : '280px', 
+        transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      }} 
+      className={cn(
+        "hidden md:flex flex-col relative group shrink-0 z-40",
+        // Modern glassmorphism
+        "bg-background/80 backdrop-blur-2xl border-r border-border/50",
+        "shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)]"
+      )}
+    >
+      <button 
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-4 top-8 bg-background border border-border text-foreground hover:text-primary rounded-full p-1.5 shadow-md z-50 hover:scale-110 transition-all hover:border-primary/50"
+      >
+        {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+      </button>
+
+      <div className="h-20 flex items-center px-6 border-b border-border/40 shrink-0 overflow-hidden">
+        <Link href="/" className="flex items-center gap-3 no-underline group/logo">
+          <div className="relative flex items-center justify-center min-w-[40px] h-[40px] rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold shadow-lg shadow-primary/20 group-hover/logo:shadow-primary/40 transition-shadow">
+            <img 
+              src="/icon-192x192.png" 
+              alt="Money Manager Logo" 
+              className="w-full h-full rounded-xl object-cover absolute inset-0"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <span className="relative z-10">M</span>
+          </div>
+          <div className={cn(
+            "overflow-hidden transition-all duration-300 ease-in-out",
+            isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+          )}>
+            <h1 className="text-[20px] font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 whitespace-nowrap">
+              Money Manager
+            </h1>
+          </div>
+        </Link>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto py-6 hide-scrollbar">
+        <SidebarMenu role={user?.role} isCollapsed={isCollapsed} />
+      </div>
+
+      <div className="p-4 border-t border-border/40 flex flex-col gap-4 overflow-hidden shrink-0 bg-secondary/10 backdrop-blur-md">
+        {user && user.currentStreak > 0 && !isCollapsed && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-500/10 to-amber-500/10 text-orange-600 dark:text-orange-400 rounded-xl border border-orange-500/20 shadow-inner">
+            <span className="font-bold text-sm whitespace-nowrap tracking-wide drop-shadow-sm">🔥 {user.currentStreak} Day Streak!</span>
+          </div>
+        )}
+        <div className={cn(
+          "flex items-center rounded-2xl transition-all duration-300",
+          isCollapsed ? "justify-center p-2" : "justify-between bg-card/60 backdrop-blur-md border border-border/50 p-2 shadow-sm"
+        )}>
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="min-w-[40px] h-[40px] rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center font-bold text-primary ring-2 ring-background shrink-0 shadow-sm">
+              {user?.name?.charAt(0) || "U"}
+            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col overflow-hidden">
+                <span className="font-semibold text-foreground text-sm leading-tight whitespace-nowrap truncate">{user?.name?.split(" ")[0] || "User"}</span>
+                <span className="text-xs font-medium text-muted-foreground mt-0.5 whitespace-nowrap">{user?.role === 'ADMIN' ? 'Admin' : 'Free Plan'}</span>
+              </div>
+            )}
+          </div>
+          {!isCollapsed && <ThemeToggle />}
+        </div>
+      </div>
+    </aside>
+  );
+}

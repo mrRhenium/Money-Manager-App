@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "antd";
 import { createPerson } from "@/actions/person";
 import { Plus } from "lucide-react";
 
@@ -72,19 +72,21 @@ export function PersonForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Relation</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select relation" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Friend">Friend</SelectItem>
-                      <SelectItem value="Family">Family</SelectItem>
-                      <SelectItem value="Colleague">Colleague</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Select
+                      showSearch
+                      placeholder="Select relation"
+                      className="w-full h-10"
+                      optionFilterProp="label"
+                      options={[
+                        { label: 'Friend', value: 'Friend' },
+                        { label: 'Family', value: 'Family' },
+                        { label: 'Colleague', value: 'Colleague' },
+                        { label: 'Other', value: 'Other' },
+                      ]}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "antd";
 import { upsertBudget } from "@/actions/budget";
 import { Plus } from "lucide-react";
 
@@ -71,18 +71,16 @@ export function BudgetForm({ categories }: BudgetFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select expense category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {expenseCategories.map(cat => (
-                        <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Select
+                      showSearch
+                      placeholder="Select expense category"
+                      className="w-full h-10"
+                      optionFilterProp="label"
+                      options={expenseCategories.map(cat => ({ label: cat.name, value: cat._id }))}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

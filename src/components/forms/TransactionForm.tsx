@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "antd";
 import { createTransaction } from "@/actions/transaction";
 import { useRef } from "react";
 import Tesseract from "tesseract.js";
@@ -108,7 +108,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
       } />
       <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex items-center justify-between pr-8">
             Log Transaction
             <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isScanning}>
               {isScanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
@@ -126,20 +126,22 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="expense">Expense</SelectItem>
-                        <SelectItem value="income">Income</SelectItem>
-                        <SelectItem value="lend">Lend</SelectItem>
-                        <SelectItem value="borrow">Borrow</SelectItem>
-                        <SelectItem value="settlement">Settlement</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Select
+                        showSearch
+                        placeholder="Select type"
+                        className="w-full h-10"
+                        optionFilterProp="label"
+                        options={[
+                          { label: 'Expense', value: 'expense' },
+                          { label: 'Income', value: 'income' },
+                          { label: 'Lend', value: 'lend' },
+                          { label: 'Borrow', value: 'borrow' },
+                          { label: 'Settlement', value: 'settlement' },
+                        ]}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -172,19 +174,20 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                   render={({ field }) => (
                     <FormItem className="col-span-1">
                       <FormLabel>Currency</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="INR">INR</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="GBP">GBP</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Select
+                          showSearch
+                          className="w-full h-10"
+                          optionFilterProp="label"
+                          options={[
+                            { label: 'INR', value: 'INR' },
+                            { label: 'USD', value: 'USD' },
+                            { label: 'EUR', value: 'EUR' },
+                            { label: 'GBP', value: 'GBP' },
+                          ]}
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -198,18 +201,16 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Account</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select account" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {accounts.map(acc => (
-                        <SelectItem key={acc._id} value={acc._id}>{acc.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Select
+                      showSearch
+                      placeholder="Select account"
+                      className="w-full h-10"
+                      optionFilterProp="label"
+                      options={accounts.map(acc => ({ label: acc.name, value: acc._id }))}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -222,18 +223,16 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredCategories.map(cat => (
-                          <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Select
+                        showSearch
+                        placeholder="Select category"
+                        className="w-full h-10"
+                        optionFilterProp="label"
+                        options={filteredCategories.map(cat => ({ label: cat.name, value: cat._id }))}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

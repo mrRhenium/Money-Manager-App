@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "antd";
 import { createAccount } from "@/actions/account";
 import { Plus } from "lucide-react";
 
@@ -72,19 +72,21 @@ export function AccountForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="bank">Bank</SelectItem>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="card">Credit Card</SelectItem>
-                      <SelectItem value="wallet">Wallet</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Select
+                      showSearch
+                      placeholder="Select type"
+                      className="w-full h-10"
+                      optionFilterProp="label"
+                      options={[
+                        { label: 'Bank', value: 'bank' },
+                        { label: 'Cash', value: 'cash' },
+                        { label: 'Credit Card', value: 'card' },
+                        { label: 'Wallet', value: 'wallet' },
+                      ]}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

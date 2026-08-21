@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "antd";
 import { payCreditCardStatement } from "@/actions/creditCard";
 import { IndianRupee } from "lucide-react";
 
@@ -52,35 +52,34 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Select Statement / Cycle</Label>
-            <Select value={statementId} onValueChange={(val) => setStatementId(val || "")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select statement" />
-              </SelectTrigger>
-              <SelectContent>
-                {statements.map(s => (
-                  <SelectItem key={s._id} value={s._id}>
-                    {s.statementMonth} - Due: ₹{(s.totalAmount - s.amountPaid).toLocaleString()}
-                  </SelectItem>
-                ))}
-                {statements.length === 0 && <SelectItem value="none" disabled>No pending statements</SelectItem>}
-              </SelectContent>
-            </Select>
+            <Select 
+              value={statementId} 
+              onChange={(val) => setStatementId(val || "")}
+              showSearch
+              placeholder="Select statement"
+              className="w-full h-10"
+              optionFilterProp="label"
+              options={statements.length > 0 ? statements.map(s => ({
+                label: `${s.statementMonth} - Due: ₹${(s.totalAmount - s.amountPaid).toLocaleString()}`,
+                value: s._id
+              })) : [{ label: 'No pending statements', value: 'none', disabled: true } as any]}
+            />
           </div>
 
           <div className="space-y-2">
             <Label>Pay From Account</Label>
-            <Select value={accountId} onValueChange={(val) => setAccountId(val || "")}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select bank account" />
-              </SelectTrigger>
-              <SelectContent>
-                {accounts.map(a => (
-                  <SelectItem key={a._id} value={a._id}>
-                    {a.name} (Bal: ₹{a.balance.toLocaleString()})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Select 
+              value={accountId} 
+              onChange={(val) => setAccountId(val || "")}
+              showSearch
+              placeholder="Select bank account"
+              className="w-full h-10"
+              optionFilterProp="label"
+              options={accounts.map(a => ({
+                label: `${a.name} (Bal: ₹${a.balance.toLocaleString()})`,
+                value: a._id
+              }))}
+            />
           </div>
 
           <div className="space-y-2">

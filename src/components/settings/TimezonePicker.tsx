@@ -70,7 +70,9 @@ export function TimezonePicker({ initialTimezone }: { initialTimezone: string })
           value={selectedTimezone}
           onChange={setSelectedTimezone}
           className="text-foreground text-sm"
+          menuPortalTarget={typeof document !== 'undefined' ? document.body : null}
           styles={{
+            menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
             control: (provided: any) => ({
               ...provided,
               backgroundColor: "transparent",

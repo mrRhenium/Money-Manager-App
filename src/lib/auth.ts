@@ -21,12 +21,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         let user = await User.findOne({ email: credentials.email }).select("+password");
 
-        // Auto-provision admin user if it doesn't exist
-        if (!user && credentials.email === "admin@gmail.com" && credentials.password === "Admin@75614") {
-          const hashedPassword = await bcrypt.hash("Admin@75614", 10);
+        // Auto-provision admin user if it doesn't exist and credentials match environment config
+        const initialAdminEmail = process.env.INITIAL_ADMIN_EMAIL;
+        const initialAdminPass = process.env.INITIAL_ADMIN_PASSWORD;
+
+        if (!user && initialAdminEmail && initialAdminPass && credentials.email === initialAdminEmail && credentials.password === initialAdminPass) {
+          const hashedPassword = await bcrypt.hash(initialAdminPass, 10);
           user = await User.create({
             name: "Admin",
-            email: "admin@gmail.com",
+            email: initialAdminEmail,
             password: hashedPassword,
             role: "ADMIN",
           });
@@ -75,4 +78,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
 });

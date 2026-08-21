@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Input, Button, Form, Typography, Alert } from "antd";
-import { MailOutlined, LockOutlined, UserOutlined, StarOutlined } from "@ant-design/icons";
+import { MailOutlined, LockOutlined, UserOutlined, WalletOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -42,17 +42,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-50 p-4">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8 text-center">
-        <div className="w-16 h-16 mx-auto bg-[#0ea5e9] text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-[#0ea5e9]/20">
-          <StarOutlined style={{ fontSize: '32px' }} />
+        <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', boxShadow: '0 10px 15px -3px hsla(var(--primary), 0.2)' }}>
+          <WalletOutlined style={{ fontSize: '32px' }} />
         </div>
         <Title level={2} style={{ margin: 0 }}>Create Account</Title>
         <Text type="secondary">Join us to start managing your finances</Text>
       </div>
 
       <Card 
-        style={{ width: '100%', maxWidth: 420, borderRadius: 16, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)' }}
+        className="w-full max-w-[420px] rounded-2xl shadow-xl"
         bordered={false}
       >
         <Form
@@ -103,7 +103,7 @@ export default function RegisterPage() {
 
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
-              Already have an account? <Link href="/login" style={{ fontWeight: 600, color: '#0ea5e9' }}>Sign in</Link>
+              Already have an account? <Link href="/login" style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>Sign in</Link>
             </Text>
           </div>
         </Form>

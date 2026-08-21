@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Input, Button, Form, Typography, Alert, Space } from "antd";
-import { MailOutlined, LockOutlined, StarOutlined } from "@ant-design/icons";
+import { MailOutlined, LockOutlined, WalletOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -39,17 +39,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-50 p-4">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8 text-center">
-        <div className="w-16 h-16 mx-auto bg-[#0ea5e9] text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-[#0ea5e9]/20">
-          <StarOutlined style={{ fontSize: '32px' }} />
+        <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', boxShadow: '0 10px 15px -3px hsla(var(--primary), 0.2)' }}>
+          <WalletOutlined style={{ fontSize: '32px' }} />
         </div>
         <Title level={2} style={{ margin: 0 }}>Welcome Back</Title>
         <Text type="secondary">Sign in to manage your finances</Text>
       </div>
 
       <Card 
-        style={{ width: '100%', maxWidth: 420, borderRadius: 16, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)' }}
+        className="w-full max-w-[420px] rounded-2xl shadow-xl"
         bordered={false}
       >
         <Form
@@ -74,24 +74,24 @@ export default function LoginPage() {
           </Form.Item>
 
           <Form.Item
-            label={
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <span>Password</span>
-                <Link href="/forgot-password" style={{ fontSize: '14px', fontWeight: 500, color: '#0ea5e9' }} tabIndex={-1}>
-                  Forgot password?
-                </Link>
-              </div>
-            }
+            label="Password"
             name="password"
             rules={[{ required: true, message: 'Please enter your password!' }]}
+            style={{ marginBottom: 8 }}
           >
             <Input.Password
               prefix={<LockOutlined className="site-form-item-icon text-gray-400" />}
               placeholder="••••••••"
             />
           </Form.Item>
+          
+          <div style={{ textAlign: 'right', marginBottom: 24 }}>
+            <Link href="/forgot-password" style={{ fontSize: '14px', fontWeight: 500, color: 'hsl(var(--primary))' }} tabIndex={-1}>
+              Forgot password?
+            </Link>
+          </div>
 
-          <Form.Item style={{ marginTop: 32, marginBottom: 12 }}>
+          <Form.Item style={{ marginBottom: 12 }}>
             <Button type="primary" htmlType="submit" style={{ width: '100%', fontWeight: 600, height: 44 }} loading={loading}>
               Sign In
             </Button>
@@ -99,7 +99,7 @@ export default function LoginPage() {
 
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
-              Don't have an account? <Link href="/register" style={{ fontWeight: 600, color: '#0ea5e9' }}>Sign up</Link>
+              Don't have an account? <Link href="/register" style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>Sign up</Link>
             </Text>
           </div>
         </Form>

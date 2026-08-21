@@ -35,7 +35,7 @@ export async function Sidebar() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all font-medium group"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all font-medium group cursor-pointer"
               >
                 <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span>{item.label}</span>
@@ -52,7 +52,7 @@ export async function Sidebar() {
             <span className="font-bold text-sm">{user.currentStreak} Day Streak!</span>
           </div>
         )}
-        <div className="flex items-center justify-between bg-secondary/30 p-2 rounded-xl">
+        <div className="flex items-center justify-between bg-secondary/30 p-2 rounded-xl cursor-pointer hover:bg-secondary/50 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary border border-primary/20">
               {user?.name?.charAt(0) || "U"}

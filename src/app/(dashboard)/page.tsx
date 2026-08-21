@@ -3,7 +3,7 @@ import { getAccounts } from "@/actions/account";
 import { getTransactions } from "@/actions/transaction";
 import { getPeople } from "@/actions/person";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
-import { ArrowUpRight, ArrowDownRight, Wallet, Users, ChevronRight, Activity } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Wallet, Users, ChevronRight, Activity, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -62,8 +62,8 @@ export default async function DashboardPage() {
       {/* Greeting Area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/10">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Hello, {session.user.name?.split(" ")[0] || "User"} 👋
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            Hello, {session.user.name?.split(" ")[0] || "User"} <Sparkles className="w-7 h-7 text-primary animate-pulse" />
           </h1>
           <p className="text-muted-foreground mt-1">
             Here is your financial overview for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -89,7 +89,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Income</CardTitle>
             <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Expenses</CardTitle>
             <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Lend / Borrow</CardTitle>
             <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center">

@@ -35,7 +35,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       type: "expense",
       amount: 0,
@@ -99,12 +99,12 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Add Transaction
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">

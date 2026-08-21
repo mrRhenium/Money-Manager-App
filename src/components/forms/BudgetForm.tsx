@@ -30,7 +30,7 @@ export function BudgetForm({ categories }: BudgetFormProps) {
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       categoryId: "",
       month: currentMonth,
@@ -53,12 +53,12 @@ export function BudgetForm({ categories }: BudgetFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Set Budget
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Set Category Budget</DialogTitle>

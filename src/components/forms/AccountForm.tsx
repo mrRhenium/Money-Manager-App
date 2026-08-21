@@ -21,7 +21,7 @@ const formSchema = z.object({
 export function AccountForm() {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       type: "bank",
@@ -41,12 +41,12 @@ export function AccountForm() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Add Account
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Account</DialogTitle>

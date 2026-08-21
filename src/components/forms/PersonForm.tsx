@@ -21,7 +21,7 @@ const formSchema = z.object({
 export function PersonForm() {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       relation: "Friend",
@@ -41,12 +41,12 @@ export function PersonForm() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Add Person
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Contact</DialogTitle>

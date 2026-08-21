@@ -3,10 +3,12 @@ import { getAccounts } from "@/actions/account";
 import { getTransactions } from "@/actions/transaction";
 import { getPeople } from "@/actions/person";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
-import { ArrowUpRight, ArrowDownRight, Wallet, Users } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Wallet, Users, ChevronRight, Activity } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -41,7 +43,7 @@ export default async function DashboardPage() {
     if (t.type === "expense" && t.categoryId) {
       const catName = t.categoryId.name;
       if (!expenseByCategory[catName]) {
-        expenseByCategory[catName] = { value: 0, color: t.categoryId.color || "#8884d8" };
+        expenseByCategory[catName] = { value: 0, color: t.categoryId.color || "#0ea5e9" }; // Default to primary blue
       }
       expenseByCategory[catName].value += t.amount;
     }
@@ -56,95 +58,141 @@ export default async function DashboardPage() {
   const totalWeOwe = people.filter((p: any) => p.netBalance < 0).reduce((acc: number, p: any) => acc + Math.abs(p.netBalance), 0);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back. Here is an overview of your finances this month.
-        </p>
+    <div className="space-y-8 pb-8">
+      {/* Greeting Area */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/10">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Hello, {session.user.name?.split(" ")[0] || "User"} 👋
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Here is your financial overview for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
+          </p>
+        </div>
+        <Button nativeButton={false} render={<Link href="/add" />} className="rounded-full px-6 shadow-md hover:shadow-lg transition-all">
+          Add Transaction
+        </Button>
       </div>
-      
+
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Total Balance</h3>
-            <Wallet className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <div className="pt-2">
-            <div className="text-2xl font-bold">₹{totalBalance.toLocaleString("en-IN")}</div>
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Income (This Month)</h3>
-            <ArrowUpRight className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="pt-2">
-            <div className="text-2xl font-bold text-emerald-500">+₹{monthlyIncome.toLocaleString("en-IN")}</div>
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">Expenses (This Month)</h3>
-            <ArrowDownRight className="w-4 h-4 text-red-500" />
-          </div>
-          <div className="pt-2">
-            <div className="text-2xl font-bold text-red-500">-₹{monthlyExpense.toLocaleString("en-IN")}</div>
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="tracking-tight text-sm font-medium">People Ledger Net</h3>
-            <Users className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <div className="pt-2 flex flex-col gap-1">
-            <div className="text-sm font-medium text-emerald-500">To Receive: ₹{totalOweUs.toLocaleString("en-IN")}</div>
-            <div className="text-sm font-medium text-red-500">To Pay: ₹{totalWeOwe.toLocaleString("en-IN")}</div>
-          </div>
-        </div>
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Wallet className="w-4 h-4 text-primary" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">₹{totalBalance.toLocaleString("en-IN")}</div>
+            <p className="text-xs text-muted-foreground mt-1">Across all accounts</p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Income</CardTitle>
+            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">+₹{monthlyIncome.toLocaleString("en-IN")}</div>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+              <Activity className="w-3 h-3" /> This month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Expenses</CardTitle>
+            <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
+              <ArrowDownRight className="w-4 h-4 text-red-600 dark:text-red-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">-₹{monthlyExpense.toLocaleString("en-IN")}</div>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
+              <Activity className="w-3 h-3" /> This month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Lend / Borrow</CardTitle>
+            <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
+              <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-1.5 mt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">To Receive</span>
+                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">₹{totalOweUs.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">To Pay</span>
+                <span className="text-sm font-semibold text-red-600 dark:text-red-400">₹{totalWeOwe.toLocaleString("en-IN")}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-7">
         {/* Charts */}
-        <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Expense Categories</h3>
-          <OverviewChart data={chartData} />
-        </div>
+        <Card className="md:col-span-4 border-none shadow-sm hover:shadow-md transition-all">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-foreground">Spending by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <OverviewChart data={chartData} />
+          </CardContent>
+        </Card>
 
         {/* Recent Transactions */}
-        <div className="rounded-xl border bg-card text-card-foreground shadow p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Recent Transactions</h3>
-            <Link href="/transactions" className="text-sm text-primary hover:underline">View All</Link>
-          </div>
-          <div className="space-y-4 flex-1 overflow-auto max-h-[300px]">
-            {transactions.slice(0, 5).map((t: any) => (
-              <div key={t._id} className="flex items-center justify-between border-b pb-2 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white" 
-                    style={{ backgroundColor: t.categoryId?.color || (t.type === 'income' ? '#10b981' : '#f43f5e') }}
-                  >
-                    {t.categoryId?.name.charAt(0) || t.type.charAt(0).toUpperCase()}
+        <Card className="md:col-span-3 border-none shadow-sm hover:shadow-md transition-all flex flex-col">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-lg font-semibold text-foreground">Recent Activity</CardTitle>
+            <Link href="/transactions" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center">
+              View All <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-auto max-h-[320px] pr-2 custom-scrollbar">
+            <div className="space-y-4">
+              {transactions.slice(0, 5).map((t: any) => (
+                <div key={t._id} className="flex items-center justify-between group cursor-pointer hover:bg-secondary/40 p-2 -mx-2 rounded-lg transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm"
+                      style={{ backgroundColor: t.categoryId?.color || (t.type === 'income' ? '#10b981' : '#f43f5e') }}
+                    >
+                      {t.categoryId?.name.charAt(0) || t.type.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{t.categoryId?.name || t.type}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {t.accountId?.name || 'Account'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{t.categoryId?.name || t.type}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(t.date).toLocaleDateString()}</p>
+                  <div className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
+                    {t.type === 'expense' || t.type === 'lend' ? '-' : '+'}₹{t.amount.toLocaleString("en-IN")}
                   </div>
                 </div>
-                <div className={`font-semibold ${t.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>
-                  {t.type === 'expense' || t.type === 'lend' ? '-' : '+'}₹{t.amount.toLocaleString("en-IN")}
+              ))}
+              {transactions.length === 0 && (
+                <div className="text-center text-muted-foreground py-10 flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mb-3">
+                    <Wallet className="w-6 h-6 text-muted-foreground/50" />
+                  </div>
+                  <p>No transactions yet.</p>
+                  <p className="text-xs mt-1">Add your first transaction to see activity.</p>
                 </div>
-              </div>
-            ))}
-            {transactions.length === 0 && (
-              <div className="text-center text-muted-foreground py-8">
-                No transactions yet.
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

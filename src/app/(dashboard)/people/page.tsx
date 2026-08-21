@@ -1,6 +1,7 @@
 import { getPeople } from "@/actions/person";
 import { User as UserIcon } from "lucide-react";
 import { PersonForm } from "@/components/forms/PersonForm";
+import { Button } from "@/components/ui/button";
 
 export default async function PeoplePage() {
   const people = await getPeople();

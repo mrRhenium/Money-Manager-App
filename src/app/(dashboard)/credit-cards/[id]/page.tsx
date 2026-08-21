@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { PayBillModal } from "./PayBillModal";
 import { formatDate } from "@/lib/helpers";
 import { auth } from "@/lib/auth";
+import { CreditCardTransactionTable } from "@/components/tables/CreditCardTransactionTable";
+import { CreditCardStatementTable } from "@/components/tables/CreditCardStatementTable";
 
 export default async function CreditCardDetailPage({ params }: { params: { id: string } }) {
   const session = await auth();
@@ -116,32 +118,7 @@ export default async function CreditCardDetailPage({ params }: { params: { id: s
               <CardTitle>Recent Card Transactions</CardTitle>
             </CardHeader>
             <CardContent>
-              {card.transactions.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No transactions yet.</p>
-              ) : (
-                <div className="space-y-4">
-                  {card.transactions.map((t: any) => (
-                    <div key={t._id} className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-500/10 text-red-500">
-                          <ArrowUpRight className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{t.note || t.categoryId?.name || "Expense"}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {formatDate(t.date, "standard", userTimezone)} • {t.categoryId?.name}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-semibold text-foreground">
-                          -₹{t.amount.toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <CreditCardTransactionTable transactions={card.transactions} userTimezone={userTimezone} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -152,36 +129,7 @@ export default async function CreditCardDetailPage({ params }: { params: { id: s
               <CardTitle>Billing Statements</CardTitle>
             </CardHeader>
             <CardContent>
-              {card.statements.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No statements generated yet.</p>
-              ) : (
-                <div className="space-y-4">
-                  {card.statements.map((s: any) => (
-                    <div key={s._id} className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors">
-                      <div>
-                        <p className="font-medium text-foreground">Statement: {s.statementMonth}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Due: {formatDate(s.dueDate, "standard", userTimezone)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-bold text-foreground">₹{s.totalAmount.toLocaleString("en-IN")}</span>
-                        <div className="mt-1">
-                          {s.paymentStatus === "paid" ? (
-                            <span className="text-xs bg-emerald-500/20 text-emerald-600 px-2 py-0.5 rounded-full">Paid</span>
-                          ) : s.paymentStatus === "partially_paid" ? (
-                            <span className="text-xs bg-yellow-500/20 text-yellow-600 px-2 py-0.5 rounded-full">Partial (₹{s.amountPaid})</span>
-                          ) : s.paymentStatus === "overdue" ? (
-                             <span className="text-xs bg-red-500/20 text-red-600 px-2 py-0.5 rounded-full">Overdue</span>
-                          ) : (
-                            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Unpaid</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <CreditCardStatementTable statements={card.statements} userTimezone={userTimezone} />
             </CardContent>
           </Card>
         </TabsContent>

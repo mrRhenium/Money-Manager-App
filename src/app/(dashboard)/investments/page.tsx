@@ -1,6 +1,7 @@
 import { getInvestments } from "@/actions/investment";
 import { Plus, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InvestmentTable } from "@/components/tables/InvestmentTable";
 
 export default async function InvestmentsPage() {
   const investments = await getInvestments();
@@ -56,48 +57,7 @@ export default async function InvestmentsPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card text-card-foreground shadow overflow-hidden">
-        <div className="p-0">
-          <div className="w-full overflow-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/50 text-muted-foreground">
-                <tr>
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Type</th>
-                  <th className="px-6 py-3 font-medium text-right">Invested</th>
-                  <th className="px-6 py-3 font-medium text-right">Current Value</th>
-                  <th className="px-6 py-3 font-medium text-right">Returns</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {investments.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                      No investments found.
-                    </td>
-                  </tr>
-                ) : (
-                  investments.map((inv: any) => {
-                    const ret = inv.currentValue - inv.investedAmount;
-                    const retPct = inv.investedAmount > 0 ? (ret / inv.investedAmount) * 100 : 0;
-                    return (
-                      <tr key={inv._id} className="hover:bg-muted/50 transition-colors">
-                        <td className="px-6 py-4 font-medium">{inv.name}</td>
-                        <td className="px-6 py-4">{inv.type}</td>
-                        <td className="px-6 py-4 text-right">₹{inv.investedAmount.toLocaleString("en-IN")}</td>
-                        <td className="px-6 py-4 text-right">₹{inv.currentValue.toLocaleString("en-IN")}</td>
-                        <td className={`px-6 py-4 text-right font-medium ${ret >= 0 ? "text-emerald-500" : "text-red-500"}`}>
-                          {ret >= 0 ? "+" : ""}₹{ret.toLocaleString("en-IN")} ({ret >= 0 ? "+" : ""}{retPct.toFixed(2)}%)
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <InvestmentTable investments={investments} />
     </div>
   );
 }

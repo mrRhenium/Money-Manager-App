@@ -2,9 +2,44 @@
 
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { ConfigProvider, theme } from "antd";
 import { InactivityTracker } from "./InactivityTracker";
+
+function AppConfigurator({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
+  const customColor = (session?.user as any)?.themeColor;
+  const activeColor = customColor || "#0ea5e9";
+
+  return (
+    <>
+      {customColor && (
+        <style>
+          {`
+            :root {
+              --primary: ${customColor};
+            }
+            .dark {
+              --primary: ${customColor};
+            }
+          `}
+        </style>
+      )}
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: activeColor,
+            borderRadius: 8,
+            fontFamily: "var(--font-sans)",
+          },
+          algorithm: theme.defaultAlgorithm,
+        }}
+      >
+        {children}
+      </ConfigProvider>
+    </>
+  );
+}
 
 export function Providers({
   children,
@@ -14,18 +49,9 @@ export function Providers({
     <SessionProvider>
       <InactivityTracker />
       <NextThemesProvider defaultTheme="light" enableSystem disableTransitionOnChange {...props}>
-        <ConfigProvider
-          theme={{
-            token: {
-              colorPrimary: "#0ea5e9", // Sky Blue
-              borderRadius: 8,
-              fontFamily: "var(--font-sans)",
-            },
-            algorithm: theme.defaultAlgorithm,
-          }}
-        >
+        <AppConfigurator>
           {children}
-        </ConfigProvider>
+        </AppConfigurator>
       </NextThemesProvider>
     </SessionProvider>
   );

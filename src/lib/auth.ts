@@ -50,6 +50,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           role: user.role,
           timezone: user.timezone || "UTC",
+          themeColor: (user as any).themeColor || null,
         };
       },
     }),
@@ -64,6 +65,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.timezone = (user as any).timezone || "UTC";
+        token.themeColor = (user as any).themeColor || null;
       }
       return token;
     },
@@ -72,6 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as "USER" | "ADMIN";
         (session.user as any).timezone = token.timezone as string;
+        (session.user as any).themeColor = token.themeColor as string | null;
       }
       return session;
     },

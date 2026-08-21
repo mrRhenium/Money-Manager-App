@@ -50,3 +50,18 @@ export async function updateProfile(data: { name: string; mobile: string }) {
     throw new Error(error.message || "Failed to update profile");
   }
 }
+
+export async function updateThemeColor(color: string | null) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+  
+  if (color) {
+    await User.findByIdAndUpdate(session.user.id, { themeColor: color });
+  } else {
+    await User.findByIdAndUpdate(session.user.id, { $unset: { themeColor: 1 } });
+  }
+  
+  return { success: true };
+}

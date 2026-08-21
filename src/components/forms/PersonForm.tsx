@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createPerson } from "@/actions/person";
-import { Plus, UserPlus, User, Users, Phone, Smartphone } from "lucide-react";
+import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -74,17 +74,27 @@ export function PersonForm() {
       } />
       <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2 text-primary">
-              <UserPlus className="w-5 h-5" />
-              <span className="text-foreground">Add New Contact</span>
-            </DialogTitle>
-            <Button type="button" variant="outline" size="sm" onClick={handleImportContact} className="gap-2">
-              <Smartphone className="w-4 h-4" />
-              Import
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center gap-2 text-primary">
+            <UserPlus className="w-5 h-5" />
+            <span className="text-foreground">Add New Contact</span>
+          </DialogTitle>
         </DialogHeader>
+        
+        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 mb-2">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg text-primary">
+              <BookUser className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm text-foreground">Import from Phone</h4>
+              <p className="text-xs text-muted-foreground">Select a contact to auto-fill details</p>
+            </div>
+          </div>
+          <Button type="button" variant="secondary" className="w-full sm:w-auto shadow-sm" onClick={handleImportContact}>
+            <Smartphone className="w-4 h-4 mr-2" />
+            Import
+          </Button>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField

@@ -9,7 +9,7 @@ import { LogOut, User, Bell } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { subscribeUser, sendTestNotification } from "@/actions/push";
-import { getUserProfile, updateProfile } from "@/actions/user";
+import { getUserProfile, updateProfile, updateThemeColor } from "@/actions/user";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
@@ -26,22 +26,46 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export default function SettingsPage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [isSubscribed, setIsSubscribed] = useState(false);
   
   const [name, setName] = useState(session?.user?.name || "");
   const [mobile, setMobile] = useState("");
+  const [themeColor, setThemeColor] = useState((session?.user as any)?.themeColor || "#0ea5e9");
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [isThemeLoading, setIsThemeLoading] = useState(false);
 
   useEffect(() => {
     if (session?.user?.name) {
       setName(session.user.name);
     }
+    if ((session?.user as any)?.themeColor) {
+      setThemeColor((session?.user as any)?.themeColor);
+    }
+    
     getUserProfile().then(user => {
       if (user.name) setName(user.name);
       if (user.mobile) setMobile(user.mobile);
+      if (user.themeColor) setThemeColor(user.themeColor);
     }).catch(console.error);
   }, [session]);
+
+  const handleThemeColorChange = async (color: string | null) => {
+    try {
+      setIsThemeLoading(true);
+      await updateThemeColor(color);
+      await updateSession(); // Refresh session data
+      if (color) {
+        setThemeColor(color);
+      } else {
+        setThemeColor("#0ea5e9");
+      }
+    } catch (error: any) {
+      alert("Failed to update theme color: " + error.message);
+    } finally {
+      setIsThemeLoading(false);
+    }
+  };
 
   const handleProfileSave = async () => {
     try {
@@ -124,7 +148,39 @@ export default function SettingsPage() {
           <CardTitle>Preferences</CardTitle>
           <CardDescription>Customize your Money Manager experience.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label>Portal Theme Color</Label>
+            <div className="flex items-center gap-4">
+              <div 
+                className="w-10 h-10 rounded-full border shadow-sm cursor-pointer overflow-hidden flex-shrink-0"
+                onClick={() => document.getElementById('theme-color-picker')?.click()}
+                style={{ backgroundColor: themeColor }}
+              >
+                <input 
+                  id="theme-color-picker"
+                  type="color" 
+                  value={themeColor} 
+                  onChange={(e) => handleThemeColorChange(e.target.value)}
+                  disabled={isThemeLoading}
+                  className="opacity-0 w-full h-full cursor-pointer"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Primary Color</p>
+                <p className="text-xs text-muted-foreground">Select your favorite color to personalize the entire portal.</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleThemeColorChange(null)}
+                disabled={isThemeLoading || themeColor === "#0ea5e9"}
+              >
+                Reset Default
+              </Button>
+            </div>
+          </div>
+          
           <div className="space-y-2">
             <Label>Currency</Label>
             <Input value="Dynamic (Multi-Currency Enabled)" disabled />

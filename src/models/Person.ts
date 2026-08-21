@@ -5,6 +5,7 @@ export interface IPerson extends Document {
   name: string;
   phone?: string;
   relation: "Friend" | "Family" | "Colleague" | "Other";
+  vpa?: string;
   avatarUrl?: string;
   createdAt: Date;
 }
@@ -19,6 +20,7 @@ const PersonSchema: Schema<IPerson> = new Schema(
       enum: ["Friend", "Family", "Colleague", "Other"],
       default: "Other",
     },
+    vpa: { type: String },
     avatarUrl: { type: String },
   },
   { timestamps: true }

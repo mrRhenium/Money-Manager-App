@@ -5,6 +5,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { SessionProvider, useSession } from "next-auth/react";
 import { ConfigProvider, theme, App } from "antd";
 import { InactivityTracker } from "./InactivityTracker";
+import { GlobalConfirmationCheck } from "./upi/GlobalConfirmationCheck";
 
 function AppConfigurator({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -48,6 +49,7 @@ export function Providers({
   return (
     <SessionProvider>
       <InactivityTracker />
+      <GlobalConfirmationCheck />
       <NextThemesProvider defaultTheme="light" enableSystem disableTransitionOnChange {...props}>
         <AppConfigurator>
           {children}

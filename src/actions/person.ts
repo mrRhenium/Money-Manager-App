@@ -72,3 +72,30 @@ export async function deletePerson(id: string) {
 
   revalidatePath("/people");
 }
+
+export async function savePersonVpa(name: string, vpa: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  let person = await Person.findOne({ userId: session.user.id, vpa });
+  if (!person) {
+    person = await Person.findOne({ userId: session.user.id, name });
+  }
+
+  if (person) {
+    person.vpa = vpa;
+    await person.save();
+  } else {
+    person = await Person.create({
+      userId: session.user.id,
+      name,
+      vpa,
+      relation: "Other"
+    });
+  }
+
+  revalidatePath("/people");
+  return JSON.parse(JSON.stringify(person));
+}

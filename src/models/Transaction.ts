@@ -26,6 +26,8 @@ export interface ITransaction extends Document {
   tags?: string[];
   receiptUrl?: string;
   upiRef?: string;
+  paymentSource?: "manual_entry" | "upi_scan" | "upi_manual" | "payee_quickpay";
+  status?: "completed" | "pending" | "cancelled" | "awaiting_confirmation";
   createdAt: Date;
 }
 
@@ -63,6 +65,16 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     tags: [{ type: String }],
     receiptUrl: { type: String },
     upiRef: { type: String },
+    paymentSource: { 
+      type: String, 
+      enum: ["manual_entry", "upi_scan", "upi_manual", "payee_quickpay"],
+      default: "manual_entry"
+    },
+    status: { 
+      type: String, 
+      enum: ["completed", "pending", "cancelled", "awaiting_confirmation"],
+      default: "completed"
+    },
   },
   { timestamps: true }
 );

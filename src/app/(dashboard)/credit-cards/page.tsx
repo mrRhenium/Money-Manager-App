@@ -23,8 +23,7 @@ export default async function CreditCardsPage() {
         <div className="text-center py-20 bg-muted/20 border border-dashed rounded-xl">
           <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold">No Credit Cards Yet</h3>
-          <p className="text-muted-foreground mb-6">Register your first credit card to start tracking bills.</p>
-          <CreditCardForm />
+          <p className="text-muted-foreground">Register your first credit card to start tracking bills.</p>
         </div>
       ) : (
         <CreditCardList cards={cards} />

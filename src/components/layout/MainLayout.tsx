@@ -1,6 +1,7 @@
 import React from "react";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
+import { ScanAndPayTrigger } from "../upi/ScanAndPayTrigger";
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,6 +20,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <div className="md:hidden">
         <BottomNav />
       </div>
+
+      {/* Floating Scan & Pay FAB */}
+      <ScanAndPayTrigger />
     </div>
   );
 }

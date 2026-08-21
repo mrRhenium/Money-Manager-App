@@ -1,6 +1,7 @@
 import { getTransactions } from "@/actions/transaction";
 import { getAccounts } from "@/actions/account";
 import { getCategories } from "@/actions/category";
+import { getPeople } from "@/actions/person";
 import { ExportButton } from "@/components/transactions/ExportButton";
 import { TransactionForm } from "@/components/forms/TransactionForm";
 import { TransactionTable } from "@/components/tables/TransactionTable";
@@ -10,10 +11,11 @@ export default async function TransactionsPage() {
   const session = await auth();
   const userTimezone = (session?.user as any)?.timezone || "UTC";
 
-  const [transactions, accounts, categories] = await Promise.all([
+  const [transactions, accounts, categories, people] = await Promise.all([
     getTransactions(),
     getAccounts(),
-    getCategories()
+    getCategories(),
+    getPeople()
   ]);
 
   return (
@@ -25,7 +27,7 @@ export default async function TransactionsPage() {
         </div>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <ExportButton />
-          <TransactionForm accounts={accounts} categories={categories} />
+          <TransactionForm accounts={accounts} categories={categories} people={people} />
         </div>
       </div>
 

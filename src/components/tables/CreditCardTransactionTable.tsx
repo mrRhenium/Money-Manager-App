@@ -3,6 +3,7 @@
 import { Table } from "antd";
 import { ArrowUpRight } from "lucide-react";
 import { formatDate } from "@/lib/helpers";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 export function CreditCardTransactionTable({ transactions, userTimezone }: { transactions: any[], userTimezone: string }) {
   const columns = [
@@ -22,8 +23,13 @@ export function CreditCardTransactionTable({ transactions, userTimezone }: { tra
                 <span>{record.upiPayeeName} ({record.upiPayeeVpa})</span>
               </div>
             )}
-            <p className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
-              {formatDate(record.date, "standard", userTimezone)} • {record.categoryId?.name}
+            <p className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap flex items-center gap-1.5">
+              <span>{formatDate(record.date, "standard", userTimezone)}</span>
+              <span>•</span>
+              {record.categoryId && (
+                <CategoryIcon name={record.categoryId.icon} color={record.categoryId.color} className="w-3 h-3 shrink-0" />
+              )}
+              <span>{record.categoryId?.name || "Expense"}</span>
             </p>
           </div>
         </div>

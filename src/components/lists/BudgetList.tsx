@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BudgetForm } from "../forms/BudgetForm";
 import { deleteBudget } from "@/actions/budget";
 import { Trash } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 export function BudgetList({ budgets, categories }: { budgets: any[]; categories: any[] }) {
   if (budgets.length === 0) {
@@ -29,7 +30,7 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: budget.categoryId?.color || "#888" }} />
+                      <CategoryIcon name={budget.categoryId?.icon} color={budget.categoryId?.color} className="w-4 h-4" />
                       <h3 className="font-semibold">{budget.categoryId?.name}</h3>
                     </div>
                     <div className="flex items-center gap-1">

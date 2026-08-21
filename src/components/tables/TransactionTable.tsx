@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TransactionForm } from "../forms/TransactionForm";
 import { deleteTransaction } from "@/actions/transaction";
 import { Trash } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 export function TransactionTable({
   transactions,
@@ -49,8 +50,8 @@ export function TransactionTable({
       render: (_: any, record: any) => {
         if (!record.categoryId) return <span className="text-muted-foreground">-</span>;
         return (
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: record.categoryId.color }} />
+          <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
+            <CategoryIcon name={record.categoryId.icon} color={record.categoryId.color} className="w-4 h-4 shrink-0" />
             <span>{record.categoryId.name}</span>
           </div>
         );

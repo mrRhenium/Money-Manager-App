@@ -4,7 +4,21 @@ import { getTransactions } from "@/actions/transaction";
 import { getPeople } from "@/actions/person";
 import { getCreditCards } from "@/actions/creditCard";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
-import { ArrowUpRight, ArrowDownRight, Wallet, Users, ChevronRight, Activity, Sparkles, CreditCard as CardIcon, AlertCircle } from "lucide-react";
+import { 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Wallet, 
+  Users, 
+  ChevronRight, 
+  Activity, 
+  Sparkles, 
+  CreditCard as CardIcon, 
+  AlertCircle,
+  ArrowDownLeft,
+  ArrowRightLeft,
+  TrendingUp,
+  Circle
+} from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -14,6 +28,16 @@ import { formatDate } from "@/lib/helpers";
 import { isSameMonthAndYear, getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
 import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
+
+function getFallbackTransactionIcon(type: string) {
+  const className = "w-5 h-5 text-white";
+  if (type === "income") return <ArrowDownLeft className={className} />;
+  if (type === "expense") return <ArrowUpRight className={className} />;
+  if (type === "transfer") return <ArrowRightLeft className={className} />;
+  if (type === "lend" || type === "borrow") return <Users className={className} />;
+  return <Circle className={className} />;
+}
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -195,10 +219,14 @@ export default async function DashboardPage() {
                 <div key={t._id} className="flex items-center justify-between group cursor-pointer hover:bg-secondary/40 p-2 -mx-2 rounded-lg transition-colors">
                   <div className="flex items-center gap-4">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
                       style={{ backgroundColor: t.categoryId?.color || (t.type === 'income' ? '#10b981' : '#f43f5e') }}
                     >
-                      {t.categoryId?.name.charAt(0) || t.type.charAt(0).toUpperCase()}
+                      {t.categoryId ? (
+                        <CategoryIcon name={t.categoryId.icon} className="w-5 h-5 text-white" />
+                      ) : (
+                        getFallbackTransactionIcon(t.type)
+                      )}
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{t.categoryId?.name || t.type}</p>

@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { CategoryForm } from "../forms/CategoryForm";
 import { deleteCategory } from "@/actions/category";
 import { Trash } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 export function CategoryList({ expenseCategories, incomeCategories }: { expenseCategories: any[], incomeCategories: any[] }) {
   const renderCategoryItem = (cat: any) => (
     <List.Item className="!p-0 !border-0 mb-2">
       <div className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm w-full">
         <div className="flex items-center gap-3">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color }} />
+          <CategoryIcon name={cat.icon} color={cat.color} className="w-5 h-5" />
           <span className="font-medium">{cat.name}</span>
         </div>
         <div className="flex items-center gap-1.5">

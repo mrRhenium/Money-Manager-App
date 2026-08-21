@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Transaction from "@/models/Transaction";
 import { auth } from "@/lib/auth";
 import * as xlsx from "xlsx";
+import { formatDateString } from "@/lib/dateTimeHelper";
 
 export async function exportTransactionsToExcel() {
   const session = await auth();
@@ -18,7 +19,7 @@ export async function exportTransactionsToExcel() {
     .lean();
 
   const data = transactions.map((t: any) => ({
-    Date: new Date(t.date).toLocaleDateString(),
+    Date: formatDateString(t.date, 'M/D/YYYY'),
     Type: t.type.charAt(0).toUpperCase() + t.type.slice(1),
     Amount: t.amount,
     Category: t.categoryId ? t.categoryId.name : "-",

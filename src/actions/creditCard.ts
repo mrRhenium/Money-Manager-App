@@ -7,6 +7,7 @@ import Transaction from "@/models/Transaction";
 import Account from "@/models/Account";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getCurrentDate } from "@/lib/dateTimeHelper";
 
 export async function getCreditCards() {
   const session = await auth();
@@ -120,7 +121,7 @@ export async function payCreditCardStatement(statementId: string, sourceAccountI
     userId: session.user.id,
     type: "settlement",
     amount: amountToPay,
-    date: new Date(),
+    date: getCurrentDate(),
     accountId: sourceAccountId,
     paymentMode: "bank",
     note: `Credit Card Bill Payment - ${card.bankName} ending ${card.last4Digits}`,
@@ -139,7 +140,7 @@ export async function payCreditCardStatement(statementId: string, sourceAccountI
   statement.amountPaid += amountToPay;
   if (statement.amountPaid >= statement.totalAmount) {
     statement.paymentStatus = "paid";
-    statement.paidDate = new Date();
+    statement.paidDate = getCurrentDate();
   } else {
     statement.paymentStatus = "partially_paid";
   }

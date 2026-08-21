@@ -7,6 +7,7 @@ import Transaction from "@/models/Transaction";
 import Category from "@/models/Category";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getStartOfMonth, getEndOfMonth } from "@/lib/dateTimeHelper";
 
 export async function getBudgetsWithProgress(month: string) {
   const session = await auth();
@@ -19,9 +20,8 @@ export async function getBudgetsWithProgress(month: string) {
     .lean();
 
   // Get start and end dates for the month
-  const [yearStr, monthStr] = month.split("-");
-  const startDate = new Date(parseInt(yearStr), parseInt(monthStr) - 1, 1);
-  const endDate = new Date(parseInt(yearStr), parseInt(monthStr), 0, 23, 59, 59);
+  const startDate = getStartOfMonth(month);
+  const endDate = getEndOfMonth(month);
 
   const budgetsWithProgress = await Promise.all(
     budgets.map(async (budget) => {

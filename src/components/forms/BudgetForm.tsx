@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -26,8 +27,7 @@ interface BudgetFormProps {
 export function BudgetForm({ categories }: BudgetFormProps) {
   const [open, setOpen] = useState(false);
   
-  const now = new Date();
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonth = getCurrentFormatted("YYYY-MM");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,

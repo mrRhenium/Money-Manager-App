@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import { sendEmail } from "@/lib/mailer";
 import { generateOtp, getExpiryDate } from "@/lib/helpers";
+import { getCurrentYear } from "@/lib/dateTimeHelper";
 
 export async function POST(req: Request) {
   try {
@@ -74,7 +75,7 @@ export async function POST(req: Request) {
             <h1 style="margin: 0; letter-spacing: 5px; color: #333;">${otp}</h1>
           </div>
           <p>This code will expire in <strong>10 minutes</strong>.</p>
-          <p style="color: #888; font-size: 12px; margin-top: 30px; text-align: center;">&copy; ${new Date().getFullYear()} Money Manager. All rights reserved.</p>
+          <p style="color: #888; font-size: 12px; margin-top: 30px; text-align: center;">&copy; ${getCurrentYear()} Money Manager. All rights reserved.</p>
         </div>
       `
     });

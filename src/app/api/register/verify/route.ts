@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
+import { isExpired } from "@/lib/dateTimeHelper";
 
 export async function POST(req: Request) {
   try {
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (new Date() > user.verificationOtpExpiry) {
+    if (isExpired(user.verificationOtpExpiry)) {
       return NextResponse.json(
         { message: "OTP has expired. Please request a new one." },
         { status: 400 }

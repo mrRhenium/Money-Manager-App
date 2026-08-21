@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -43,7 +44,7 @@ export function TransactionForm({ accounts, categories }: TransactionFormProps) 
       accountId: accounts.length > 0 ? accounts[0]._id : "",
       categoryId: "",
       note: "",
-      date: new Date().toISOString().split("T")[0],
+      date: getCurrentFormatted("YYYY-MM-DD"),
     },
   });
 

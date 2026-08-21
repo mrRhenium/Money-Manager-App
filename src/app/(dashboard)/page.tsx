@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/helpers";
+import { isSameMonthAndYear, getCurrentFormatted } from "@/lib/dateTimeHelper";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -30,10 +31,8 @@ export default async function DashboardPage() {
   const totalBalance = accounts.reduce((acc: number, curr: any) => acc + curr.balance, 0);
 
   // Calculate current month's income and expenses
-  const now = new Date();
   const currentMonthTxns = transactions.filter((t: any) => {
-    const d = new Date(t.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    return isSameMonthAndYear(t.date, new Date());
   });
 
   const monthlyIncome = currentMonthTxns
@@ -73,7 +72,7 @@ export default async function DashboardPage() {
             Hello, {session.user.name?.split(" ")[0] || "User"} <Sparkles className="w-7 h-7 text-primary animate-pulse" />
           </h1>
           <p className="text-muted-foreground mt-1">
-            Here is your financial overview for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
+            Here is your financial overview for {getCurrentFormatted('MMMM YYYY')}.
           </p>
         </div>
         <Button nativeButton={false} render={<Link href="/add" />} className="rounded-full px-6 shadow-md hover:shadow-lg transition-all">

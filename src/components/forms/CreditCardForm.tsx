@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getCurrentFormatted, parseToDate } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -40,7 +41,7 @@ export function CreditCardForm() {
       last4Digits: "",
       cardholderName: "",
       creditLimit: 0,
-      startingDate: new Date().toISOString().split('T')[0],
+      startingDate: getCurrentFormatted("YYYY-MM-DD"),
       expiryDate: "",
       billingCycleStartDay: 1,
       billingCycleEndDay: 30,
@@ -53,8 +54,8 @@ export function CreditCardForm() {
     setError("");
     
     // Validate Dates
-    const start = new Date(values.startingDate);
-    const end = new Date(values.expiryDate);
+    const start = parseToDate(values.startingDate);
+    const end = parseToDate(values.expiryDate);
     if (end <= start) {
       setError("Expiry date must be after starting date.");
       return;

@@ -7,7 +7,7 @@ export async function Sidebar() {
   const user = await getUserProfile().catch(() => null);
 
   return (
-    <aside style={{ display: 'flex', flexDirection: 'column', width: '256px', borderRight: '1px solid hsl(var(--border))', backgroundColor: 'hsl(var(--card))' }} className="hidden md:flex shadow-sm">
+    <aside style={{ width: '256px', borderRight: '1px solid hsl(var(--border))', backgroundColor: 'hsl(var(--card))' }} className="hidden md:flex flex-col shadow-sm">
       <div style={{ height: '64px', display: 'flex', alignItems: 'center', padding: '0 24px', borderBottom: '1px solid hsl(var(--border))' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: 'hsl(var(--primary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'hsl(var(--primary-foreground))', fontWeight: 'bold' }}>

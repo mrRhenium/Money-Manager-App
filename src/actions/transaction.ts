@@ -8,6 +8,7 @@ import CardStatement from "@/models/CardStatement";
 import User from "@/models/User";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { parseToDate, getStatementMonth, calculateCreditCardDueDate, getCurrentDate, getStartOfDay, getDaysDifference } from "@/lib/dateTimeHelper";
 
 export async function getTransactions(limit = 50) {
   const session = await auth();
@@ -67,7 +68,7 @@ export async function createTransaction(data: {
     originalAmount,
     originalCurrency: currency,
     exchangeRate,
-    date: new Date(data.date),
+    date: parseToDate(data.date),
     userId: session.user.id,
   });
 
@@ -79,22 +80,17 @@ export async function createTransaction(data: {
       card.availableLimit = card.creditLimit - card.currentOutstanding;
       await card.save();
 
-      const txDate = new Date(data.date);
-      const statementMonth = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      const statementMonth = getStatementMonth(data.date);
       
       let statement = await CardStatement.findOne({ cardId: card._id, statementMonth });
       if (!statement) {
-        const dueDate = new Date(txDate);
-        dueDate.setDate(card.paymentDueDay);
-        if (card.paymentDueDay <= card.billingCycleEndDay) {
-          dueDate.setMonth(dueDate.getMonth() + 1);
-        }
+        const dueDate = calculateCreditCardDueDate(data.date, card.paymentDueDay, card.billingCycleEndDay);
         
         statement = await CardStatement.create({
           cardId: card._id,
           userId: session.user.id,
           statementMonth,
-          statementDate: new Date(),
+          statementDate: getCurrentDate(),
           dueDate,
           totalAmount: 0,
           minimumDue: 0,
@@ -128,19 +124,15 @@ export async function createTransaction(data: {
   // Update Streak
   const user = await User.findById(session.user.id);
   if (user) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const lastActive = user.lastActiveDate ? new Date(user.lastActiveDate) : null;
-    if (lastActive) lastActive.setHours(0, 0, 0, 0);
+    const today = getStartOfDay();
+    const lastActive = user.lastActiveDate ? getStartOfDay(user.lastActiveDate) : null;
 
     let newStreak = user.currentStreak || 0;
 
     if (!lastActive) {
       newStreak = 1;
     } else {
-      const diffTime = Math.abs(today.getTime() - lastActive.getTime());
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const diffDays = getDaysDifference(today, lastActive);
 
       if (diffDays === 1) {
         newStreak += 1;
@@ -149,7 +141,7 @@ export async function createTransaction(data: {
       }
     }
 
-    user.lastActiveDate = new Date();
+    user.lastActiveDate = getCurrentDate();
     user.currentStreak = newStreak;
     await user.save();
   }
@@ -177,8 +169,7 @@ export async function deleteTransaction(id: string) {
       card.availableLimit = card.creditLimit - card.currentOutstanding;
       await card.save();
       
-      const txDate = new Date(transaction.date);
-      const statementMonth = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      const statementMonth = getStatementMonth(transaction.date);
       const statement = await CardStatement.findOne({ cardId: transaction.creditCardId, statementMonth });
       if (statement) {
         statement.totalAmount = Math.max(0, statement.totalAmount - transaction.amount);

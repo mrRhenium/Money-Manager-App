@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Investment from "@/models/Investment";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { parseToDate } from "@/lib/dateTimeHelper";
 
 export async function getInvestments() {
   const session = await auth();
@@ -34,7 +35,7 @@ export async function createInvestment(data: {
   const investment = await Investment.create({
     ...data,
     userId: session.user.id,
-    date: new Date(data.date),
+    date: parseToDate(data.date),
   });
 
   revalidatePath("/investments");

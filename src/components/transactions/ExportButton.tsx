@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { exportTransactionsToExcel } from "@/actions/export";
@@ -24,7 +25,7 @@ export function ExportButton() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `transactions_${new Date().toISOString().split('T')[0]}.xlsx`;
+      a.download = `transactions_${getCurrentFormatted('YYYY-MM-DD')}.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {

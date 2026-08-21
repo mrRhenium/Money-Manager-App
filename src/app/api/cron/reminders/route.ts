@@ -4,6 +4,7 @@ import CardStatement from "@/models/CardStatement";
 import CreditCard from "@/models/CreditCard";
 import User from "@/models/User";
 import webpush from "web-push";
+import { getRelativeDaysDifference, formatDateString } from "@/lib/dateTimeHelper";
 
 // Configuration for web-push
 // In a real app, VAPID keys would be loaded from env vars
@@ -25,7 +26,6 @@ export async function GET(request: Request) {
     });
 
     let notificationsSent = 0;
-    const now = new Date();
     
     for (const statement of statements) {
       const card = await CreditCard.findById(statement.cardId);
@@ -34,16 +34,15 @@ export async function GET(request: Request) {
       const user = await User.findById(statement.userId);
       if (!user || !user.pushSubscription) continue;
 
-      const dueDate = new Date(statement.dueDate);
+      const dueDate = statement.dueDate;
       
       // Calculate diff in days
-      const diffTime = dueDate.getTime() - now.getTime();
-      const daysUntilDue = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const daysUntilDue = getRelativeDaysDifference(dueDate, new Date());
 
       let message = "";
       
       if (daysUntilDue <= 5 && daysUntilDue >= 0) {
-        message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ₹${(statement.totalAmount - statement.amountPaid).toLocaleString("en-IN")} is due in ${daysUntilDue} days on ${dueDate.toLocaleDateString()}.`;
+        message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ₹${(statement.totalAmount - statement.amountPaid).toLocaleString("en-IN")} is due in ${daysUntilDue} days on ${formatDateString(dueDate, "M/D/YYYY")}.`;
       } else if (daysUntilDue < 0) {
         message = `OVERDUE: Your ${card.bankName} ${card.cardName} bill was due ${Math.abs(daysUntilDue)} days ago. Please pay immediately to avoid penalties.`;
         

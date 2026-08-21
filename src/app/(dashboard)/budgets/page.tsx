@@ -2,10 +2,10 @@ import { getBudgetsWithProgress } from "@/actions/budget";
 import { getCategories } from "@/actions/category";
 import { BudgetForm } from "@/components/forms/BudgetForm";
 import { Button } from "@/components/ui/button";
+import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 
 export default async function BudgetsPage() {
-  const now = new Date();
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonth = getCurrentFormatted("YYYY-MM");
   
   const [budgets, categories] = await Promise.all([
     getBudgetsWithProgress(currentMonth),
@@ -17,7 +17,7 @@ export default async function BudgetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Budgets</h1>
-          <p className="text-muted-foreground">Manage your spending limits for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.</p>
+          <p className="text-muted-foreground">Manage your spending limits for {getCurrentFormatted('MMMM YYYY')}.</p>
         </div>
         <BudgetForm categories={categories} />
       </div>

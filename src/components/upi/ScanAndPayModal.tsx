@@ -47,6 +47,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
   // States
   const [loading, setLoading] = useState(false);
+  const [confirmingStatus, setConfirmingStatus] = useState<"completed" | "cancelled" | "pending" | null>(null);
   const [createdTxnId, setCreatedTxnId] = useState<string | null>(null);
   const [generatedUpiUrl, setGeneratedUpiUrl] = useState("");
   const [isIOS, setIsIOS] = useState(false);
@@ -295,6 +296,13 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
     try {
       setLoading(true);
+      setConfirmingStatus(status);
+      
+      // Close the modal and reset states immediately so the popup closes without lag
+      onOpenChange(false);
+      resetModal();
+
+      // Trigger transaction confirmation on the backend in the background
       await confirmTransaction(createdTxnId, status);
 
       if (status === "completed") {
@@ -304,14 +312,11 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       } else {
         toast.info("Transaction kept pending for later confirmation.");
       }
-
-      // Reset state and close modal
-      resetModal();
-      onOpenChange(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to confirm transaction status");
     } finally {
       setLoading(false);
+      setConfirmingStatus(null);
     }
   };
 
@@ -543,6 +548,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 onClick={() => handleFinalConfirm("completed")}
                 disabled={loading}
               >
+                {confirmingStatus === "completed" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 Yes, Paid Successfully
               </Button>
               <Button
@@ -551,6 +557,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 onClick={() => handleFinalConfirm("cancelled")}
                 disabled={loading}
               >
+                {confirmingStatus === "cancelled" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 No, Failed / Cancelled
               </Button>
               <Button
@@ -559,6 +566,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 onClick={() => handleFinalConfirm("pending")}
                 disabled={loading}
               >
+                {confirmingStatus === "pending" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 Not sure yet / Ask me later
               </Button>
             </div>

@@ -1,66 +1,40 @@
 import Link from "next/link";
-import { Home, PieChart, Users, Wallet, Settings, Flame, ShieldAlert, CreditCard } from "lucide-react";
 import { ThemeToggle } from "../theme-toggle";
 import { getUserProfile } from "@/actions/user";
+import { SidebarMenu } from "./SidebarMenu";
 
 export async function Sidebar() {
   const user = await getUserProfile().catch(() => null);
 
-  const navItems = [
-    { label: "Dashboard", href: "/", icon: Home },
-    { label: "Transactions", href: "/transactions", icon: Wallet },
-    { label: "Credit Cards", href: "/credit-cards", icon: CreditCard },
-    { label: "Budgets", href: "/budgets", icon: PieChart },
-    { label: "People", href: "/people", icon: Users },
-    { label: "Settings", href: "/settings", icon: Settings },
-  ];
-
-  if (user?.role === "ADMIN") {
-    navItems.push({ label: "Admin Portal", href: "/admin/dashboard", icon: ShieldAlert });
-  }
-
   return (
-    <aside className="hidden md:flex flex-col w-64 border-r border-border/50 bg-card shadow-sm">
-      <div className="h-16 flex items-center px-6 border-b border-border/50">
-        <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-            <Wallet className="w-5 h-5 text-primary-foreground" />
+    <aside style={{ display: 'flex', flexDirection: 'column', width: '256px', borderRight: '1px solid #e2e8f0', backgroundColor: '#ffffff', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }} className="hidden md:flex">
+      <div style={{ height: '64px', display: 'flex', alignItems: 'center', padding: '0 24px', borderBottom: '1px solid #e2e8f0' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+            M
           </div>
-          <h1 className="text-lg font-bold text-foreground tracking-tight">Money Manager</h1>
+          <h1 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#0f172a' }}>Money Manager</h1>
         </Link>
       </div>
       
-      <nav className="flex-1 overflow-y-auto py-6 px-4 custom-scrollbar">
-        <ul className="space-y-1.5">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all font-medium group cursor-pointer"
-              >
-                <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span>{item.label}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 0' }}>
+        <SidebarMenu role={user?.role} />
+      </div>
 
-      <div className="p-4 border-t border-border/50 flex flex-col gap-4">
+      <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {user && user.currentStreak > 0 && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-lg shadow-sm border border-orange-500/10">
-            <Flame className="w-5 h-5 animate-pulse" />
-            <span className="font-bold text-sm">{user.currentStreak} Day Streak!</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', backgroundColor: '#fff7ed', color: '#ea580c', borderRadius: '8px', border: '1px solid #ffedd5' }}>
+            <span style={{ fontWeight: 'bold', fontSize: '14px' }}>🔥 {user.currentStreak} Day Streak!</span>
           </div>
         )}
-        <div className="flex items-center justify-between bg-secondary/30 p-2 rounded-xl cursor-pointer hover:bg-secondary/50 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary border border-primary/20">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f1f5f9', padding: '8px', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#0ea5e9' }}>
               {user?.name?.charAt(0) || "U"}
             </div>
-            <div className="text-sm flex flex-col">
-              <p className="font-semibold text-foreground leading-none">{user?.name?.split(" ")[0] || "User"}</p>
-              <p className="text-xs text-muted-foreground mt-1 leading-none">Free Plan</p>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontWeight: 600, color: '#0f172a', fontSize: '14px', lineHeight: 1 }}>{user?.name?.split(" ")[0] || "User"}</span>
+              <span style={{ fontSize: '12px', color: '#64748b', marginTop: '4px', lineHeight: 1 }}>Free Plan</span>
             </div>
           </div>
           <ThemeToggle />

@@ -4,32 +4,25 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
+import { Card, Input, Button, Form, Typography, Alert, Space } from "antd";
+import { MailOutlined, LockOutlined, StarOutlined } from "@ant-design/icons";
+
+const { Title, Text } = Typography;
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onFinish = async (values: any) => {
     setError("");
     setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
 
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        email,
-        password,
+        email: values.email,
+        password: values.password,
       });
 
       if (res?.error) {
@@ -46,83 +39,70 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-muted/30 p-4">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-50 p-4">
       <div className="mb-8 text-center">
-        <div className="w-16 h-16 mx-auto bg-primary text-primary-foreground rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-          <Sparkles className="w-8 h-8" />
+        <div className="w-16 h-16 mx-auto bg-[#0ea5e9] text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-[#0ea5e9]/20">
+          <StarOutlined style={{ fontSize: '32px' }} />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome Back</h1>
-        <p className="text-muted-foreground mt-2">Sign in to manage your finances</p>
+        <Title level={2} style={{ margin: 0 }}>Welcome Back</Title>
+        <Text type="secondary">Sign in to manage your finances</Text>
       </div>
 
-      <Card className="w-full max-w-md shadow-xl border-border/50">
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-5 pt-6 pb-6">
-            {error && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg text-center font-medium">
-                {error}
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                <Input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  className="pl-10 h-11"
-                  required 
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link 
-                  href="/forgot-password" 
-                  className="text-sm font-medium text-primary hover:underline"
-                  tabIndex={-1}
-                >
+      <Card 
+        style={{ width: '100%', maxWidth: 420, borderRadius: 16, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)' }}
+        bordered={false}
+      >
+        <Form
+          name="login_form"
+          layout="vertical"
+          onFinish={onFinish}
+          size="large"
+          requiredMark={false}
+        >
+          {error && (
+            <Form.Item>
+              <Alert message={error} type="error" showIcon />
+            </Form.Item>
+          )}
+
+          <Form.Item
+            label="Email address"
+            name="email"
+            rules={[{ required: true, message: 'Please enter your email!' }, { type: 'email', message: 'Please enter a valid email!' }]}
+          >
+            <Input prefix={<MailOutlined className="site-form-item-icon text-gray-400" />} placeholder="name@example.com" />
+          </Form.Item>
+
+          <Form.Item
+            label={
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>Password</span>
+                <Link href="/forgot-password" style={{ fontSize: '14px', fontWeight: 500, color: '#0ea5e9' }} tabIndex={-1}>
                   Forgot password?
                 </Link>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                <Input 
-                  id="password" 
-                  name="password" 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder="••••••••" 
-                  className="pl-10 pr-10 h-11"
-                  required 
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4 pb-6">
-            <Button className="w-full h-11 text-base font-semibold shadow-md" type="submit" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+            }
+            name="password"
+            rules={[{ required: true, message: 'Please enter your password!' }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined className="site-form-item-icon text-gray-400" />}
+              placeholder="••••••••"
+            />
+          </Form.Item>
+
+          <Form.Item style={{ marginTop: 32, marginBottom: 12 }}>
+            <Button type="primary" htmlType="submit" style={{ width: '100%', fontWeight: 600, height: 44 }} loading={loading}>
+              Sign In
             </Button>
-            <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline font-semibold">
-                Sign up
-              </Link>
-            </div>
-          </CardFooter>
-        </form>
+          </Form.Item>
+
+          <div style={{ textAlign: 'center' }}>
+            <Text type="secondary">
+              Don't have an account? <Link href="/register" style={{ fontWeight: 600, color: '#0ea5e9' }}>Sign up</Link>
+            </Text>
+          </div>
+        </Form>
       </Card>
     </div>
   );

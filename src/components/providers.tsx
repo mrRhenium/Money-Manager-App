@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
+import { ConfigProvider, theme } from "antd";
 import { InactivityTracker } from "./InactivityTracker";
 
 export function Providers({
@@ -13,7 +14,18 @@ export function Providers({
     <SessionProvider>
       <InactivityTracker />
       <NextThemesProvider defaultTheme="light" enableSystem disableTransitionOnChange {...props}>
-        {children}
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#0ea5e9", // Sky Blue
+              borderRadius: 8,
+              fontFamily: "var(--font-sans)",
+            },
+            algorithm: theme.defaultAlgorithm,
+          }}
+        >
+          {children}
+        </ConfigProvider>
       </NextThemesProvider>
     </SessionProvider>
   );

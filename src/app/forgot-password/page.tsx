@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, KeyRound, ArrowLeft } from "lucide-react";
+import { Card, Input, Button, Form, Typography, Alert } from "antd";
+import { MailOutlined, LockOutlined, KeyOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { sendResetOtp, resetPassword } from "@/actions/auth";
+
+const { Title, Text } = Typography;
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -20,15 +19,15 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const [showPassword, setShowPassword] = useState(false);
+  const [form] = Form.useForm();
 
-  const handleSendOtp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSendOtp = async (values: { email: string }) => {
     setError("");
     setLoading(true);
 
     try {
-      await sendResetOtp(email);
+      await sendResetOtp(values.email);
+      setEmail(values.email);
       setSuccess("If an account exists, an OTP has been sent (Check server console for DEV).");
       setStep(2);
     } catch (err: any) {
@@ -38,16 +37,12 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleResetPassword = async (values: any) => {
     setError("");
     setSuccess("");
     setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const otp = formData.get("otp") as string;
-    const newPassword = formData.get("newPassword") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
+    const { otp, newPassword, confirmPassword } = values;
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
@@ -75,123 +70,123 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-muted/30 p-4">
-      <Link href="/login" className="absolute top-8 left-8 flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Login
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-50 p-4 relative">
+      <Link href="/login" style={{ position: 'absolute', top: 32, left: 32, display: 'flex', alignItems: 'center', fontWeight: 500, color: '#64748b', textDecoration: 'none' }}>
+        <ArrowLeftOutlined style={{ marginRight: 8 }} /> Back to Login
       </Link>
       
       <div className="mb-8 text-center">
-        <div className="w-16 h-16 mx-auto bg-primary text-primary-foreground rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-          <KeyRound className="w-8 h-8" />
+        <div className="w-16 h-16 mx-auto bg-[#0ea5e9] text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-[#0ea5e9]/20">
+          <KeyOutlined style={{ fontSize: '32px' }} />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Reset Password</h1>
-        <p className="text-muted-foreground mt-2">
+        <Title level={2} style={{ margin: 0 }}>Reset Password</Title>
+        <Text type="secondary">
           {step === 1 ? "Enter your email to receive a recovery code" : "Enter your recovery code and new password"}
-        </p>
+        </Text>
       </div>
 
-      <Card className="w-full max-w-md shadow-xl border-border/50">
+      <Card 
+        style={{ width: '100%', maxWidth: 420, borderRadius: 16, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)' }}
+        bordered={false}
+      >
         {step === 1 ? (
-          <form onSubmit={handleSendOtp}>
-            <CardContent className="space-y-5 pt-6 pb-6">
-              {error && (
-                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg text-center font-medium">
-                  {error}
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com" 
-                    className="pl-10 h-11"
-                    required 
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full h-11 text-base font-semibold shadow-md" type="submit" disabled={loading || !email}>
-                {loading ? "Sending OTP..." : "Send OTP"}
+          <Form
+            name="send_otp_form"
+            layout="vertical"
+            onFinish={handleSendOtp}
+            size="large"
+            requiredMark={false}
+          >
+            {error && (
+              <Form.Item>
+                <Alert message={error} type="error" showIcon />
+              </Form.Item>
+            )}
+
+            <Form.Item
+              label="Email address"
+              name="email"
+              rules={[{ required: true, message: 'Please enter your email!' }, { type: 'email', message: 'Please enter a valid email!' }]}
+            >
+              <Input prefix={<MailOutlined className="site-form-item-icon text-gray-400" />} placeholder="name@example.com" />
+            </Form.Item>
+
+            <Form.Item style={{ marginTop: 32, marginBottom: 0 }}>
+              <Button type="primary" htmlType="submit" style={{ width: '100%', fontWeight: 600, height: 44 }} loading={loading}>
+                Send OTP
               </Button>
-            </CardFooter>
-          </form>
+            </Form.Item>
+          </Form>
         ) : (
-          <form onSubmit={handleResetPassword}>
-            <CardContent className="space-y-5 pt-6 pb-6">
-              {error && (
-                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg text-center font-medium">
-                  {error}
-                </div>
-              )}
-              {success && (
-                <div className="p-3 text-sm text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center font-medium">
-                  {success}
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="otp">6-Digit OTP</Label>
-                <Input 
-                  id="otp" 
-                  name="otp"
-                  type="text" 
-                  placeholder="123456" 
-                  className="h-11 tracking-widest text-center text-lg font-mono"
-                  maxLength={6}
-                  required 
-                />
-              </div>
+          <Form
+            form={form}
+            name="reset_password_form"
+            layout="vertical"
+            onFinish={handleResetPassword}
+            size="large"
+            requiredMark={false}
+          >
+            {error && (
+              <Form.Item>
+                <Alert message={error} type="error" showIcon />
+              </Form.Item>
+            )}
+            {success && (
+              <Form.Item>
+                <Alert message={success} type="success" showIcon />
+              </Form.Item>
+            )}
 
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="newPassword" 
-                    name="newPassword" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••" 
-                    className="pl-10 pr-10 h-11"
-                    required 
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-              </div>
+            <Form.Item
+              label="6-Digit OTP"
+              name="otp"
+              rules={[{ required: true, message: 'Please enter the 6-digit OTP!' }]}
+            >
+              <Input 
+                placeholder="123456" 
+                maxLength={6}
+                style={{ textAlign: 'center', letterSpacing: '8px', fontWeight: 600, fontSize: '18px' }}
+              />
+            </Form.Item>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="confirmPassword" 
-                    name="confirmPassword" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••" 
-                    className="pl-10 pr-10 h-11"
-                    required 
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full h-11 text-base font-semibold shadow-md" type="submit" disabled={loading}>
-                {loading ? "Resetting..." : "Reset Password"}
+            <Form.Item
+              label="New Password"
+              name="newPassword"
+              rules={[{ required: true, message: 'Please enter your new password!' }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="site-form-item-icon text-gray-400" />}
+                placeholder="••••••••"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Confirm Password"
+              name="confirmPassword"
+              rules={[
+                { required: true, message: 'Please confirm your password!' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('newPassword') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('The two passwords that you entered do not match!'));
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="site-form-item-icon text-gray-400" />}
+                placeholder="••••••••"
+              />
+            </Form.Item>
+
+            <Form.Item style={{ marginTop: 32, marginBottom: 0 }}>
+              <Button type="primary" htmlType="submit" style={{ width: '100%', fontWeight: 600, height: 44 }} loading={loading}>
+                Reset Password
               </Button>
-            </CardFooter>
-          </form>
+            </Form.Item>
+          </Form>
         )}
       </Card>
     </div>

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { SessionProvider, useSession } from "next-auth/react";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, theme, App } from "antd";
 import { InactivityTracker } from "./InactivityTracker";
 
 function AppConfigurator({ children }: { children: React.ReactNode }) {
@@ -35,7 +35,7 @@ function AppConfigurator({ children }: { children: React.ReactNode }) {
           algorithm: theme.defaultAlgorithm,
         }}
       >
-        {children}
+        <App>{children}</App>
       </ConfigProvider>
     </>
   );

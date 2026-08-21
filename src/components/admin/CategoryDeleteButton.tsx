@@ -4,18 +4,21 @@ import { useTransition } from "react";
 import { deleteSystemCategory } from "@/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
 export function CategoryDeleteButton({ categoryId }: { categoryId: string }) {
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   function handleDelete() {
     if (confirm("Are you sure you want to delete this master category?")) {
       startTransition(async () => {
         try {
           await deleteSystemCategory(categoryId);
+          toast.success("Category deleted successfully.");
         } catch (error) {
           console.error("Failed to delete category", error);
-          alert("Failed to delete category.");
+          toast.error("Failed to delete category.");
         }
       });
     }

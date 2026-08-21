@@ -4,18 +4,21 @@ import { useTransition } from "react";
 import { deleteUser } from "@/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
 export function UserDeleteButton({ userId }: { userId: string }) {
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   function handleDelete() {
     if (confirm("Are you sure you want to delete this user? This will delete all their data permanently.")) {
       startTransition(async () => {
         try {
           await deleteUser(userId);
+          toast.success("User deleted successfully.");
         } catch (error) {
           console.error("Failed to delete user", error);
-          alert("Failed to delete user.");
+          toast.error("Failed to delete user.");
         }
       });
     }

@@ -10,6 +10,7 @@ import { Globe, Search, Navigation, Check, X, Plus, Minus, RotateCcw } from "luc
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/useToast";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -62,6 +63,7 @@ interface AdvancedTimezonePickerProps {
 }
 
 export function AdvancedTimezonePicker({ initialTimezone, onSave, onCancel, isSaving }: AdvancedTimezonePickerProps) {
+  const { toast } = useToast();
   const [selectedTz, setSelectedTz] = useState<string>(initialTimezone);
   const [searchQuery, setSearchQuery] = useState("");
   const [position, setPosition] = useState({ coordinates: [0, 0], zoom: 1 });
@@ -143,10 +145,10 @@ export function AdvancedTimezonePicker({ initialTimezone, onSave, onCancel, isSa
         } catch (e) {}
 
       }, (err) => {
-        alert("Could not detect location: " + err.message);
+        toast.error("Could not detect location: " + err.message);
       });
     } else {
-      alert("Geolocation is not supported by your browser.");
+      toast.warning("Geolocation is not supported by your browser.");
     }
   };
 

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createPerson } from "@/actions/person";
 import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -20,6 +21,7 @@ const formSchema = z.object({
 
 export function PersonForm() {
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -41,7 +43,7 @@ export function PersonForm() {
 
   const handleImportContact = async () => {
     if (typeof navigator === 'undefined' || !('contacts' in navigator) || !('ContactsManager' in window)) {
-      alert("The Contact Picker is only supported on mobile devices (like Chrome on Android or Safari on iOS).");
+      toast.warning("The Contact Picker is only supported on mobile devices (like Chrome on Android or Safari on iOS).");
       return;
     }
 

@@ -8,10 +8,12 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AdvancedTimezonePicker } from "./AdvancedTimezonePicker";
 import { Globe } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
 export function TimezonePicker({ initialTimezone }: { initialTimezone: string }) {
   const { update } = useSession();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [selectedTimezone, setSelectedTimezone] = useState<string>(initialTimezone);
   const [isSaving, setIsSaving] = useState(false);
@@ -28,9 +30,9 @@ export function TimezonePicker({ initialTimezone }: { initialTimezone: string })
       setIsOpen(false);
       router.refresh();
       
-      alert("Timezone updated successfully!");
+      toast.success("Timezone updated successfully!");
     } catch {
-      alert("Failed to update timezone.");
+      toast.error("Failed to update timezone.");
     } finally {
       setIsSaving(false);
     }

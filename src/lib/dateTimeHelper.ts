@@ -22,9 +22,9 @@ export function formatDateString(date: string | Date, formatStr: string): string
 }
 
 /**
- * Parses a date string or Date object into a native Date object.
+ * Parses a date string, timestamp, or Date object into a native Date object.
  */
-export function parseToDate(date: string | Date): Date {
+export function parseToDate(date: string | Date | number): Date {
   return dayjs(date).toDate();
 }
 

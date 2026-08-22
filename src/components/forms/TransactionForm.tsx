@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getCurrentFormatted } from "@/lib/dateTimeHelper";
+import { getCurrentFormatted, parseToDate, formatDateString } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -74,7 +74,7 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
       categoryId: transaction?.categoryId?._id || transaction?.categoryId || "",
       personId: transaction?.personId?._id || transaction?.personId || "",
       note: transaction?.note || "",
-      date: transaction?.date ? new Date(transaction.date).toISOString().slice(0, 16) : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
+      date: transaction?.date ? formatDateString(transaction.date, "YYYY-MM-DDTHH:mm") : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
     },
   });
 
@@ -104,6 +104,7 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
         if (maxAmount > 0) {
           form.setValue("amount", formatIndianNumber(maxAmount));
           form.setValue("note", "Scanned from receipt");
+          form.setValue("date", getCurrentFormatted("YYYY-MM-DDTHH:mm"));
         }
       }
 

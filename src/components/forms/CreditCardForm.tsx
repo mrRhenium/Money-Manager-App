@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getCurrentFormatted, parseToDate } from "@/lib/dateTimeHelper";
+import { getCurrentFormatted, formatDateString, parseToDate } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -49,8 +49,8 @@ export function CreditCardForm({ card }: { card?: any }) {
       last4Digits: card?.last4Digits ? String(card.last4Digits) : "",
       cardholderName: card?.cardholderName ? String(card.cardholderName) : "",
       creditLimit: card?.creditLimit ? formatIndianNumber(card.creditLimit) : "",
-      startingDate: card?.startingDate ? new Date(card.startingDate).toISOString().slice(0, 16) : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
-      expiryDate: card?.expiryDate ? new Date(card.expiryDate).toISOString().slice(0, 7) : "",
+      startingDate: card?.startingDate ? formatDateString(card.startingDate, "YYYY-MM-DDTHH:mm") : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
+      expiryDate: card?.expiryDate ? formatDateString(card.expiryDate, "YYYY-MM") : "",
       billingCycleStartDay: card?.billingCycleStartDay || 1,
       billingCycleEndDay: card?.billingCycleEndDay || 30,
       paymentDueDay: card?.paymentDueDay || 15,

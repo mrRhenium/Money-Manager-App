@@ -26,7 +26,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/helpers";
-import { isSameMonthAndYear, getCurrentFormatted } from "@/lib/dateTimeHelper";
+import { isSameMonthAndYear, getCurrentDate, parseToDate, getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
 import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
 
   // Calculate current month's income and expenses
   const currentMonthTxns = transactions.filter((t: any) => {
-    return isSameMonthAndYear(t.date, new Date());
+    return isSameMonthAndYear(t.date, getCurrentDate());
   });
 
   const monthlyIncome = currentMonthTxns
@@ -104,14 +104,14 @@ export default async function DashboardPage() {
   const totalWeOwe = people.filter((p: any) => p.netBalance < 0).reduce((acc: number, p: any) => acc + Math.abs(p.netBalance), 0);
 
   const upcomingDues: any[] = [];
-  const now = new Date();
-  const next30Days = new Date();
+  const now = getCurrentDate();
+  const next30Days = getCurrentDate();
   next30Days.setDate(now.getDate() + 30);
 
   // Parse credit cards
   cards.forEach((c: any) => {
     if (c.currentOutstanding > 0 && c.dueDate) {
-      let dd = new Date(c.dueDate);
+      let dd = parseToDate(c.dueDate);
       if (dd.getMonth() < now.getMonth() && dd.getFullYear() <= now.getFullYear()) {
         dd.setMonth(now.getMonth());
       }
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
   // Parse investments (SIPs)
   investments.forEach((inv: any) => {
     if (inv.status === 'active' && inv.frequency === 'Monthly' && inv.startDate) {
-      let nextDue = new Date(inv.startDate);
+      let nextDue = parseToDate(inv.startDate);
       nextDue.setMonth(now.getMonth());
       nextDue.setFullYear(now.getFullYear());
       if (nextDue < now) nextDue.setMonth(now.getMonth() + 1);
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
   // Parse insurance policies
   policies.forEach((pol: any) => {
     if (pol.status === 'active' && pol.renewalDate) {
-      let rd = new Date(pol.renewalDate);
+      let rd = parseToDate(pol.renewalDate);
       if (rd >= now && rd <= next30Days) {
         upcomingDues.push({ title: `${pol.policyName} Premium`, amount: pol.premiumAmount, dueDate: rd, type: 'insurance' });
       }
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
   // Parse active loans (EMIs)
   activeLoans.forEach((loan: any) => {
     if (loan.status === 'active' && loan.emiDate && loan.emiAmount > 0) {
-      let emiDate = new Date(now.getFullYear(), now.getMonth(), loan.emiDate);
+      let emiDate = parseToDate(`${now.getFullYear()}-${now.getMonth() + 1}-${loan.emiDate}`);
       if (emiDate < now) emiDate.setMonth(now.getMonth() + 1);
       
       if (emiDate <= next30Days) {

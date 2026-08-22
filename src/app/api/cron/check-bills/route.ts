@@ -7,6 +7,7 @@ import User from "@/models/User";
 import { sendPushNotification } from "@/actions/push";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
+import { getCurrentDate, parseToDate, getStartOfDay } from "@/lib/dateTimeHelper";
 
 // This route should ideally be protected by a cron secret in production
 export async function GET(request: Request) {
@@ -19,13 +20,12 @@ export async function GET(request: Request) {
     await dbConnect();
     
     // Find all active bills due in the next 3 days
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getStartOfDay();
     
     // Fetch live currency rates for backend conversion
     const rates = await fetchExchangeRates();
     
-    const threeDaysFromNow = new Date(today);
+    const threeDaysFromNow = getStartOfDay();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
 
     const bills = await RecurringBill.find({
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
 
     // 1. Process Bills
     for (const bill of bills) {
-      await sendDueNotification(bill.userId.toString(), bill.name, bill.amount, new Date(bill.nextDueDate), "subscription");
+      await sendDueNotification(bill.userId.toString(), bill.name, bill.amount, parseToDate(bill.nextDueDate), "subscription");
     }
 
     // 2. Process Insurance Policies
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
 
     for (const policy of policies) {
       if (!policy.renewalDate) continue;
-      await sendDueNotification(policy.userId.toString(), policy.policyName, policy.premiumAmount, new Date(policy.renewalDate), "premium");
+      await sendDueNotification(policy.userId.toString(), policy.policyName, policy.premiumAmount, parseToDate(policy.renewalDate), "premium");
     }
 
     // 3. Process Investments (SIPs)
@@ -89,8 +89,8 @@ export async function GET(request: Request) {
 
     for (const inv of investments) {
       if (inv.startDate) {
-        let nextDue = new Date(inv.startDate as string | Date);
-        const now = new Date();
+        let nextDue = parseToDate(inv.startDate as string | Date);
+        const now = getCurrentDate();
         nextDue.setMonth(now.getMonth());
         nextDue.setFullYear(now.getFullYear());
         if (nextDue < now) nextDue.setMonth(now.getMonth() + 1);

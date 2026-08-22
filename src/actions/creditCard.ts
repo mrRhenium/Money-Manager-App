@@ -7,7 +7,7 @@ import Transaction from "@/models/Transaction";
 import Account from "@/models/Account";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { getCurrentDate } from "@/lib/dateTimeHelper";
+import { calculateCreditCardDueDate, parseToDate, getCurrentDate } from "@/lib/dateTimeHelper";
 import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getCreditCards() {
@@ -198,8 +198,8 @@ export async function updateCreditCard(
   card.last4Digits = data.last4Digits;
   card.cardholderName = data.cardholderName;
   card.creditLimit = data.creditLimit;
-  card.startingDate = new Date(data.startingDate);
-  card.expiryDate = new Date(data.expiryDate);
+  card.startingDate = parseToDate(data.startingDate);
+  card.expiryDate = parseToDate(data.expiryDate);
   card.billingCycleStartDay = data.billingCycleStartDay;
   card.billingCycleEndDay = data.billingCycleEndDay;
   card.paymentDueDay = data.paymentDueDay;

@@ -16,6 +16,7 @@ import { Plus, TrendingUp, PenLine, Landmark, AlertCircle } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { getCurrentFormatted, formatDateString, parseToDate } from "@/lib/dateTimeHelper";
 import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
@@ -55,7 +56,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
       schemeCode: investment?.schemeCode || "",
       ticker: investment?.ticker || "",
       autoPriceUpdateEnabled: investment?.autoPriceUpdateEnabled ?? true,
-      startDate: investment?.startDate ? new Date(investment.startDate).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+      startDate: investment?.startDate ? formatDateString(investment.startDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
       frequency: investment?.frequency || "OneTime",
       linkedAccountId: investment?.linkedAccountId || undefined,
     },
@@ -100,7 +101,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
         investedAmount: parseIndianNumber(values.investedAmount),
         currentValue: parseIndianNumber(values.currentValue),
         units: values.units ? parseFloat(values.units) : undefined,
-        startDate: new Date(values.startDate),
+        startDate: parseToDate(values.startDate),
         currency,
         color,
         icon,

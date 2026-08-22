@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { createTransaction, confirmTransaction } from "@/actions/transaction";
+import { getCurrentDate } from "@/lib/dateTimeHelper";
 import { getCategories } from "@/actions/category";
 import { getAccounts } from "@/actions/account";
 import { getPeople, savePersonVpa } from "@/actions/person";
@@ -254,7 +255,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       const txn = await createTransaction({
         type: "expense",
         amount: parsedAmount,
-        date: new Date().toISOString(),
+        date: getCurrentDate().toISOString(),
         accountId,
         paymentMode: "bank", // standard UPI goes through bank account
         categoryId,

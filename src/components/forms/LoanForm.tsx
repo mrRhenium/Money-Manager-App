@@ -9,7 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { Plus, Landmark, PenLine } from "lucide-react";
+import { PenLine, Plus, Briefcase, Landmark, HandCoins, Activity, CalendarDays, Percent, AlignLeft } from "lucide-react";
+import { getCurrentFormatted, formatDateString } from "@/lib/dateTimeHelper";
 import { upsertLoan } from "@/actions/loan";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 import { ColorPicker, IconPicker } from "@/components/ui/IconColorPicker";
@@ -52,7 +53,7 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
       totalAmount: loan?.totalAmount ? formatIndianNumber(loan.totalAmount) : "",
       emiAmount: loan?.emiAmount ? formatIndianNumber(loan.emiAmount) : "",
       emiDate: loan?.emiDate ? loan.emiDate.toString() : "1",
-      startDate: loan?.startDate ? new Date(loan.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      startDate: loan?.startDate ? formatDateString(loan.startDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
       tenureMonths: loan?.tenureMonths ? loan.tenureMonths.toString() : "12",
       linkedAccountId: loan?.linkedAccountId?._id || loan?.linkedAccountId || "",
     },

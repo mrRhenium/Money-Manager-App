@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Target, Plus, PenLine } from "lucide-react";
+import { Plus, Target, PenLine } from "lucide-react";
+import { formatDateString, parseToDate } from "@/lib/dateTimeHelper";
 import { createGoal, updateGoal } from "@/actions/goal";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -52,7 +53,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void
     defaultValues: {
       name: goal?.name || "",
       targetAmount: goal?.targetAmount ? formatIndianNumber(goal.targetAmount) : "",
-      deadline: goal?.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : "",
+      deadline: goal?.deadline ? formatDateString(goal.deadline, "YYYY-MM-DD") : "",
       color: goal?.color || "#3b82f6",
       icon: goal?.icon || "Target",
     },

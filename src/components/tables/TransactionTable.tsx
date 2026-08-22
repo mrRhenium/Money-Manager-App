@@ -7,6 +7,7 @@ import { TransactionForm } from "../forms/TransactionForm";
 import { deleteTransaction } from "@/actions/transaction";
 import { Trash } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -39,7 +40,7 @@ export function TransactionTable({
       dataIndex: "date",
       key: "date",
       render: (date: string) => <span className="whitespace-nowrap">{formatDate(date, "standard", userTimezone)}</span>,
-      sorter: (a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sorter: (a: any, b: any) => parseToDate(a.date).getTime() - parseToDate(b.date).getTime(),
       defaultSortOrder: 'descend' as const,
     },
     {

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createInsurancePolicy, updateInsurancePolicy } from "@/actions/insurance";
 import { Plus, Shield, PenLine, Landmark, Calendar, Activity } from "lucide-react";
+import { getCurrentFormatted, formatDateString, parseToDate } from "@/lib/dateTimeHelper";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
@@ -45,9 +46,9 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
       coverageAmount: policy?.coverageAmount ? policy.coverageAmount.toString() : "",
       premiumAmount: policy?.premiumAmount ? policy.premiumAmount.toString() : "",
       premiumFrequency: policy?.premiumFrequency || "Yearly",
-      startDate: policy?.startDate ? new Date(policy.startDate).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
-      endDate: policy?.endDate ? new Date(policy.endDate).toISOString().slice(0,10) : undefined,
-      renewalDate: policy?.renewalDate ? new Date(policy.renewalDate).toISOString().slice(0,10) : undefined,
+      startDate: policy?.startDate ? formatDateString(policy.startDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
+      endDate: policy?.endDate ? formatDateString(policy.endDate, "YYYY-MM-DD") : undefined,
+      renewalDate: policy?.renewalDate ? formatDateString(policy.renewalDate, "YYYY-MM-DD") : undefined,
       linkedAccountId: policy?.linkedAccountId || undefined,
     },
   });
@@ -58,9 +59,9 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
         ...values,
         coverageAmount: parseIndianNumber(values.coverageAmount),
         premiumAmount: parseIndianNumber(values.premiumAmount),
-        startDate: new Date(values.startDate),
-        endDate: values.endDate ? new Date(values.endDate) : undefined,
-        renewalDate: values.renewalDate ? new Date(values.renewalDate) : undefined,
+        startDate: parseToDate(values.startDate),
+        endDate: values.endDate ? parseToDate(values.endDate) : undefined,
+        renewalDate: values.renewalDate ? parseToDate(values.renewalDate) : undefined,
         currency,
         color,
         icon,

@@ -5,6 +5,7 @@ import InvestmentValueHistory from "@/models/InvestmentValueHistory";
 import MutualFundScheme from "@/models/MutualFundScheme";
 import StockSymbol from "@/models/StockSymbol";
 import { syncActiveStocks, syncActiveMutualFunds } from "@/lib/investmentFetcher";
+import { getCurrentDate } from "@/lib/dateTimeHelper";
 
 // This route should ideally be protected by a cron secret in production
 export async function GET(request: Request) {
@@ -79,14 +80,14 @@ export async function GET(request: Request) {
           inv.currentValue = currentValue;
           inv.absoluteGain = absoluteGain;
           inv.percentGain = percentGain;
-          inv.lastAutoUpdatedAt = new Date();
+          inv.lastAutoUpdatedAt = getCurrentDate();
           
           await inv.save();
 
           if (valueChanged) {
             await InvestmentValueHistory.create({
               investmentId: inv._id,
-              date: new Date(),
+              date: getCurrentDate(),
               value: currentValue,
               note: "Auto-price sync"
             });

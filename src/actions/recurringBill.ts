@@ -3,6 +3,7 @@
 import dbConnect from "@/lib/db";
 import RecurringBill from "@/models/RecurringBill";
 import { auth } from "@/lib/auth";
+import { parseToDate } from "@/lib/dateTimeHelper";
 import { revalidatePath } from "next/cache";
 
 export async function getRecurringBills() {
@@ -37,7 +38,7 @@ export async function createRecurringBill(data: {
   const bill = await RecurringBill.create({
     ...data,
     userId: session.user.id,
-    nextDueDate: new Date(data.nextDueDate),
+    nextDueDate: parseToDate(data.nextDueDate),
   });
 
   revalidatePath("/subscriptions");
@@ -51,7 +52,7 @@ export async function updateRecurringBill(id: string, data: Partial<any>) {
   await dbConnect();
 
   if (data.nextDueDate) {
-    data.nextDueDate = new Date(data.nextDueDate);
+    data.nextDueDate = parseToDate(data.nextDueDate);
   }
 
   const bill = await RecurringBill.findOneAndUpdate(

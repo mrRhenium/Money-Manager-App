@@ -8,6 +8,7 @@ import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { parseToDate } from "@/lib/dateTimeHelper";
 
 dayjs.extend(relativeTime);
 
@@ -23,7 +24,7 @@ export default async function InvestmentsPage() {
   const returnsPercentage = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
 
   const latestSync = investments
-    .map((i: any) => i.lastAutoUpdatedAt ? new Date(i.lastAutoUpdatedAt).getTime() : 0)
+    .map((i: any) => i.lastAutoUpdatedAt ? parseToDate(i.lastAutoUpdatedAt).getTime() : 0)
     .sort((a: number, b: number) => b - a)[0];
 
   // Group by category

@@ -1,4 +1,5 @@
 import yahooFinance from "yahoo-finance2";
+import { getCurrentDate, parseToDate } from "@/lib/dateTimeHelper";
 import MutualFundScheme from "@/models/MutualFundScheme";
 import StockSymbol from "@/models/StockSymbol";
 import dbConnect from "@/lib/db";
@@ -29,7 +30,7 @@ export async function fetchMutualFundNAV(schemeCode: string): Promise<{ nav: num
     
     // Parse DD-MM-YYYY to Date
     const [day, month, year] = latestEntry.date.split("-");
-    const navDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    const navDate = parseToDate(`${year}-${month}-${day}`);
 
     return { nav, date: navDate };
   } catch (error) {
@@ -50,7 +51,7 @@ export async function fetchStockPrice(ticker: string): Promise<{ price: number; 
     }
 
     const price = result.regularMarketPrice;
-    const date = result.regularMarketTime || new Date();
+    const date = result.regularMarketTime || getCurrentDate();
 
     return { price, date };
   } catch (error) {
@@ -79,7 +80,7 @@ export async function syncActiveStocks(tickers: string[]) {
             $set: {
               latestPrice: data.price,
               latestPriceDate: data.date,
-              lastFetchedAt: new Date(),
+              lastFetchedAt: getCurrentDate(),
               lastFetchStatus: "success"
             },
             $setOnInsert: {
@@ -93,7 +94,7 @@ export async function syncActiveStocks(tickers: string[]) {
       } else {
         await StockSymbol.findOneAndUpdate(
           { ticker },
-          { $set: { lastFetchedAt: new Date(), lastFetchStatus: "failed" },
+          { $set: { lastFetchedAt: getCurrentDate(), lastFetchStatus: "failed" },
             $setOnInsert: { companyName: ticker, exchange: "Other" }
           },
           { upsert: true }
@@ -103,7 +104,7 @@ export async function syncActiveStocks(tickers: string[]) {
     } catch (err) {
       await StockSymbol.findOneAndUpdate(
         { ticker },
-        { $set: { lastFetchedAt: new Date(), lastFetchStatus: "failed" },
+        { $set: { lastFetchedAt: getCurrentDate(), lastFetchStatus: "failed" },
           $setOnInsert: { companyName: ticker, exchange: "Other" }
         },
         { upsert: true }
@@ -135,7 +136,7 @@ export async function syncActiveMutualFunds(schemeCodes: string[]) {
             $set: {
               latestNAV: data.nav,
               latestNAVDate: data.date,
-              lastFetchedAt: new Date(),
+              lastFetchedAt: getCurrentDate(),
               lastFetchStatus: "success"
             },
             $setOnInsert: { schemeName: `Scheme ${code}` }
@@ -146,7 +147,7 @@ export async function syncActiveMutualFunds(schemeCodes: string[]) {
       } else {
         await MutualFundScheme.findOneAndUpdate(
           { schemeCode: code },
-          { $set: { lastFetchedAt: new Date(), lastFetchStatus: "failed" },
+          { $set: { lastFetchedAt: getCurrentDate(), lastFetchStatus: "failed" },
             $setOnInsert: { schemeName: `Scheme ${code}` }
           },
           { upsert: true }
@@ -156,7 +157,7 @@ export async function syncActiveMutualFunds(schemeCodes: string[]) {
     } catch (err) {
       await MutualFundScheme.findOneAndUpdate(
         { schemeCode: code },
-        { $set: { lastFetchedAt: new Date(), lastFetchStatus: "failed" },
+        { $set: { lastFetchedAt: getCurrentDate(), lastFetchStatus: "failed" },
           $setOnInsert: { schemeName: `Scheme ${code}` }
         },
         { upsert: true }

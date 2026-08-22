@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDateString } from "@/lib/dateTimeHelper";
+import { formatDateString, parseToDate, getCurrentDate } from "@/lib/dateTimeHelper";
 import { Button } from "@/components/ui/button";
 import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2, CalendarDays } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -25,7 +25,7 @@ export function UpcomingDuesWidget({ dues }: { dues: any[] }) {
       <CardContent className="pt-4 p-0">
         <div className="divide-y divide-border/50">
           {dues.map((due: any, idx: number) => {
-            const isOverdue = new Date(due.dueDate) < new Date();
+            const isOverdue = parseToDate(due.dueDate) < getCurrentDate();
 
             let Icon = Calendar;
             let iconColor = "text-muted-foreground";

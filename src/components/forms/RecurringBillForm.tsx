@@ -12,7 +12,7 @@ import { Select } from "antd";
 import { createRecurringBill, updateRecurringBill } from "@/actions/recurringBill";
 import { Plus, PenLine, Repeat, Coins, Calendar, Wallet, Smartphone, Folder } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
-import { getCurrentFormatted } from "@/lib/dateTimeHelper";
+import { getCurrentFormatted, formatDateString } from "@/lib/dateTimeHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 
@@ -49,7 +49,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
       name: bill?.name || "",
       amount: bill?.amount ? formatIndianNumber(bill.amount) : "",
       frequency: bill?.frequency || "monthly",
-      nextDueDate: bill?.nextDueDate ? new Date(bill.nextDueDate).toISOString().slice(0, 10) : getCurrentFormatted("YYYY-MM-DD"),
+      nextDueDate: bill?.nextDueDate ? formatDateString(bill.nextDueDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
       autoPayPlatform: bill?.autoPayPlatform || "",
       categoryId: bill?.categoryId?._id || bill?.categoryId || "",
       accountId: bill?.accountId?._id || bill?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),

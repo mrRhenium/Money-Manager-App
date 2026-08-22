@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "antd";
 import { bulkInsertTransactions } from "@/actions/bulkImport";
 import { useToast } from "@/hooks/useToast";
+import { parseToDate } from "@/lib/dateTimeHelper";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/currencyFormatter";
@@ -151,11 +152,11 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
       // Format date (XLSX sometimes parses dates as numbers)
       let dateStr = row[dateCol];
       if (typeof dateStr === 'number') {
-        const dateObj = new Date((dateStr - (25567 + 1)) * 86400 * 1000);
+        const dateObj = parseToDate((dateStr - (25567 + 1)) * 86400 * 1000);
         dateStr = dateObj.toISOString().split('T')[0];
       } else if (typeof dateStr === 'string') {
         // basic conversion attempt
-        const d = new Date(dateStr);
+        const d = parseToDate(dateStr);
         if (!isNaN(d.getTime())) {
           dateStr = d.toISOString().split('T')[0];
         }

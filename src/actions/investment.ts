@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Investment from "@/models/Investment";
 import InvestmentValueHistory from "@/models/InvestmentValueHistory";
 import { auth } from "@/lib/auth";
+import { getCurrentDate } from "@/lib/dateTimeHelper";
 import { revalidatePath } from "next/cache";
 
 export async function getInvestments() {
@@ -52,7 +53,7 @@ export async function createInvestment(data: any) {
   // Log initial value
   await InvestmentValueHistory.create({
     investmentId: investment._id,
-    date: investment.startDate || new Date(),
+    date: investment.startDate || getCurrentDate(),
     value: investment.currentValue,
     note: "Initial Investment"
   });
@@ -97,7 +98,7 @@ export async function updateInvestmentValue(id: string, newValue: number, note?:
   if (investment) {
     await InvestmentValueHistory.create({
       investmentId: id,
-      date: new Date(),
+      date: getCurrentDate(),
       value: newValue,
       note: note || "Manual value update"
     });

@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Table, Button, Modal, Badge, Select } from "antd";
 import { Input } from "@/components/ui/input";
+import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatDate } from "@/lib/helpers";
 import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search, Filter } from "lucide-react";
 
@@ -66,7 +67,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => <span className="whitespace-nowrap font-medium">{formatDate(date, "standard", userTimezone)}</span>,
-      sorter: (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      sorter: (a: any, b: any) => parseToDate(a.createdAt).getTime() - parseToDate(b.createdAt).getTime(),
       defaultSortOrder: 'descend' as const,
     },
     {

@@ -5,7 +5,7 @@ import Loan from "@/models/Loan";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { createTransaction } from "./transaction";
-import { getCurrentFormatted } from "@/lib/dateTimeHelper";
+import { getCurrentFormatted, getCurrentDate } from "@/lib/dateTimeHelper";
 
 export async function getLoans() {
   const session = await auth();
@@ -80,7 +80,7 @@ export async function payEMI(loanId: string, amountOverride?: number) {
   await createTransaction({
     type: loan.type === "taken" ? "expense" : "income",
     amount: actualPayment,
-    date: new Date().toISOString(),
+    date: getCurrentDate().toISOString(),
     accountId: loan.linkedAccountId?.toString(),
     note: `EMI Payment for ${loan.name}`,
     originalCurrency: loan.currency || "INR",

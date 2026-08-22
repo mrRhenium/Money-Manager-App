@@ -4,7 +4,7 @@ import webpush from "web-push";
 import CardStatement from "@/models/CardStatement";
 import CreditCard from "@/models/CreditCard";
 import User from "@/models/User";
-import { getRelativeDaysDifference, formatDateString } from "@/lib/dateTimeHelper";
+import { getCurrentDate, getRelativeDaysDifference, formatDateString } from "@/lib/dateTimeHelper";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       const dueDate = statement.dueDate;
       
       // Calculate diff in days
-      const daysUntilDue = getRelativeDaysDifference(dueDate, new Date());
+      const daysUntilDue = getRelativeDaysDifference(dueDate, getCurrentDate());
       const userCurrency = (user as any).currency || "INR";
       const rate = getConversionRate(userCurrency, rates);
       const amount = statement.totalAmount - statement.amountPaid;

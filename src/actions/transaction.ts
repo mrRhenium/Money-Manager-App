@@ -8,6 +8,7 @@ import CardStatement from "@/models/CardStatement";
 import User from "@/models/User";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 import { parseToDate, getStatementMonth, calculateCreditCardDueDate, getCurrentDate, getStartOfDay, getDaysDifference } from "@/lib/dateTimeHelper";
 import { logAuditEvent } from "@/actions/auditLog";
 
@@ -421,7 +422,7 @@ export async function updateTransaction(
   oldTxn.originalAmount = originalAmount;
   oldTxn.originalCurrency = currency;
   oldTxn.exchangeRate = exchangeRate;
-  oldTxn.date = new Date(data.date);
+  oldTxn.date = parseToDate(data.date);
   oldTxn.accountId = (data.accountId as any) || undefined;
   oldTxn.toAccountId = (data.toAccountId as any) || undefined;
   oldTxn.categoryId = (data.categoryId as any) || undefined;

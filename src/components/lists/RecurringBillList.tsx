@@ -11,7 +11,7 @@ import { RecurringBillForm } from "@/components/forms/RecurringBillForm";
 import { deleteRecurringBill } from "@/actions/recurringBill";
 import { useToast } from "@/hooks/useToast";
 import { Popconfirm } from "antd";
-import { formatDateString } from "@/lib/dateTimeHelper";
+import { formatDateString, parseToDate, getStartOfDay } from "@/lib/dateTimeHelper";
 
 interface RecurringBillListProps {
   bills: any[];
@@ -56,9 +56,11 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredBills.map((bill, index) => {
-          const dueDate = new Date(bill.nextDueDate);
-          const isOverdue = dueDate < new Date() && dueDate.toDateString() !== new Date().toDateString();
-          const isToday = dueDate.toDateString() === new Date().toDateString();
+          const dueDate = parseToDate(bill.nextDueDate);
+          const today = getStartOfDay();
+          const dueDay = getStartOfDay(dueDate);
+          const isOverdue = dueDay.getTime() < today.getTime();
+          const isToday = dueDay.getTime() === today.getTime();
 
           return (
             <div key={bill._id} className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">

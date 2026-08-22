@@ -3,7 +3,8 @@
 import { Table, Popconfirm } from "antd";
 import { Button } from "@/components/ui/button";
 import { deleteInvestment } from "@/actions/investment";
-import { Trash, Eye } from "lucide-react";
+import { Eye, Trash, RefreshCw } from "lucide-react";
+import { formatDateString } from "@/lib/dateTimeHelper";
 import Link from "next/link";
 import { InvestmentForm } from "../forms/InvestmentForm";
 import { formatDate } from "@/lib/helpers";
@@ -50,7 +51,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
         <div>
           <span className="font-medium">{format(amount)}</span>
           {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && (
-            <div className="text-[10px] text-muted-foreground" title={new Date(record.lastAutoUpdatedAt).toLocaleString()}>
+            <div className="text-[10px] text-muted-foreground" title={formatDateString(record.lastAutoUpdatedAt, "YYYY-MM-DD HH:mm")}>
               Auto-synced
             </div>
           )}

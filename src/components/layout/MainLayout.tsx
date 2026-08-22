@@ -9,8 +9,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, overflowY: 'auto', position: 'relative', paddingBottom: '64px' }}>
-        <div style={{ maxWidth: 1024, margin: '0 auto', padding: '24px' }}>
+      <main style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="pb-16 md:pb-0">
+        <div className="max-w-[1400px] mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
           {children}
         </div>
       </main>

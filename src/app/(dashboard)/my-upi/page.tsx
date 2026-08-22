@@ -62,7 +62,7 @@ function MyUpiContent() {
   const generatedUpiUrl = selectedUpiForQr ? `upi://pay?pa=${selectedUpiForQr}&pn=${encodeURIComponent(name || "User")}` : "";
 
   return (
-    <div className="flex-1 space-y-4 p-2 sm:p-4 md:p-8 pt-4 md:pt-6 md:max-w-4xl mx-auto w-full">
+    <div className="flex-1 space-y-4 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">

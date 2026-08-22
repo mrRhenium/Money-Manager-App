@@ -110,15 +110,11 @@ export default async function InvestmentsPage() {
         </div>
       )}
 
-      <div className="bg-card rounded-2xl shadow-sm border p-4 md:p-6">
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <PieChart className="w-5 h-5 text-primary" />
-          My Portfolio
-        </h2>
+      <div className="w-full">
         {investments.length > 0 ? (
           <InvestmentTable investments={investments} accounts={accounts} />
         ) : (
-          <div className="text-center p-12 border rounded-xl border-dashed">
+          <div className="text-center p-12 border rounded-xl border-dashed bg-card shadow-sm">
             <div className="mx-auto w-12 h-12 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
               <TrendingUp className="w-6 h-6 text-muted-foreground" />
             </div>

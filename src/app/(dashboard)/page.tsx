@@ -144,16 +144,16 @@ export default async function DashboardPage() {
       {/* Greeting Area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/10">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex items-center justify-center">
+          <Link href="/settings" className="w-14 h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex md:hidden items-center justify-center hover:opacity-80 transition-opacity">
             {session.user.image ? (
               <img src={session.user.image} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <span className="text-xl font-bold text-primary">{session.user.name?.charAt(0).toUpperCase() || "U"}</span>
             )}
-          </div>
+          </Link>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              Hello, {session.user.name?.split(" ")[0] || "User"} <Sparkles className="w-6 h-6 md:w-7 md:h-7 text-primary animate-pulse" />
+              Hello, {session.user.name?.split(" ")[0] || "User"}
             </h1>
             <p className="text-muted-foreground mt-1 text-sm md:text-base">
               Here is your financial overview for {getCurrentFormatted('MMMM YYYY')}.

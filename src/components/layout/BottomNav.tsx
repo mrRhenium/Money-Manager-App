@@ -28,7 +28,6 @@ export function BottomNav() {
     { href: "/people", icon: Users, label: "People" },
     { href: "/audit-logs", icon: History, label: "Audit Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
-    { href: "/my-upi", icon: QrCode, label: "My UPI" },
   ];
 
   return (

@@ -26,15 +26,17 @@ export function CreditCardList({ cards }: { cards: any[] }) {
           return (
             <List.Item>
               <Link href={`/credit-cards/${card._id}`} className="group relative block cursor-pointer transition-transform hover:-translate-y-1 h-full">
-                <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-white/20 text-white text-[10px] font-bold flex items-center justify-center z-10 backdrop-blur-sm">{index + 1}</div>
                 <div 
                   className="rounded-2xl p-6 text-white shadow-lg overflow-hidden h-56 flex flex-col justify-between"
                   style={{ background: `linear-gradient(135deg, ${card.color} 0%, #1a1a1a 150%)` }}
                 >
                   <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-lg opacity-90 truncate" title={card.bankName}>{card.bankName}</h3>
-                      <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
+                    <div className="flex items-start gap-2 min-w-0">
+                      <span className="text-white/70 font-bold shrink-0 text-sm mt-1">{index + 1}.</span>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-lg opacity-90 truncate" title={card.bankName}>{card.bankName}</h3>
+                        <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1 z-10" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <CreditCardForm card={card} />

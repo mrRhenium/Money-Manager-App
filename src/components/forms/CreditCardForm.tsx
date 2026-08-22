@@ -97,7 +97,7 @@ export function CreditCardForm({ card }: { card?: any }) {
           </Button>
         )
       } />
-      <DialogContent className="sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} className="sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CardIcon className="w-5 h-5 text-primary" />

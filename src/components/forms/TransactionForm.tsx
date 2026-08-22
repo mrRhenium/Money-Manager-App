@@ -140,7 +140,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
           </Button>
         )
       } />
-      <DialogContent className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <ReceiptText className="w-5 h-5" />

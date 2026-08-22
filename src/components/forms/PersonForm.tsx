@@ -15,7 +15,7 @@ import { useFieldArray } from "react-hook-form";
 import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser, PenLine, QrCode, Trash, Camera, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
-import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   relation: z.enum(["Friend", "Family", "Colleague", "Merchant", "Shopkeeper", "Other"]),
@@ -29,7 +29,6 @@ export function PersonForm({ person }: { person?: any }) {
   const [avatarUrl, setAvatarUrl] = useState<string>(person?.avatarUrl || "");
   const [isUploading, setIsUploading] = useState(false);
   const [color, setColor] = useState(person?.color || "#0ea5e9");
-  const [icon, setIcon] = useState(person?.icon || "Users");
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -60,7 +59,6 @@ export function PersonForm({ person }: { person?: any }) {
         vpas: values.vpas?.map(v => v.value).filter(Boolean) || [],
         avatarUrl,
         color,
-        icon,
       };
 
       if (person?._id) {
@@ -132,7 +130,7 @@ export function PersonForm({ person }: { person?: any }) {
           </Button>
         )
       } />
-      <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <UserPlus className="w-5 h-5" />
@@ -281,9 +279,8 @@ export function PersonForm({ person }: { person?: any }) {
               ))}
               {vpaFields.length === 0 && <p className="text-xs text-muted-foreground italic">No UPI VPAs added.</p>}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 pb-2 border-t">
+            <div className="pt-2 pb-2 border-t">
               <ColorPicker value={color} onChange={setColor} id="personColor" />
-              <IconPicker value={icon} onChange={setIcon} />
             </div>
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{person ? "Save Changes" : "Add Contact"}</Button>
           </form>

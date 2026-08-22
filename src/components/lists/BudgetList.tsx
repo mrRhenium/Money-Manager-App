@@ -26,11 +26,11 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
           const isOverBudget = budget.totalSpent > budget.amount;
           return (
             <List.Item>
-              <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 h-full justify-between group relative">
-                <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">{index + 1}</div>
+              <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 h-full justify-between group">
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
                       <div className="shrink-0">
                         <CategoryIcon name={budget.icon || budget.categoryId?.icon} color={budget.color || budget.categoryId?.color} className="w-4 h-4" />
                       </div>

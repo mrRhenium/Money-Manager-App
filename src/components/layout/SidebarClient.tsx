@@ -62,9 +62,13 @@ export function SidebarClient({ user }: { user: any }) {
           "flex items-center rounded-2xl transition-all duration-300",
           isCollapsed ? "justify-center p-2" : "justify-between bg-card/60 backdrop-blur-md border border-border/50 p-2 shadow-sm"
         )}>
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="min-w-[40px] h-[40px] rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center font-bold text-primary ring-2 ring-background shrink-0 shadow-sm">
-              {user?.name?.charAt(0) || "U"}
+          <Link href="/settings" className="flex items-center gap-3 overflow-hidden hover:opacity-80 transition-opacity cursor-pointer">
+            <div className="min-w-[40px] h-[40px] rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center font-bold text-primary ring-2 ring-background shrink-0 shadow-sm">
+              {user?.image ? (
+                <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user?.name?.charAt(0) || "U"
+              )}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden">
@@ -72,7 +76,7 @@ export function SidebarClient({ user }: { user: any }) {
                 <span className="text-xs font-medium text-muted-foreground mt-0.5 whitespace-nowrap">{user?.role === 'ADMIN' ? 'Admin' : 'Free Plan'}</span>
               </div>
             )}
-          </div>
+          </Link>
           {!isCollapsed && <ThemeToggle />}
         </div>
       </div>

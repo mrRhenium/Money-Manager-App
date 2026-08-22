@@ -86,7 +86,7 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
           </Button>
         )
       } />
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <TrendingUp className="w-5 h-5" />

@@ -83,7 +83,7 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
           </Button>
         )
       } />
-      <DialogContent className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Target className="w-5 h-5" />

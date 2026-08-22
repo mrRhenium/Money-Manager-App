@@ -1,29 +1,62 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+export type InvestmentType = "SIP" | "MutualFund" | "Stocks" | "FD" | "RD" | "PPF" | "EPF" | "NPS" | "Gold" | "Crypto" | "Bonds" | "RealEstate" | "Other";
+
 export interface IInvestment extends Document {
   userId: mongoose.Types.ObjectId;
-  type: "SIP" | "Stocks" | "FD" | "PPF" | "Gold" | "Crypto" | "Other";
+  investmentType: InvestmentType;
   name: string;
-  units?: number;
+  folioNumber?: string;
+  platform?: string;
   investedAmount: number;
   currentValue: number;
-  date: Date;
+  units?: number;
+  purchasePrice?: number;
+  currentPrice?: number;
+  startDate: Date;
+  maturityDate?: Date;
+  interestRate?: number;
+  maturityAmount?: number;
+  frequency: "OneTime" | "Monthly" | "Quarterly" | "Yearly";
+  linkedAccountId?: mongoose.Types.ObjectId;
+  autoDebitEnabled: boolean;
+  autoDebitDay?: number;
+  status: "active" | "matured" | "closed" | "sold";
+  riskCategory?: "Low" | "Medium" | "High";
+  notes?: string;
+  currency: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const InvestmentSchema: Schema<IInvestment> = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    type: {
+    investmentType: {
       type: String,
-      enum: ["SIP", "Stocks", "FD", "PPF", "Gold", "Crypto", "Other"],
+      enum: ["SIP", "MutualFund", "Stocks", "FD", "RD", "PPF", "EPF", "NPS", "Gold", "Crypto", "Bonds", "RealEstate", "Other"],
       required: true,
     },
     name: { type: String, required: true },
-    units: { type: Number },
+    folioNumber: { type: String },
+    platform: { type: String },
     investedAmount: { type: Number, required: true },
-    currentValue: { type: Number, required: true }, // For MVP, user manually updates this
-    date: { type: Date, required: true, default: Date.now },
+    currentValue: { type: Number, required: true },
+    units: { type: Number },
+    purchasePrice: { type: Number },
+    currentPrice: { type: Number },
+    startDate: { type: Date, required: true },
+    maturityDate: { type: Date },
+    interestRate: { type: Number },
+    maturityAmount: { type: Number },
+    frequency: { type: String, enum: ["OneTime", "Monthly", "Quarterly", "Yearly"], default: "OneTime" },
+    linkedAccountId: { type: Schema.Types.ObjectId, ref: "Account" },
+    autoDebitEnabled: { type: Boolean, default: false },
+    autoDebitDay: { type: Number },
+    status: { type: String, enum: ["active", "matured", "closed", "sold"], default: "active" },
+    riskCategory: { type: String, enum: ["Low", "Medium", "High"] },
+    notes: { type: String },
+    currency: { type: String, default: "INR" },
   },
   { timestamps: true }
 );

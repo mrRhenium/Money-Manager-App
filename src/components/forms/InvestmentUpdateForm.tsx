@@ -1,0 +1,46 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { updateInvestmentValue } from "@/actions/investment";
+import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
+
+export function InvestmentUpdateForm({ investmentId, currentValue }: { investmentId: string, currentValue: number }) {
+  const [val, setVal] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleUpdate = async () => {
+    if (!val) return;
+    const num = parseIndianNumber(val);
+    if (isNaN(num)) return;
+
+    setLoading(true);
+    try {
+      await updateInvestmentValue(investmentId, num);
+      toast.success("Value updated successfully");
+      setVal("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update value");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex gap-2">
+      <Input 
+        placeholder="New Value (₹)" 
+        value={val}
+        onChange={(e) => setVal(formatIndianNumber(e.target.value))}
+        className="flex-1"
+      />
+      <Button onClick={handleUpdate} disabled={loading || !val}>
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update"}
+      </Button>
+    </div>
+  );
+}

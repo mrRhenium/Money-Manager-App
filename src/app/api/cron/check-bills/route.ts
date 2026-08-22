@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import RecurringBill from "@/models/RecurringBill";
+import Investment from "@/models/Investment";
+import InsurancePolicy from "@/models/InsurancePolicy";
 import { sendPushNotification } from "@/actions/push";
 
 // This route should ideally be protected by a cron secret in production
@@ -30,9 +32,7 @@ export async function GET(request: Request) {
 
     let notificationsSent = 0;
 
-    for (const bill of bills) {
-      const dueDate = new Date(bill.nextDueDate);
-      
+    const sendDueNotification = async (userId: string, title: string, amount: number, dueDate: Date, entityType: string) => {
       let timeText = "soon";
       if (dueDate.toDateString() === today.toDateString()) {
         timeText = "today";
@@ -42,18 +42,55 @@ export async function GET(request: Request) {
         timeText = `on ${dueDate.toLocaleDateString()}`;
       }
 
-      const platformText = bill.autoPayPlatform ? ` on ${bill.autoPayPlatform}` : "";
-      
-      const title = "Upcoming Bill Reminder";
-      const body = `Your ${bill.name} subscription of ₹${bill.amount} is due ${timeText}${platformText}.`;
-
-      const result = await sendPushNotification(bill.userId.toString(), title, body);
+      const body = `Your ${title} ${entityType} of ₹${amount} is due ${timeText}.`;
+      const result = await sendPushNotification(userId.toString(), "Upcoming Payment Reminder", body);
       if (result.success) notificationsSent++;
+    };
+
+    // 1. Process Bills
+    for (const bill of bills) {
+      await sendDueNotification(bill.userId.toString(), bill.name, bill.amount, new Date(bill.nextDueDate), "subscription");
+    }
+
+    // 2. Process Insurance Policies
+    const policies = await InsurancePolicy.find({
+      status: 'active',
+      renewalDate: {
+        $gte: today,
+        $lte: threeDaysFromNow
+      }
+    });
+
+    for (const policy of policies) {
+      if (!policy.renewalDate) continue;
+      await sendDueNotification(policy.userId.toString(), policy.policyName, policy.premiumAmount, new Date(policy.renewalDate), "premium");
+    }
+
+    // 3. Process Investments (SIPs)
+    const investments = await Investment.find({
+      status: 'active',
+      frequency: 'Monthly'
+    });
+
+    for (const inv of investments) {
+      if (inv.startDate) {
+        let nextDue = new Date(inv.startDate as string | Date);
+        const now = new Date();
+        nextDue.setMonth(now.getMonth());
+        nextDue.setFullYear(now.getFullYear());
+        if (nextDue < now) nextDue.setMonth(now.getMonth() + 1);
+        
+        if (nextDue >= today && nextDue <= threeDaysFromNow) {
+          await sendDueNotification(inv.userId.toString(), inv.name, inv.investedAmount, nextDue, "SIP");
+        }
+      }
     }
 
     return NextResponse.json({ 
       success: true, 
-      billsFound: bills.length, 
+      billsFound: bills.length,
+      policiesFound: policies.length,
+      sipsFound: investments.length,
       notificationsSent 
     });
   } catch (error: any) {

@@ -18,6 +18,7 @@ import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calenda
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 const formSchema = z.object({
   type: z.enum(["income", "expense", "lend", "borrow", "settlement"]),
@@ -184,7 +185,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Row 1: Type and Category / People */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="type"
@@ -283,31 +284,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
             )}
 
             {/* Row 2: Currency and Amount */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="originalCurrency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Coins className="w-4 h-4 text-muted-foreground" /> Currency</FormLabel>
-                    <FormControl>
-                      <Select
-                        showSearch
-                        className="w-full h-10"
-                        optionFilterProp="label"
-                        options={[
-                          { label: 'INR', value: 'INR' },
-                          { label: 'USD', value: 'USD' },
-                          { label: 'EUR', value: 'EUR' },
-                          { label: 'GBP', value: 'GBP' },
-                        ]}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name="amount"
@@ -315,9 +292,10 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="text" 
+                      <CurrencyInput
                         placeholder="e.g. 1,50,000"
+                        currency={form.watch("originalCurrency") || "INR"}
+                        onCurrencyChange={(val) => form.setValue("originalCurrency", val)}
                         {...field}
                         onChange={(e) => {
                           field.onChange(formatIndianNumber(e.target.value));
@@ -331,7 +309,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
             </div>
 
             {/* Row 3: Account and Date */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="accountId"

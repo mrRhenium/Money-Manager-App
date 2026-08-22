@@ -6,6 +6,9 @@ export interface IAccount extends Document {
   type: "bank" | "cash" | "card" | "wallet";
   balance: number;
   creditLimit?: number; // Only applicable for cards
+  color?: string;
+  icon?: string;
+  isLiability: boolean;
   createdAt: Date;
 }
 
@@ -20,6 +23,9 @@ const AccountSchema: Schema<IAccount> = new Schema(
     },
     balance: { type: Number, default: 0 },
     creditLimit: { type: Number },
+    color: { type: String },
+    icon: { type: String },
+    isLiability: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

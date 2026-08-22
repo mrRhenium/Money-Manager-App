@@ -549,7 +549,9 @@ function SettingsContent() {
           router.push(window.location.pathname, { scroll: false });
         }
       }}>
-        <DialogContent className="w-[95vw] max-w-lg p-5 rounded-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent 
+          className="w-[95vw] max-w-lg p-5 rounded-2xl max-h-[85vh] overflow-y-auto"
+        >
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground">
               {activeTab === "profile" && "Profile Information"}

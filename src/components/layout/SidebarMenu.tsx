@@ -16,7 +16,7 @@ import {
   TrendingUp,
   History,
   Repeat,
-  QrCode
+  Umbrella
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +32,10 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
     { href: "/budgets", icon: PieChart, label: "Budgets" },
     { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
     { href: "/investments", icon: TrendingUp, label: "Investments" },
+    { href: "/insurance", icon: Umbrella, label: "Insurance" },
     { href: "/people", icon: Users, label: "People" },
     { href: "/audit-logs", icon: History, label: "Audit Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
-    { href: "/my-upi", icon: QrCode, label: "My UPI & QR" },
   ];
 
   if (role === "ADMIN") {

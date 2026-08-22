@@ -17,7 +17,8 @@ import {
   ArrowDownLeft,
   ArrowRightLeft,
   TrendingUp,
-  Circle
+  Circle,
+  QrCode
 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
@@ -29,6 +30,8 @@ import { isSameMonthAndYear, getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
 import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+
+import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
 
 function getFallbackTransactionIcon(type: string) {
   const className = "w-5 h-5 text-white";
@@ -45,16 +48,20 @@ export default async function DashboardPage() {
   
   const userTimezone = (session.user as any).timezone || "UTC";
 
-  const [accounts, transactions, people, cards] = await Promise.all([
+  const [accounts, transactions, people, cards, investments, policies] = await Promise.all([
     getAccounts(),
     getTransactions(100), // Get recent 100 for dashboard
     getPeople(),
     getCreditCards(),
+    import("@/actions/investment").then(m => m.getInvestments()),
+    import("@/actions/insurance").then(m => m.getInsurancePolicies())
   ]);
 
   const totalOutstanding = cards.reduce((sum: number, c: any) => sum + c.currentOutstanding, 0);
 
-  const totalBalance = accounts.reduce((acc: number, curr: any) => acc + curr.balance, 0);
+  const totalBalance = accounts.reduce((acc: number, curr: any) => {
+    return curr.isLiability ? acc - curr.balance : acc + curr.balance;
+  }, 0);
 
   // Calculate current month's income and expenses
   const currentMonthTxns = transactions.filter((t: any) => {
@@ -89,6 +96,49 @@ export default async function DashboardPage() {
   const totalOweUs = people.filter((p: any) => p.netBalance > 0).reduce((acc: number, p: any) => acc + p.netBalance, 0);
   const totalWeOwe = people.filter((p: any) => p.netBalance < 0).reduce((acc: number, p: any) => acc + Math.abs(p.netBalance), 0);
 
+  const upcomingDues: any[] = [];
+  const now = new Date();
+  const next30Days = new Date();
+  next30Days.setDate(now.getDate() + 30);
+
+  // Parse credit cards
+  cards.forEach((c: any) => {
+    if (c.currentOutstanding > 0 && c.dueDate) {
+      let dd = new Date(c.dueDate);
+      if (dd.getMonth() < now.getMonth() && dd.getFullYear() <= now.getFullYear()) {
+        dd.setMonth(now.getMonth());
+      }
+      if (dd <= next30Days) {
+        upcomingDues.push({ title: `${c.bankName} CC Bill`, amount: c.currentOutstanding, dueDate: dd, type: 'credit_card' });
+      }
+    }
+  });
+
+  // Parse investments (SIPs)
+  investments.forEach((inv: any) => {
+    if (inv.status === 'active' && inv.frequency === 'Monthly' && inv.startDate) {
+      let nextDue = new Date(inv.startDate);
+      nextDue.setMonth(now.getMonth());
+      nextDue.setFullYear(now.getFullYear());
+      if (nextDue < now) nextDue.setMonth(now.getMonth() + 1);
+      if (nextDue <= next30Days) {
+        upcomingDues.push({ title: `${inv.name} SIP`, amount: inv.investedAmount, dueDate: nextDue, type: 'sip' });
+      }
+    }
+  });
+
+  // Parse insurance policies
+  policies.forEach((pol: any) => {
+    if (pol.status === 'active' && pol.renewalDate) {
+      let rd = new Date(pol.renewalDate);
+      if (rd >= now && rd <= next30Days) {
+        upcomingDues.push({ title: `${pol.policyName} Premium`, amount: pol.premiumAmount, dueDate: rd, type: 'insurance' });
+      }
+    }
+  });
+
+  upcomingDues.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+
   return (
     <div className="space-y-8 pb-8">
       {/* Greeting Area */}
@@ -110,16 +160,23 @@ export default async function DashboardPage() {
             </p>
           </div>
         </div>
-        <DashboardScanTrigger />
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <DashboardScanTrigger />
+          <Link href="/my-upi" className="flex items-center gap-2 bg-background border border-border/50 text-foreground px-4 py-2.5 rounded-xl hover:bg-secondary/50 hover:border-primary/30 transition-all font-medium text-sm shadow-sm md:w-auto flex-1 justify-center whitespace-nowrap">
+            <QrCode className="w-4 h-4 text-primary" />
+            My UPI
+          </Link>
+        </div>
       </div>
 
       <PendingConfirmationsWidget />
+      <UpcomingDuesWidget dues={upcomingDues} />
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
         <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Net Worth</CardTitle>
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <Wallet className="w-4 h-4 text-primary" />
             </div>

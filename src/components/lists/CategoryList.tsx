@@ -68,17 +68,19 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex bg-card p-3 rounded-xl border shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search categories..."
-            className="pl-9 bg-background"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {(expenseCategories.length > 0 || incomeCategories.length > 0) && (
+        <div className="flex bg-card p-3 rounded-xl border shadow-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search categories..."
+              className="pl-9 bg-background"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="bg-card rounded-xl border shadow-sm p-4">
         <Tabs

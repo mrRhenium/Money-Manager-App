@@ -19,7 +19,7 @@ export async function getAccounts() {
   return JSON.parse(JSON.stringify(accounts));
 }
 
-export async function createAccount(data: { name: string; type: "bank" | "cash" | "card" | "wallet"; balance?: number; creditLimit?: number }) {
+export async function createAccount(data: { name: string; type: "bank" | "cash" | "card" | "wallet"; balance?: number; creditLimit?: number; color?: string; icon?: string; isLiability?: boolean }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -28,6 +28,7 @@ export async function createAccount(data: { name: string; type: "bank" | "cash" 
   const account = await Account.create({
     ...data,
     balance: data.balance || 0,
+    isLiability: data.isLiability || false,
     userId: session.user.id,
   });
 
@@ -70,7 +71,7 @@ export async function deleteAccount(id: string) {
   }
 }
 
-export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet"; balance?: number }) {
+export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet"; balance?: number; color?: string; icon?: string; isLiability?: boolean }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -80,7 +81,7 @@ export async function updateAccount(id: string, data: { name: string; type: "ban
 
   const account = await Account.findOneAndUpdate(
     { _id: id, userId: session.user.id },
-    { $set: { name: data.name, type: data.type, balance: data.balance || 0 } },
+    { $set: { name: data.name, type: data.type, balance: data.balance || 0, color: data.color, icon: data.icon, isLiability: data.isLiability || false } },
     { new: true }
   );
 

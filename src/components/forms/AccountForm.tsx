@@ -12,6 +12,7 @@ import { Select } from "antd";
 import { createAccount, updateAccount } from "@/actions/account";
 import { Plus, Landmark, PenLine, List, Banknote } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -24,30 +25,33 @@ const formSchema = z.object({
 
 export function AccountForm({ account }: { account?: any }) {
   const [open, setOpen] = useState(false);
+  const [currency, setCurrency] = useState("INR");
+
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: account?.name || "",
       type: account?.type || "bank",
-      balance: account?.balance !== undefined ? formatIndianNumber(account.balance) : "",
+      balance: account?.balance ? account.balance.toString() : "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const parsedPayload = {
+      const payload = {
         ...values,
         balance: parseIndianNumber(values.balance),
       };
-      if (account?._id) {
-        await updateAccount(account._id, parsedPayload);
+
+      if (account) {
+        await updateAccount(account._id, payload);
       } else {
-        await createAccount(parsedPayload);
+        await createAccount(payload);
       }
       setOpen(false);
       form.reset();
     } catch (error) {
-      console.error("Failed to save account", error);
+      console.error(error);
     }
   }
 
@@ -59,27 +63,27 @@ export function AccountForm({ account }: { account?: any }) {
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button>
+          <Button className="font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
             <Plus className="w-4 h-4 mr-2" />
             Add Account
           </Button>
         )
       } />
-      <DialogContent className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Landmark className="w-5 h-5" />
-            <span className="text-foreground">{account ? "Edit Account" : "Create New Account"}</span>
+            <span className="text-foreground">{account ? "Edit Account" : "Add New Account"}</span>
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2"><PenLine className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><PenLine className="w-4 h-4 text-muted-foreground" /> Account Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. HDFC Bank" {...field} />
                   </FormControl>
@@ -92,13 +96,10 @@ export function AccountForm({ account }: { account?: any }) {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Type</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Account Type</FormLabel>
                   <FormControl>
                     <Select
-                      showSearch
-                      placeholder="Select type"
                       className="w-full h-10"
-                      optionFilterProp="label"
                       options={[
                         { label: 'Bank', value: 'bank' },
                         { label: 'Cash', value: 'cash' },
@@ -119,9 +120,10 @@ export function AccountForm({ account }: { account?: any }) {
                 <FormItem>
                   <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Initial Balance</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="text" 
+                    <CurrencyInput 
                       placeholder="e.g. 10,000"
+                      currency={currency}
+                      onCurrencyChange={setCurrency}
                       {...field}
                       onChange={(e) => {
                         field.onChange(formatIndianNumber(e.target.value));

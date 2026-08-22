@@ -14,7 +14,7 @@ import { getUserProfile, updateProfile, updateThemeColor } from "@/actions/user"
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 import { useToast } from "@/hooks/useToast";
-import { Plus, Trash, UploadCloud, Loader2, Search, Download } from "lucide-react";
+import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
@@ -164,6 +164,16 @@ function SettingsContent() {
     }
   };
 
+  const copyToClipboard = async (text: string, label: string) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied to clipboard!`);
+    } catch (err) {
+      toast.error("Failed to copy to clipboard.");
+    }
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
@@ -259,11 +269,21 @@ function SettingsContent() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="mobile">Mobile Phone (Optional)</Label>
-          <Input id="mobile" placeholder="e.g. +1 234 567 8900" value={mobile} onChange={e => setMobile(e.target.value)} />
+          <div className="flex gap-2">
+            <Input id="mobile" placeholder="e.g. +1 234 567 8900" value={mobile} onChange={e => setMobile(e.target.value)} />
+            <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(mobile, "Mobile number")} disabled={!mobile}>
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" defaultValue={session?.user?.email || ""} disabled />
+          <div className="flex gap-2">
+            <Input id="email" defaultValue={session?.user?.email || ""} disabled />
+            <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(session?.user?.email || "", "Email")}>
+              <Copy className="w-4 h-4" />
+            </Button>
+          </div>
           <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
         </div>
 
@@ -285,6 +305,9 @@ function SettingsContent() {
                   setUpiIds(newIds);
                 }}
               />
+              <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(vpa, "UPI ID")} disabled={!vpa}>
+                <Copy className="w-4 h-4" />
+              </Button>
               <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => {
                 setUpiIds(upiIds.filter((_, i) => i !== idx));
               }}>

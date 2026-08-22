@@ -16,7 +16,8 @@ import {
   TrendingUp,
   History,
   Repeat,
-  Umbrella
+  Umbrella,
+  Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
     { href: "/categories", icon: Tags, label: "Categories" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/budgets", icon: PieChart, label: "Budgets" },
+    { href: "/goals", icon: Target, label: "Goals" },
     { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
     { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/insurance", icon: Umbrella, label: "Insurance" },

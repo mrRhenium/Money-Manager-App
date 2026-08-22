@@ -21,13 +21,14 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 const formSchema = z.object({
-  type: z.enum(["income", "expense", "lend", "borrow", "settlement"]),
+  type: z.enum(["income", "expense", "lend", "borrow", "settlement", "transfer"]),
   amount: z.string().refine(val => {
     const num = parseIndianNumber(val);
     return !isNaN(num) && num > 0;
   }, "Amount must be a positive number"),
   originalCurrency: z.string().default("INR"),
   accountId: z.string().min(1, "Account is required"),
+  toAccountId: z.string().optional(),
   categoryId: z.string().optional(),
   personId: z.string().optional(),
   note: z.string().optional(),
@@ -57,6 +58,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
       amount: transaction?.amount ? formatIndianNumber(transaction.amount) : "",
       originalCurrency: transaction?.originalCurrency || "INR",
       accountId: transaction?.accountId?._id || transaction?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
+      toAccountId: transaction?.toAccountId?._id || transaction?.toAccountId || "",
       categoryId: transaction?.categoryId?._id || transaction?.categoryId || "",
       personId: transaction?.personId?._id || transaction?.personId || "",
       note: transaction?.note || "",
@@ -106,11 +108,21 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      if (values.type === "transfer" && values.accountId === values.toAccountId) {
+        form.setError("toAccountId", { message: "Cannot transfer to the same account" });
+        return;
+      }
+      if (values.type === "transfer" && !values.toAccountId) {
+        form.setError("toAccountId", { message: "Destination account is required" });
+        return;
+      }
+
       const parsedPayload = {
         ...values,
         amount: parseIndianNumber(values.amount),
-        categoryId: values.categoryId || undefined,
-        personId: values.personId || undefined,
+        categoryId: values.type === "transfer" ? undefined : (values.categoryId || undefined),
+        personId: values.type === "transfer" ? undefined : (values.personId || undefined),
+        toAccountId: values.type === "transfer" ? values.toAccountId : undefined,
         billImage,
       };
 
@@ -201,6 +213,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
                         options={[
                           { label: 'Expense', value: 'expense' },
                           { label: 'Income', value: 'income' },
+                          { label: 'Transfer', value: 'transfer' },
                           { label: 'Lend', value: 'lend' },
                           { label: 'Borrow', value: 'borrow' },
                           { label: 'Settlement', value: 'settlement' },
@@ -213,53 +226,55 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
                 )}
               />
 
-              {(selectedType === "expense" || selectedType === "income") ? (
-                <FormField
-                  control={form.control}
-                  name="categoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><Folder className="w-4 h-4 text-muted-foreground" /> Category</FormLabel>
-                      <FormControl>
-                        <Select
-                          showSearch
-                          placeholder="Select category"
-                          className="w-full h-10"
-                          optionFilterProp="label"
-                          options={filteredCategories.map(cat => ({ label: cat.name, value: cat._id }))}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ) : (
-                <FormField
-                  control={form.control}
-                  name="personId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><Users className="w-4 h-4 text-muted-foreground" /> Person</FormLabel>
-                      <FormControl>
-                        <Select
-                          showSearch
-                          placeholder="Select person"
-                          className="w-full h-10"
-                          optionFilterProp="label"
-                          options={people.map(p => ({ label: p.name, value: p._id }))}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {selectedType !== "transfer" && (
+                (selectedType === "expense" || selectedType === "income") ? (
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Folder className="w-4 h-4 text-muted-foreground" /> Category</FormLabel>
+                        <FormControl>
+                          <Select
+                            showSearch
+                            placeholder="Select category"
+                            className="w-full h-10"
+                            optionFilterProp="label"
+                            options={filteredCategories.map(cat => ({ label: cat.name, value: cat._id }))}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  <FormField
+                    control={form.control}
+                    name="personId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Users className="w-4 h-4 text-muted-foreground" /> Person</FormLabel>
+                        <FormControl>
+                          <Select
+                            showSearch
+                            placeholder="Select person"
+                            className="w-full h-10"
+                            optionFilterProp="label"
+                            options={people.map(p => ({ label: p.name, value: p._id }))}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )
               )}
             </div>
 
             {/* Optional Person for Expense/Income */}
-            {(selectedType === "expense" || selectedType === "income") && (
+            {selectedType !== "transfer" && (selectedType === "expense" || selectedType === "income") && (
               <FormField
                 control={form.control}
                 name="personId"
@@ -315,7 +330,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
                 name="accountId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Account</FormLabel>
+                    <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> {selectedType === "transfer" ? "From Account" : "Account"}</FormLabel>
                     <FormControl>
                       <Select
                         showSearch
@@ -330,6 +345,47 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
                   </FormItem>
                 )}
               />
+              
+              {selectedType === "transfer" ? (
+                <FormField
+                  control={form.control}
+                  name="toAccountId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> To Account</FormLabel>
+                      <FormControl>
+                        <Select
+                          showSearch
+                          placeholder="Select destination"
+                          className="w-full h-10"
+                          optionFilterProp="label"
+                          options={accounts.map(acc => ({ label: acc.name, value: acc._id }))}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /> Date</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            {/* If transfer, date goes on its own row */}
+            {selectedType === "transfer" && (
               <FormField
                 control={form.control}
                 name="date"
@@ -343,7 +399,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
                   </FormItem>
                 )}
               />
-            </div>
+            )}
 
             {/* Row 4: Dedicated Note Row */}
             <FormField

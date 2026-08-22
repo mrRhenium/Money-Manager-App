@@ -22,6 +22,7 @@ export async function getTransactions(limit = 50) {
     .limit(limit)
     .populate("categoryId", "name icon color type")
     .populate("accountId", "name type")
+    .populate("toAccountId", "name type")
     .lean();
     
   return JSON.parse(JSON.stringify(transactions));
@@ -32,6 +33,7 @@ export async function createTransaction(data: {
   amount: number; 
   date: string; 
   accountId?: string; 
+  toAccountId?: string;
   paymentMode?: "cash" | "bank" | "credit_card" | "wallet";
   creditCardId?: string; 
   categoryId?: string;
@@ -117,6 +119,15 @@ export async function createTransaction(data: {
         statement.transactions.push(transaction._id as any);
         await statement.save();
       }
+    } else if (data.type === "transfer" && data.toAccountId && data.accountId) {
+      await Account.findOneAndUpdate(
+        { _id: data.accountId, userId: session.user.id },
+        { $inc: { balance: -finalAmount } }
+      );
+      await Account.findOneAndUpdate(
+        { _id: data.toAccountId, userId: session.user.id },
+        { $inc: { balance: finalAmount } }
+      );
     } else if (data.accountId) {
       let balanceChange = 0;
       if (data.type === "expense" || data.type === "lend") {
@@ -192,6 +203,15 @@ export async function deleteTransaction(id: string) {
           await statement.save();
         }
       }
+    } else if (transaction.type === "transfer" && transaction.toAccountId && transaction.accountId) {
+      await Account.findOneAndUpdate(
+        { _id: transaction.accountId, userId: session.user.id },
+        { $inc: { balance: transaction.amount } } // revert source
+      );
+      await Account.findOneAndUpdate(
+        { _id: transaction.toAccountId, userId: session.user.id },
+        { $inc: { balance: -transaction.amount } } // revert destination
+      );
     } else if (transaction.accountId) {
       let balanceChange = 0;
       if (transaction.type === "expense" || transaction.type === "lend") {
@@ -267,6 +287,15 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
         statement.transactions.push(transaction._id as any);
         await statement.save();
       }
+    } else if (transaction.type === "transfer" && transaction.toAccountId && transaction.accountId) {
+      await Account.findOneAndUpdate(
+        { _id: transaction.accountId, userId: session.user.id },
+        { $inc: { balance: -transaction.amount } }
+      );
+      await Account.findOneAndUpdate(
+        { _id: transaction.toAccountId, userId: session.user.id },
+        { $inc: { balance: transaction.amount } }
+      );
     } else if (transaction.accountId) {
       let balanceChange = 0;
       if (transaction.type === "expense" || transaction.type === "lend") {
@@ -297,6 +326,7 @@ export async function updateTransaction(
     amount: number;
     date: string;
     accountId?: string;
+    toAccountId?: string;
     paymentMode?: "cash" | "bank" | "credit_card" | "wallet";
     creditCardId?: string;
     categoryId?: string;
@@ -339,6 +369,16 @@ export async function updateTransaction(
           await statement.save();
         }
       }
+    } else if (oldTxn.type === "transfer" && oldTxn.toAccountId && oldTxn.accountId) {
+      // Revert source and destination
+      await Account.findOneAndUpdate(
+        { _id: oldTxn.accountId, userId: session.user.id },
+        { $inc: { balance: oldTxn.amount } }
+      );
+      await Account.findOneAndUpdate(
+        { _id: oldTxn.toAccountId, userId: session.user.id },
+        { $inc: { balance: -oldTxn.amount } }
+      );
     } else if (oldTxn.accountId) {
       let balanceChange = 0;
       if (oldTxn.type === "expense" || oldTxn.type === "lend") {
@@ -362,6 +402,7 @@ export async function updateTransaction(
   oldTxn.originalCurrency = data.originalCurrency || "INR";
   oldTxn.date = new Date(data.date);
   oldTxn.accountId = (data.accountId as any) || undefined;
+  oldTxn.toAccountId = (data.toAccountId as any) || undefined;
   oldTxn.categoryId = (data.categoryId as any) || undefined;
   oldTxn.personId = (data.personId as any) || undefined;
   oldTxn.note = data.note || "";
@@ -411,6 +452,15 @@ export async function updateTransaction(
         }
         await statement.save();
       }
+    } else if (oldTxn.type === "transfer" && oldTxn.toAccountId && oldTxn.accountId) {
+      await Account.findOneAndUpdate(
+        { _id: oldTxn.accountId, userId: session.user.id },
+        { $inc: { balance: -oldTxn.amount } }
+      );
+      await Account.findOneAndUpdate(
+        { _id: oldTxn.toAccountId, userId: session.user.id },
+        { $inc: { balance: oldTxn.amount } }
+      );
     } else if (oldTxn.accountId) {
       let balanceChange = 0;
       if (oldTxn.type === "expense" || oldTxn.type === "lend") {
@@ -448,6 +498,7 @@ export async function getAwaitingTransactions() {
   })
   .populate("categoryId", "name icon color type")
   .populate("accountId", "name type")
+  .populate("toAccountId", "name type")
   .lean();
 
   return JSON.parse(JSON.stringify(transactions));
@@ -466,6 +517,7 @@ export async function getPendingTransactions() {
   .sort({ date: -1 })
   .populate("categoryId", "name icon color type")
   .populate("accountId", "name type")
+  .populate("toAccountId", "name type")
   .lean();
 
   return JSON.parse(JSON.stringify(transactions));

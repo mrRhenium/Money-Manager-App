@@ -39,6 +39,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
   const [currency, setCurrency] = useState(investment?.currency || "INR");
   const [color, setColor] = useState(investment?.color || "#8b5cf6");
   const [icon, setIcon] = useState(investment?.icon || "TrendingUp");
+  const [assetPrice, setAssetPrice] = useState<number | null>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -54,7 +55,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
       schemeCode: investment?.schemeCode || "",
       ticker: investment?.ticker || "",
       autoPriceUpdateEnabled: investment?.autoPriceUpdateEnabled ?? true,
-      startDate: investment?.startDate ? new Date(investment.startDate).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
+      startDate: investment?.startDate ? new Date(investment.startDate).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
       frequency: investment?.frequency || "OneTime",
       linkedAccountId: investment?.linkedAccountId || undefined,
     },
@@ -62,7 +63,15 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
 
   const watchType = form.watch("investmentType");
   const watchAutoUpdate = form.watch("autoPriceUpdateEnabled");
+  const watchUnits = form.watch("units");
   const isAutoPricedAsset = watchType === "MutualFund" || watchType === "Stocks";
+
+  useEffect(() => {
+    if (assetPrice !== null && watchUnits && !isNaN(parseFloat(watchUnits))) {
+      const val = parseFloat(watchUnits) * assetPrice;
+      form.setValue("currentValue", formatIndianNumber(val.toString()), { shouldValidate: true });
+    }
+  }, [watchUnits, assetPrice, form]);
 
   const loadMutualFunds = async (inputValue: string) => {
     if (inputValue.length < 3) return [];
@@ -139,7 +148,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -177,7 +186,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                   </FormItem>
                 )}
               />
-              
+
               {isAutoPricedAsset ? (
                 <FormField
                   control={form.control}
@@ -195,14 +204,11 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                               field.onChange(option.value);
                               form.setValue("name", option.label.split(' (')[0]);
                               if (option.nav || option.price) {
-                                const currentUnits = form.getValues("units");
-                                if (currentUnits && !isNaN(parseFloat(currentUnits))) {
-                                  const val = parseFloat(currentUnits) * (option.nav || option.price);
-                                  form.setValue("currentValue", formatIndianNumber(val.toString()));
-                                }
+                                setAssetPrice(option.nav || option.price);
                               }
                             } else {
                               field.onChange("");
+                              setAssetPrice(null);
                             }
                           }}
                           placeholder={`Type to search ${watchType === "MutualFund" ? "funds..." : "stocks..."}`}
@@ -292,7 +298,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                   <FormItem>
                     <FormLabel>Invested Amount</FormLabel>
                     <FormControl>
-                      <CurrencyInput 
+                      <CurrencyInput
                         placeholder="e.g. 50,000"
                         currency={currency}
                         onCurrencyChange={setCurrency}
@@ -304,7 +310,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                   </FormItem>
                 )}
               />
-              
+
               {isAutoPricedAsset ? (
                 <FormField
                   control={form.control}
@@ -313,9 +319,9 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                     <FormItem>
                       <FormLabel>Quantity / Units Held</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="e.g. 10.5" 
-                          {...field} 
+                        <Input
+                          placeholder="e.g. 10.5"
+                          {...field}
                           type="number"
                           step="any"
                         />
@@ -333,7 +339,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                   <FormItem>
                     <FormLabel>Current Value {isAutoPricedAsset && watchAutoUpdate && "(Auto-calculated)"}</FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         placeholder="e.g. 55,000"
                         {...field}
                         onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}

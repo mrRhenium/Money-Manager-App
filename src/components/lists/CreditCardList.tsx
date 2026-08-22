@@ -18,7 +18,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
   return (
     <div className="w-full">
       <List
-        grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+        grid={{ gutter: 24, xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 3 }}
         dataSource={cards}
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(card: any, index: number) => {
@@ -40,7 +40,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                         <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 z-10" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                    <div className="flex items-center gap-1 z-10 shrink-0" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <CreditCardForm card={card} />
                       <Popconfirm
                         title="Delete Credit Card"
@@ -77,7 +77,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 font-mono text-xl tracking-[0.2em] mb-4 opacity-90">
+                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 font-mono text-base sm:text-lg md:text-xl tracking-widest mb-4 opacity-90">
                       <span>••••</span>
                       <span>••••</span>
                       <span>••••</span>
@@ -97,12 +97,16 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                   </div>
                 </div>
 
-                <div className="mt-3 bg-secondary/30 rounded-xl p-3 border shadow-sm transition-colors group-hover:bg-secondary/50">
+                <div className="mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50">
                   <div className="flex justify-between text-xs mb-2">
                     <span className="text-muted-foreground font-medium">Utilization</span>
                     <span className={isHighUtilization ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>
                   </div>
-                  <Progress value={Math.min(utilization, 100)} className={`h-2 bg-secondary-foreground/10 ${isHighUtilization ? "[&>div]:bg-red-500" : "[&>div]:bg-emerald-500"}`} />
+                  <Progress 
+                    value={Math.min(utilization, 100)} 
+                    className="h-2" 
+                    indicatorColor={isHighUtilization ? "#ef4444" : "#10b981"} 
+                  />
                   
                   {isHighUtilization && (
                     <p className="text-[10px] text-red-500 mt-2 flex items-center gap-1 font-medium">

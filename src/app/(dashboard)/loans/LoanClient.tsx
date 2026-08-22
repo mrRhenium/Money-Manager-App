@@ -54,16 +54,16 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
       <Card key={loan._id} className="relative overflow-hidden group hover:shadow-md transition-shadow">
         <div className={`absolute top-0 left-0 w-1.5 h-full`} style={{ backgroundColor: loan.color }} />
         <CardContent className="p-5 pl-6">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-3">
+          <div className="flex justify-between items-start mb-4 gap-2">
+            <div className="flex items-center gap-3 min-w-0">
               <div 
                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
                 style={{ backgroundColor: `${loan.color}20`, color: loan.color }}
               >
                 <CategoryIcon name={loan.icon} className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className="font-bold text-lg">{loan.name}</h3>
+              <div className="min-w-0">
+                <h3 className="font-bold text-lg truncate">{loan.name}</h3>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-1">
                   {isTaken ? (
                     <span className="flex items-center gap-1 text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider whitespace-nowrap text-[10px]">
@@ -85,7 +85,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
                   size="sm" 
                   onClick={() => handlePayEMI(loan._id)}
                   disabled={isPaying === loan._id}
-                  className="hidden group-hover:flex shadow-sm h-8 mr-1"
+                  className="flex shadow-sm h-8 mr-1"
                 >
                   {isPaying === loan._id ? "Processing..." : "Pay EMI"}
                 </Button>
@@ -162,7 +162,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {activeLoans.map(renderLoanCard)}
         {activeLoans.length === 0 && (
           <div className="col-span-full py-12 text-center bg-muted/20 border border-dashed rounded-xl">
@@ -176,7 +176,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
           <h2 className="text-xl font-bold flex items-center gap-2 pt-6">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Completed Loans
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 opacity-75">
             {completedLoans.map(renderLoanCard)}
           </div>
         </>

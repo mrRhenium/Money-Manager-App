@@ -43,11 +43,11 @@ export function CreditCardForm({ card }: { card?: any }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      cardName: card?.cardName || "",
-      bankName: card?.bankName || "",
+      cardName: card?.cardName ? String(card.cardName) : "",
+      bankName: card?.bankName ? String(card.bankName) : "",
       cardNetwork: card?.cardNetwork || "Visa",
-      last4Digits: card?.last4Digits || "",
-      cardholderName: card?.cardholderName || "",
+      last4Digits: card?.last4Digits ? String(card.last4Digits) : "",
+      cardholderName: card?.cardholderName ? String(card.cardholderName) : "",
       creditLimit: card?.creditLimit ? formatIndianNumber(card.creditLimit) : "",
       startingDate: card?.startingDate ? new Date(card.startingDate).toISOString().slice(0, 16) : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
       expiryDate: card?.expiryDate ? new Date(card.expiryDate).toISOString().slice(0, 7) : "",
@@ -114,6 +114,11 @@ export function CreditCardForm({ card }: { card?: any }) {
         </DialogHeader>
 
         {error && <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md">{error}</div>}
+        {Object.keys(form.formState.errors).length > 0 && (
+          <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md">
+            Please fix the validation errors before saving.
+          </div>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -146,7 +151,9 @@ export function CreditCardForm({ card }: { card?: any }) {
                         { label: 'Amex', value: 'Amex' },
                         { label: 'Other', value: 'Other' },
                       ]}
-                      {...field}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
                     />
                   </FormControl>
                   <FormMessage />

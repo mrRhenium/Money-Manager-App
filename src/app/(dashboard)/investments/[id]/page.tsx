@@ -11,6 +11,7 @@ import { InvestmentHistoryChart } from "@/components/dashboard/InvestmentHistory
 import { InvestmentUpdateForm } from "@/components/forms/InvestmentUpdateForm";
 import { auth } from "@/lib/auth";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { formatDateString } from "@/lib/dateTimeHelper";
 
 export default async function InvestmentDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -110,7 +111,7 @@ export default async function InvestmentDetailsPage({ params }: { params: Promis
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-muted-foreground flex items-center gap-2"><Calendar className="w-4 h-4" /> Start Date</span>
-                <span className="font-medium">{new Date(investment.startDate).toLocaleDateString()}</span>
+                <span className="font-medium">{formatDateString(investment.startDate, "DD-MM-YYYY")}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-muted-foreground flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Frequency</span>

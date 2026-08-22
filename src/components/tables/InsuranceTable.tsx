@@ -9,6 +9,7 @@ import { InsuranceForm } from "../forms/InsuranceForm";
 import { formatDate } from "@/lib/helpers";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useCurrency } from "@/hooks/useCurrency";
+import { formatDateString } from "@/lib/dateTimeHelper";
 
 export function InsuranceTable({ policies, accounts }: { policies: any[], accounts: any[] }) {
   const { format } = useCurrency();
@@ -57,7 +58,7 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
       title: "Next Renewal",
       dataIndex: "renewalDate",
       key: "renewalDate",
-      render: (date: string) => date ? new Date(date).toLocaleDateString() : "-",
+      render: (date: string) => date ? formatDateString(date, "DD-MM-YYYY") : "-",
     },
     {
       title: "Actions",
@@ -93,8 +94,11 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
           <div key={record._id} className="bg-card border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-start gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${record.color || '#10b981'}15` }}>
-                  <CategoryIcon name={record.icon} color={record.color} className="w-5 h-5" />
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner" 
+                  style={{ backgroundColor: record.color || '#10b981' }}
+                >
+                  <CategoryIcon name={record.icon} className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-bold text-base leading-tight truncate">{record.policyName}</h3>
@@ -133,9 +137,15 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
               </div>
               <div className="col-span-2">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Next Renewal</p>
-                <p className="font-medium text-sm">{record.renewalDate ? new Date(record.renewalDate).toLocaleDateString() : "-"}</p>
+                <p className="font-medium text-sm">{record.renewalDate ? formatDateString(record.renewalDate, "DD-MM-YYYY") : "-"}</p>
               </div>
             </div>
+
+            {/* Decorative background circle */}
+            <div 
+              className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
+              style={{ backgroundColor: record.color || '#10b981' }}
+            />
           </div>
         ))}
       </div>

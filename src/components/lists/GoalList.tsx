@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { List, Popconfirm, Modal } from "antd";
+import { formatDateString } from "@/lib/dateTimeHelper";
 import { Progress } from "@/components/ui/progress";
 import { Trash, Target, CalendarDays, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ export function GoalList({ goals }: { goals: any[] }) {
                       {goal.deadline && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                           <CalendarDays className="w-3 h-3" /> 
-                          {new Date(goal.deadline).toLocaleDateString()}
+                          {formatDateString(goal.deadline, "DD-MM-YYYY")}
                         </p>
                       )}
                     </div>
@@ -70,12 +71,6 @@ export function GoalList({ goals }: { goals: any[] }) {
                 </div>
 
                 <div className="z-10 mt-auto">
-                  <div className="flex justify-between items-end mb-2">
-                    <div>
-                      <p className="font-semibold text-lg text-foreground truncate">{goal.name}</p>
-                    </div>
-                  </div>
-
                   <div className="w-full space-y-3 pt-2">
                     <div className="flex justify-between items-end">
                       <div>

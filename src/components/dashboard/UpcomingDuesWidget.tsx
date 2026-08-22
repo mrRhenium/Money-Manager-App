@@ -2,8 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatDateString } from "@/lib/dateTimeHelper";
 import { Button } from "@/components/ui/button";
-import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2, CalendarDays } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 
 export function UpcomingDuesWidget({ dues }: { dues: any[] }) {
@@ -25,15 +26,15 @@ export function UpcomingDuesWidget({ dues }: { dues: any[] }) {
         <div className="divide-y divide-border/50">
           {dues.map((due: any, idx: number) => {
             const isOverdue = new Date(due.dueDate) < new Date();
-            
+
             let Icon = Calendar;
             let iconColor = "text-muted-foreground";
-            
+
             if (due.type === "credit_card") { Icon = CreditCard; iconColor = "text-blue-500"; }
             if (due.type === "insurance") { Icon = Shield; iconColor = "text-emerald-500"; }
             if (due.type === "sip") { Icon = TrendingUp; iconColor = "text-purple-500"; }
             if (due.type === "subscription") { Icon = RefreshCw; iconColor = "text-amber-500"; }
-            
+
             return (
               <div key={idx} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-4">
@@ -42,15 +43,16 @@ export function UpcomingDuesWidget({ dues }: { dues: any[] }) {
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm">{due.title}</h4>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <span className={isOverdue ? "text-destructive font-medium" : ""}>
-                        Due: {new Date(due.dueDate).toLocaleDateString()}
+                    <div className="flex items-center gap-1 text-[10px] sm:text-xs">
+                      <CalendarDays className="w-3 h-3 text-muted-foreground" />
+                      <span className={isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}>
+                        Due: {formatDateString(due.dueDate, "DD-MM-YYYY")}
                       </span>
                       {isOverdue && <AlertCircle className="w-3 h-3 text-destructive" />}
-                    </p>
+                    </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <div className="font-bold text-sm">{format(due.amount)}</div>

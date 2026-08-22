@@ -1,6 +1,7 @@
 "use client";
 
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { formatDateString } from "@/lib/dateTimeHelper";
 import { useCurrency } from "@/hooks/useCurrency";
 
 export function InvestmentHistoryChart({ history }: { history: any[] }) {
@@ -15,7 +16,7 @@ export function InvestmentHistoryChart({ history }: { history: any[] }) {
   }
 
   const data = history.map(h => ({
-    date: new Date(h.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    date: formatDateString(h.date, "DD-MM-YYYY"),
     value: h.value
   }));
 

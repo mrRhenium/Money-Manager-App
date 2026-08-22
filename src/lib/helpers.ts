@@ -46,5 +46,5 @@ export function formatDate(
   }
   
   // Default standard format
-  return d.format("M/D/YYYY, h:mm A");
+  return d.format("DD-MM-YYYY");
 }

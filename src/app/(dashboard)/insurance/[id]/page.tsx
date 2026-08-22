@@ -4,6 +4,7 @@ import { getAccounts } from "@/actions/account";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatDateString } from "@/lib/dateTimeHelper";
 import { ArrowLeft, Shield, Calendar, Hash, Activity } from "lucide-react";
 import Link from "next/link";
 import { InsuranceForm } from "@/components/forms/InsuranceForm";
@@ -67,7 +68,7 @@ export default async function InsuranceDetailsPage({ params }: { params: Promise
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {policy.renewalDate ? new Date(policy.renewalDate).toLocaleDateString() : "-"}
+              {policy.renewalDate ? formatDateString(policy.renewalDate, "DD-MM-YYYY") : "-"}
             </div>
           </CardContent>
         </Card>
@@ -89,7 +90,7 @@ export default async function InsuranceDetailsPage({ params }: { params: Promise
                     <div key={h._id} className="flex justify-between items-center py-2 border-b">
                       <div>
                         <div className="font-medium"><CurrencyDisplay amount={h.amount || 0} /></div>
-                        <div className="text-xs text-muted-foreground">{new Date(h.date || h.dueDate || h.createdAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-muted-foreground">{formatDateString(h.date || h.dueDate || h.createdAt, "DD-MM-YYYY")}</div>
                       </div>
                       <div className="text-sm capitalize">{h.status}</div>
                     </div>
@@ -122,12 +123,12 @@ export default async function InsuranceDetailsPage({ params }: { params: Promise
               )}
               <div className="flex justify-between items-center py-2 border-b">
                 <span className="text-muted-foreground flex items-center gap-2"><Calendar className="w-4 h-4" /> Start Date</span>
-                <span className="font-medium">{new Date(policy.startDate).toLocaleDateString()}</span>
+                <span className="font-medium">{formatDateString(policy.startDate, "DD-MM-YYYY")}</span>
               </div>
               {policy.endDate && (
                 <div className="flex justify-between items-center py-2 border-b">
                   <span className="text-muted-foreground flex items-center gap-2"><Calendar className="w-4 h-4" /> End Date</span>
-                  <span className="font-medium">{new Date(policy.endDate).toLocaleDateString()}</span>
+                  <span className="font-medium">{formatDateString(policy.endDate, "DD-MM-YYYY")}</span>
                 </div>
               )}
             </CardContent>

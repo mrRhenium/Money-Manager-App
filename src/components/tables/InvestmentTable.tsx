@@ -118,8 +118,11 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             <div key={record._id} className="bg-card border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col gap-4">
               <div className="flex justify-between items-start gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${record.color || '#8b5cf6'}15` }}>
-                    <CategoryIcon name={record.icon} color={record.color} className="w-5 h-5" />
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner" 
+                    style={{ backgroundColor: record.color || '#8b5cf6' }}
+                  >
+                    <CategoryIcon name={record.icon} className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-bold text-base leading-tight truncate">{record.name}</h3>
@@ -174,6 +177,12 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                   </div>
                 </div>
               </div>
+
+              {/* Decorative background circle */}
+              <div 
+                className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
+                style={{ backgroundColor: record.color || '#8b5cf6' }}
+              />
             </div>
           );
         })}

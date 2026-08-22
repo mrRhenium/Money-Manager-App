@@ -5,6 +5,8 @@ import { getPendingTransactions, confirmTransaction } from "@/actions/transactio
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { formatDateString } from "@/lib/dateTimeHelper";
 import { useToast } from "@/hooks/useToast";
 import { Smartphone, Check, X, Clock, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -111,7 +113,7 @@ export function PendingConfirmationsWidget() {
                 <div>
                   <p className="font-bold text-sm text-foreground">{payeeName}</p>
                   <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">
-                    Amount: <span className="font-semibold text-foreground">{format(txn.amount)}</span> • {new Date(txn.date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
+                    Amount: <span className="font-semibold text-foreground">{format(txn.amount)}</span> • {formatDateString(txn.date, "DD-MM-YYYY")}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">

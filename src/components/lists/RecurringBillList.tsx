@@ -11,6 +11,7 @@ import { RecurringBillForm } from "@/components/forms/RecurringBillForm";
 import { deleteRecurringBill } from "@/actions/recurringBill";
 import { useToast } from "@/hooks/useToast";
 import { Popconfirm } from "antd";
+import { formatDateString } from "@/lib/dateTimeHelper";
 
 interface RecurringBillListProps {
   bills: any[];
@@ -109,7 +110,7 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
 
                 <div className="mt-5 flex items-center justify-between">
                   <Badge variant={isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-bold px-3 py-1">
-                    {isOverdue ? "Overdue" : isToday ? "Due Today" : `Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
+                    {isOverdue ? "Overdue" : isToday ? "Due Today" : `Due: ${formatDateString(dueDate, "DD-MM-YYYY")}`}
                   </Badge>
                   
                   <Button variant="outline" size="sm" className="h-8 text-xs font-semibold rounded-full hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-colors" onClick={() => {

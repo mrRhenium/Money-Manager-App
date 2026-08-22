@@ -17,6 +17,7 @@ import { TimezonePicker } from "@/components/settings/TimezonePicker";
 import { useToast } from "@/hooks/useToast";
 import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
 
@@ -354,6 +355,17 @@ function SettingsContent() {
             >
               Reset Default
             </Button>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t space-y-2 mt-4">
+          <Label>Display Theme</Label>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-sm font-medium">Dark Mode</p>
+              <p className="text-xs text-muted-foreground">Toggle between light and dark themes.</p>
+            </div>
+            <ThemeToggle />
           </div>
         </div>
       </div>

@@ -73,7 +73,7 @@ export function SidebarClient({ user }: { user: any }) {
             {!isCollapsed && (
               <div className="flex flex-col overflow-hidden">
                 <span className="font-semibold text-foreground text-sm leading-tight whitespace-nowrap truncate">{user?.name?.split(" ")[0] || "User"}</span>
-                <span className="text-xs font-medium text-muted-foreground mt-0.5 whitespace-nowrap">{user?.role === 'ADMIN' ? 'Admin' : 'Free Plan'}</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">{user?.role === 'ADMIN' ? 'Admin' : 'Free Plan'}</span>
               </div>
             )}
           </Link>

@@ -50,7 +50,7 @@ export function GoalList({ goals }: { goals: any[] }) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 transition-opacity">
                     <GoalForm goal={goal} onUpdate={() => {}} />
                   </div>
                 </div>

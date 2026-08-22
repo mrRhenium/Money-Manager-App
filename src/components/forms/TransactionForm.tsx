@@ -29,23 +29,30 @@ const formSchema = z.object({
     return !isNaN(num) && num > 0;
   }, "Amount must be a positive number"),
   originalCurrency: z.string().default("INR"),
-  accountId: z.string().min(1, "Account is required"),
+  paymentMode: z.enum(["bank", "cash", "credit_card", "wallet"]).default("bank"),
+  accountId: z.string().optional(),
+  creditCardId: z.string().optional(),
   toAccountId: z.string().optional(),
   categoryId: z.string().optional(),
   personId: z.string().optional(),
   note: z.string().optional(),
   date: z.string(),
-});
+}).refine(data => {
+  if (data.type === "transfer") return !!data.accountId;
+  if (data.paymentMode === "credit_card") return !!data.creditCardId;
+  return !!data.accountId;
+}, { message: "Payment source is required", path: ["accountId"] });
 
 interface TransactionFormProps {
   accounts: any[];
   categories: any[];
   people?: any[];
+  creditCards?: any[];
   triggerClassName?: string;
   transaction?: any;
 }
 
-export function TransactionForm({ accounts, categories, people = [], triggerClassName, transaction }: TransactionFormProps) {
+export function TransactionForm({ accounts, categories, people = [], creditCards = [], triggerClassName, transaction }: TransactionFormProps) {
   const [open, setOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanPayOpen, setScanPayOpen] = useState(false);
@@ -60,7 +67,9 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
       type: transaction?.type || "expense",
       amount: transaction?.originalAmount ? formatIndianNumber(transaction.originalAmount) : (transaction?.amount ? formatIndianNumber(transaction.amount) : ""),
       originalCurrency: transaction?.originalCurrency || "INR",
+      paymentMode: transaction?.paymentMode || (transaction?.creditCardId ? "credit_card" : "bank"),
       accountId: transaction?.accountId?._id || transaction?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
+      creditCardId: transaction?.creditCardId?._id || transaction?.creditCardId || "",
       toAccountId: transaction?.toAccountId?._id || transaction?.toAccountId || "",
       categoryId: transaction?.categoryId?._id || transaction?.categoryId || "",
       personId: transaction?.personId?._id || transaction?.personId || "",
@@ -70,6 +79,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
   });
 
   const selectedType = form.watch("type");
+  const selectedPaymentMode = form.watch("paymentMode");
   const filteredCategories = categories.filter(c => c.type === selectedType || selectedType === "lend" || selectedType === "borrow" || selectedType === "settlement");
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -126,6 +136,9 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
         categoryId: values.type === "transfer" ? undefined : (values.categoryId || undefined),
         personId: values.type === "transfer" ? undefined : (values.personId || undefined),
         toAccountId: values.type === "transfer" ? values.toAccountId : undefined,
+        accountId: values.type === "transfer" ? values.accountId : (values.paymentMode !== "credit_card" ? values.accountId : undefined),
+        creditCardId: values.type !== "transfer" && values.paymentMode === "credit_card" ? values.creditCardId : undefined,
+        paymentMode: values.type === "transfer" ? "bank" : values.paymentMode,
         billImage,
       };
 
@@ -326,28 +339,77 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
               />
             </div>
 
-            {/* Row 3: Account and Date */}
+            {/* Row 3: Account/Card and Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="accountId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> {selectedType === "transfer" ? "From Account" : "Account"}</FormLabel>
-                    <FormControl>
-                      <Select
-                        showSearch
-                        placeholder="Select account"
-                        className="w-full h-10"
-                        optionFilterProp="label"
-                        options={accounts.map(acc => ({ label: acc.name, value: acc._id }))}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {selectedType !== "transfer" && (
+                <FormField
+                  control={form.control}
+                  name="paymentMode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-muted-foreground" /> Payment Mode</FormLabel>
+                      <FormControl>
+                        <Select
+                          showSearch
+                          placeholder="Select mode"
+                          className="w-full h-10"
+                          options={[
+                            { label: 'Bank / Cash', value: 'bank' },
+                            { label: 'Credit Card', value: 'credit_card' },
+                          ]}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {selectedPaymentMode === "credit_card" && selectedType !== "transfer" ? (
+                <FormField
+                  control={form.control}
+                  name="creditCardId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-muted-foreground" /> Credit Card</FormLabel>
+                      <FormControl>
+                        <Select
+                          showSearch
+                          placeholder="Select credit card"
+                          className="w-full h-10"
+                          optionFilterProp="label"
+                          options={creditCards.map(c => ({ label: `${c.bankName} - ${c.cardName}`, value: c._id }))}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="accountId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> {selectedType === "transfer" ? "From Account" : "Account"}</FormLabel>
+                      <FormControl>
+                        <Select
+                          showSearch
+                          placeholder="Select account"
+                          className="w-full h-10"
+                          optionFilterProp="label"
+                          options={accounts.map(acc => ({ label: acc.name, value: acc._id }))}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               
               {selectedType === "transfer" ? (
                 <FormField

@@ -16,12 +16,14 @@ export function TransactionTable({
   accounts,
   categories,
   people = [],
+  creditCards = [],
 }: {
   transactions: any[];
   userTimezone: string;
   accounts: any[];
   categories: any[];
   people?: any[];
+  creditCards?: any[];
   userCurrency?: string;
 }) {
   const { format } = useCurrency();
@@ -156,8 +158,8 @@ export function TransactionTable({
       key: "actions",
       align: "center" as const,
       render: (_: any, record: any) => (
-        <div className="flex items-center justify-center gap-1.5">
-          <TransactionForm accounts={accounts} categories={categories} people={people} transaction={record} />
+        <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
+          <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} transaction={record} />
           <Popconfirm
             title="Delete Transaction"
             description="Are you sure you want to delete this transaction?"
@@ -262,7 +264,9 @@ export function TransactionTable({
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-3 border-t mt-1">
-                    <TransactionForm accounts={accounts} categories={categories} people={people} transaction={record} />
+                    <div onClick={e => e.stopPropagation()}>
+                      <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} transaction={record} />
+                    </div>
                     <Popconfirm
                       title="Delete Transaction"
                       description="Are you sure you want to delete this transaction?"

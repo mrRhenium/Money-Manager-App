@@ -14,11 +14,12 @@ import { auth } from "@/lib/auth";
 import { CreditCardTransactionTable } from "@/components/tables/CreditCardTransactionTable";
 import { CreditCardStatementTable } from "@/components/tables/CreditCardStatementTable";
 
-export default async function CreditCardDetailPage({ params }: { params: { id: string } }) {
+export default async function CreditCardDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await auth();
   const userTimezone = (session?.user as any)?.timezone || "UTC";
 
-  const data = await getCreditCardById(params.id);
+  const data = await getCreditCardById(id);
   const accounts = await getAccounts();
   const bankAccounts = accounts.filter((a: any) => a.type === "bank" || a.type === "cash" || a.type === "wallet");
 

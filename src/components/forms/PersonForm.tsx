@@ -280,7 +280,7 @@ export function PersonForm({ person }: { person?: any }) {
               {vpaFields.length === 0 && <p className="text-xs text-muted-foreground italic">No UPI VPAs added.</p>}
             </div>
             <div className="pt-2 pb-2 border-t">
-              <ColorPicker value={color} onChange={setColor} id="personColor" />
+              <ColorPicker value={color} onChange={setColor} id={`personColor-${person?._id || 'new'}`} />
             </div>
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{person ? "Save Changes" : "Add Contact"}</Button>
           </form>

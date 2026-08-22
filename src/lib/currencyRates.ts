@@ -31,7 +31,7 @@ export async function fetchExchangeRates(): Promise<Record<string, number>> {
 
   // Fetch fresh rates (from INR to all others)
   try {
-    const res = await fetch("https://api.frankfurter.dev/v1/latest?base=INR", { 
+    const res = await fetch("https://open.er-api.com/v6/latest/INR", { 
       next: { revalidate: 3600 } 
     });
     if (!res.ok) throw new Error("Failed to fetch rates");

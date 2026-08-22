@@ -299,7 +299,7 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-              <ColorPicker value={color} onChange={setColor} id="insuranceColor" />
+              <ColorPicker value={color} onChange={setColor} id={`insuranceColor-${policy?._id || 'new'}`} />
               <IconPicker value={icon} onChange={setIcon} />
             </div>
 

@@ -57,35 +57,35 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-3">
               <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
+                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
                 style={{ backgroundColor: `${loan.color}20`, color: loan.color }}
               >
-                <CategoryIcon name={loan.icon} className="w-6 h-6" />
+                <CategoryIcon name={loan.icon} className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-bold text-lg">{loan.name}</h3>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-1">
                   {isTaken ? (
-                    <span className="flex items-center gap-1 text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full font-medium">
+                    <span className="flex items-center gap-1 text-red-500 bg-red-500/10 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider whitespace-nowrap text-[10px]">
                       <ArrowUpRight className="w-3 h-3" /> Loan Taken
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">
+                    <span className="flex items-center gap-1 text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider whitespace-nowrap text-[10px]">
                       <ArrowDownLeft className="w-3 h-3" /> Loan Given
                     </span>
                   )}
-                  <span>•</span>
-                  <span>EMI on {loan.emiDate}th</span>
+                  <span className="text-muted-foreground/50">•</span>
+                  <span className="whitespace-nowrap">EMI on {loan.emiDate}th</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 -mt-2 -mr-2">
               {loan.status === "active" && (
                 <Button 
                   size="sm" 
                   onClick={() => handlePayEMI(loan._id)}
                   disabled={isPaying === loan._id}
-                  className="hidden group-hover:flex shadow-sm h-8"
+                  className="hidden group-hover:flex shadow-sm h-8 mr-1"
                 >
                   {isPaying === loan._id ? "Processing..." : "Pay EMI"}
                 </Button>
@@ -97,30 +97,30 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-4 bg-secondary/30 p-3 rounded-xl border shadow-sm">
             <div>
-              <p className="text-xs text-muted-foreground">EMI Amount</p>
-              <p className="font-semibold">{format(loan.emiAmount)}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate mb-1">EMI Amount</p>
+              <p className="font-semibold text-sm truncate">{format(loan.emiAmount)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Outstanding</p>
-              <p className={`font-semibold ${isTaken ? 'text-red-500' : 'text-emerald-500'}`}>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate mb-1">Outstanding</p>
+              <p className={`font-bold text-sm truncate ${isTaken ? 'text-red-500' : 'text-emerald-500'}`}>
                 {format(loan.outstandingBalance)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total Paid</p>
-              <p className="font-semibold text-foreground">{format(amountPaid)}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate mb-1">Total Paid</p>
+              <p className="font-semibold text-sm truncate text-foreground">{format(amountPaid)}</p>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-medium">
-              <span>Progress</span>
+          <div className="space-y-2 px-1">
+            <div className="flex justify-between text-xs font-semibold">
+              <span className="text-muted-foreground">Progress</span>
               <span>{progressPercent.toFixed(1)}%</span>
             </div>
-            <Progress value={progressPercent} className="h-2" indicatorColor={loan.color} />
-            <div className="flex justify-between text-[10px] text-muted-foreground">
+            <Progress value={progressPercent} className="h-2 bg-secondary-foreground/10" indicatorColor={loan.color} />
+            <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
               <span>{format(0)}</span>
               <span>{format(loan.totalAmount)}</span>
             </div>

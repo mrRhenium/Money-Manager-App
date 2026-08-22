@@ -16,6 +16,7 @@ import { Plus, TrendingUp, PenLine, Landmark, AlertCircle } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   investmentType: z.enum(["SIP", "MutualFund", "Stocks", "FD", "RD", "PPF", "EPF", "NPS", "Gold", "Crypto", "Bonds", "RealEstate", "Other"]),
@@ -38,6 +39,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
   const [currency, setCurrency] = useState(investment?.currency || "INR");
   const [color, setColor] = useState(investment?.color || "#8b5cf6");
   const [icon, setIcon] = useState(investment?.icon || "TrendingUp");
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -108,8 +110,9 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
       }
       setOpen(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      toast.error(error.message || "Failed to save investment");
     }
   }
 
@@ -334,7 +337,8 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                         placeholder="e.g. 55,000"
                         {...field}
                         onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
-                        disabled={isAutoPricedAsset && watchAutoUpdate && form.getValues(watchType === "MutualFund" ? "schemeCode" : "ticker") !== ""}
+                        readOnly={isAutoPricedAsset && watchAutoUpdate && form.getValues(watchType === "MutualFund" ? "schemeCode" : "ticker") !== ""}
+                        className={isAutoPricedAsset && watchAutoUpdate && form.getValues(watchType === "MutualFund" ? "schemeCode" : "ticker") !== "" ? "bg-muted/50 cursor-not-allowed" : ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -402,7 +406,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-              <ColorPicker value={color} onChange={setColor} id="investmentColor" />
+              <ColorPicker value={color} onChange={setColor} id={`investmentColor-${investment?._id || 'new'}`} />
               <IconPicker value={icon} onChange={setIcon} />
             </div>
 

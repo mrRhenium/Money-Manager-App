@@ -97,16 +97,16 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                   </div>
                 </div>
 
-                <div className="mt-3 px-1">
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Utilization</span>
-                    <span className={isHighUtilization ? "text-red-500 font-bold" : ""}>{utilization.toFixed(1)}%</span>
+                <div className="mt-3 bg-secondary/30 rounded-xl p-3 border shadow-sm transition-colors group-hover:bg-secondary/50">
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="text-muted-foreground font-medium">Utilization</span>
+                    <span className={isHighUtilization ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>
                   </div>
-                  <Progress value={utilization} className={`h-2 ${isHighUtilization ? "[&>div]:bg-red-500" : "[&>div]:bg-emerald-500"}`} />
+                  <Progress value={Math.min(utilization, 100)} className={`h-2 bg-secondary-foreground/10 ${isHighUtilization ? "[&>div]:bg-red-500" : "[&>div]:bg-emerald-500"}`} />
                   
                   {isHighUtilization && (
-                    <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> High utilization affects credit score
+                    <p className="text-[10px] text-red-500 mt-2 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-3 h-3 shrink-0" /> High utilization affects credit score
                     </p>
                   )}
                 </div>

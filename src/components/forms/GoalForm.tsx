@@ -154,7 +154,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <FormField
                 control={form.control}
                 name="icon"
@@ -167,7 +167,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void
                 control={form.control}
                 name="color"
                 render={({ field }) => (
-                  <ColorPicker value={field.value} onChange={field.onChange} id="goalColor" />
+                  <ColorPicker value={field.value} onChange={field.onChange} id={`goalColor-${goal?._id || 'new'}`} />
                 )}
               />
             </div>

@@ -50,7 +50,7 @@ export function CreditCardForm({ card }: { card?: any }) {
       cardholderName: card?.cardholderName || "",
       creditLimit: card?.creditLimit ? formatIndianNumber(card.creditLimit) : "",
       startingDate: card?.startingDate ? new Date(card.startingDate).toISOString().slice(0, 16) : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
-      expiryDate: card?.expiryDate ? new Date(card.expiryDate).toISOString().slice(0, 16) : "",
+      expiryDate: card?.expiryDate ? new Date(card.expiryDate).toISOString().slice(0, 7) : "",
       billingCycleStartDay: card?.billingCycleStartDay || 1,
       billingCycleEndDay: card?.billingCycleEndDay || 30,
       paymentDueDay: card?.paymentDueDay || 15,
@@ -233,7 +233,7 @@ export function CreditCardForm({ card }: { card?: any }) {
             </div>
 
             <FormField control={form.control} name="color" render={({ field }) => (
-              <ColorPicker value={field.value} onChange={field.onChange} id="creditCardColorInput" />
+              <ColorPicker value={field.value} onChange={field.onChange} id={`creditCardColorInput-${card?._id || 'new'}`} />
             )} />
 
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{card ? "Save Changes" : "Register Card"}</Button>

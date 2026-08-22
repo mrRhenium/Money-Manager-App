@@ -270,7 +270,7 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
-               <ColorPicker value={color} onChange={setColor} id="loanColor" />
+               <ColorPicker value={color} onChange={setColor} id={`loanColor-${loan?._id || 'new'}`} />
                <IconPicker value={icon} onChange={setIcon} color={color} />
             </div>
 

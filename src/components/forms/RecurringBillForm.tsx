@@ -238,7 +238,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-              <ColorPicker value={color} onChange={setColor} id="billColor" />
+              <ColorPicker value={color} onChange={setColor} id={`billColor-${bill?._id || 'new'}`} />
               <IconPicker value={icon} onChange={setIcon} />
             </div>
 

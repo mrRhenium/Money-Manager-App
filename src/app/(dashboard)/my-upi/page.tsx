@@ -75,7 +75,7 @@ function MyUpiContent() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl sm:rounded-2xl border shadow-sm p-3 sm:p-4 md:p-6 space-y-6">
+      <div className="bg-card rounded-none sm:rounded-2xl border-y sm:border-x sm:border-y shadow-sm p-4 md:p-6 space-y-6 -mx-2 sm:mx-0 mt-4 sm:mt-0">
         
         {/* UPI IDs Section */}
         <div className="space-y-4">
@@ -144,7 +144,7 @@ function MyUpiContent() {
                 </div>
 
                 {generatedUpiUrl && (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 w-full items-center md:items-start mt-4 md:mt-0">
                     <button 
                       type="button" 
                       onClick={() => setQrModalOpen(true)}

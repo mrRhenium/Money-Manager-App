@@ -58,7 +58,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
       type: transaction?.type || "expense",
-      amount: transaction?.amount ? formatIndianNumber(transaction.amount) : "",
+      amount: transaction?.originalAmount ? formatIndianNumber(transaction.originalAmount) : (transaction?.amount ? formatIndianNumber(transaction.amount) : ""),
       originalCurrency: transaction?.originalCurrency || "INR",
       accountId: transaction?.accountId?._id || transaction?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
       toAccountId: transaction?.toAccountId?._id || transaction?.toAccountId || "",

@@ -36,7 +36,7 @@ const formSchema = z.object({
   linkedAccountId: z.string().optional(),
 });
 
-export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?: any, onUpdate?: () => void }) {
+export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accounts: any[], loan?: any, onUpdate?: () => void, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [color, setColor] = useState(loan?.color || "#3b82f6");
@@ -90,7 +90,7 @@ export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?:
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="font-semibold shadow-md rounded-xl h-11 px-6">
+          <Button className={triggerClassName || "font-semibold shadow-md rounded-xl h-11 px-6"}>
             <Plus className="w-4 h-4 mr-2" />
             Add Loan
           </Button>

@@ -23,9 +23,7 @@ export default async function InsurancePage() {
           <h1 className="text-3xl font-bold tracking-tight">Insurance</h1>
           <p className="text-muted-foreground">Manage your life, health, and general insurance policies.</p>
         </div>
-        <div className="flex items-center gap-4">
-          <InsuranceForm accounts={accounts} />
-        </div>
+        <InsuranceForm accounts={accounts} triggerClassName="w-full sm:w-auto" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

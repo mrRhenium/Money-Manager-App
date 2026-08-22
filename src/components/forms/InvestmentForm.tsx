@@ -33,7 +33,7 @@ const formSchema = z.object({
   linkedAccountId: z.string().optional(),
 });
 
-export function InvestmentForm({ investment, accounts }: { investment?: any, accounts: any[] }) {
+export function InvestmentForm({ investment, accounts, triggerClassName }: { investment?: any, accounts: any[], triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState(investment?.currency || "INR");
   const [color, setColor] = useState(investment?.color || "#8b5cf6");
@@ -121,7 +121,7 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
+          <Button className={triggerClassName || "font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"}>
             <Plus className="w-4 h-4 mr-2" />
             Add Investment
           </Button>

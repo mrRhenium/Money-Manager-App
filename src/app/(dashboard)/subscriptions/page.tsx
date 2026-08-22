@@ -29,7 +29,7 @@ export default async function SubscriptionsPage() {
             Track auto-pays, OTT subscriptions, and monthly allowances.
           </p>
         </div>
-        <RecurringBillForm accounts={accounts} categories={categories} />
+        <RecurringBillForm accounts={accounts} categories={categories} triggerClassName="w-full sm:w-auto" />
       </div>
 
       <RecurringBillList bills={bills} accounts={accounts} categories={categories} />

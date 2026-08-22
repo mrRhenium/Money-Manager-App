@@ -29,7 +29,7 @@ const formSchema = z.object({
   linkedAccountId: z.string().optional(),
 });
 
-export function InsuranceForm({ policy, accounts }: { policy?: any, accounts: any[] }) {
+export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?: any, accounts: any[], triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState(policy?.currency || "INR");
   const [color, setColor] = useState(policy?.color || "#10b981");
@@ -86,7 +86,7 @@ export function InsuranceForm({ policy, accounts }: { policy?: any, accounts: an
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
+          <Button className={triggerClassName || "font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"}>
             <Plus className="w-4 h-4 mr-2" />
             Add Policy
           </Button>

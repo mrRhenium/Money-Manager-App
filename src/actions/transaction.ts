@@ -396,10 +396,31 @@ export async function updateTransaction(
     }
   }
 
+  // Handle currency conversion
+  const originalAmount = Number(data.amount);
+  const currency = data.originalCurrency || "INR";
+  let finalAmount = originalAmount;
+  let exchangeRate = 1;
+
+  if (currency !== "INR") {
+    try {
+      const res = await fetch(`https://api.frankfurter.app/latest?from=${currency}&to=INR`);
+      if (res.ok) {
+        const rateData = await res.json();
+        exchangeRate = rateData.rates.INR;
+        finalAmount = originalAmount * exchangeRate;
+      }
+    } catch (e) {
+      console.error("Failed to fetch exchange rate", e);
+    }
+  }
+
   // 2. Save the updated transaction fields
   oldTxn.type = data.type;
-  oldTxn.amount = data.amount;
-  oldTxn.originalCurrency = data.originalCurrency || "INR";
+  oldTxn.amount = finalAmount;
+  oldTxn.originalAmount = originalAmount;
+  oldTxn.originalCurrency = currency;
+  oldTxn.exchangeRate = exchangeRate;
   oldTxn.date = new Date(data.date);
   oldTxn.accountId = (data.accountId as any) || undefined;
   oldTxn.toAccountId = (data.toAccountId as any) || undefined;

@@ -160,7 +160,6 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
         <h2 className="text-xl font-bold flex items-center gap-2">
           <AlertCircle className="w-5 h-5 text-primary" /> Active Loans
         </h2>
-        <LoanForm accounts={accounts} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

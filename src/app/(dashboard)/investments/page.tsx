@@ -41,14 +41,14 @@ export default async function InvestmentsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Investments</h1>
           <p className="text-muted-foreground">Track your wealth growth across all asset classes.</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
           {latestSync > 0 && (
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full border">
               <RefreshCw className="w-3 h-3" />
               Synced {dayjs(latestSync).fromNow()}
             </div>
           )}
-          <InvestmentForm accounts={accounts} />
+          <InvestmentForm accounts={accounts} triggerClassName="w-full sm:w-auto" />
         </div>
       </div>
 

@@ -216,10 +216,17 @@ function SettingsContent() {
         return;
       }
 
-      // Instead of waiting forever for .ready, let's check if it's registered first
-      const registration = await navigator.serviceWorker.getRegistration();
+      let registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
-        toast.error("Service worker not registered. Push notifications are disabled in development mode.");
+        try {
+          registration = await navigator.serviceWorker.register('/sw.js');
+        } catch (e) {
+          console.error("SW Registration failed:", e);
+        }
+      }
+
+      if (!registration) {
+        toast.error("Service worker not registered. Please ensure you are not in private browsing mode and using a secure connection (HTTPS).");
         return;
       }
 

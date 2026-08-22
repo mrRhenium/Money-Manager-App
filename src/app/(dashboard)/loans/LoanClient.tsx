@@ -48,7 +48,8 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
   const renderLoanCard = (loan: any) => {
     const isTaken = loan.type === "taken";
     const amountPaid = loan.totalAmount - loan.outstandingBalance;
-    const progressPercent = Math.min(100, Math.max(0, (amountPaid / loan.totalAmount) * 100));
+    const actualPercentage = (amountPaid / loan.totalAmount) * 100;
+    const clampedPercentage = Math.min(100, Math.max(0, actualPercentage));
 
     return (
       <Card key={loan._id} className="relative overflow-hidden group hover:shadow-md transition-shadow">
@@ -114,14 +115,20 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
             </div>
           </div>
 
-          <div className="w-full space-y-2 mt-4 px-1">
-            <div className="flex justify-between items-center text-sm font-semibold">
-              <span style={{ color: loan.color }}>{progressPercent.toFixed(1)}%</span>
-              <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
-                LEFT: {format(loan.totalAmount - amountPaid)}
-              </span>
+          <div className="w-full space-y-3 mt-4 px-1">
+            <div className="flex justify-between items-end">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Paid / Total</p>
+                <p className="text-sm font-semibold">{format(amountPaid)} <span className="text-muted-foreground font-normal">/ {format(loan.totalAmount)}</span></p>
+              </div>
+              <div className="text-right">
+                <span style={{ color: loan.color }} className="font-bold">{actualPercentage.toFixed(1)}%</span>
+                <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
+                  LEFT: {format(loan.outstandingBalance)}
+                </p>
+              </div>
             </div>
-            <Progress value={progressPercent} className="h-3" indicatorColor={loan.color} />
+            <Progress value={clampedPercentage} className="h-3" indicatorColor={loan.color} />
           </div>
         </CardContent>
       </Card>

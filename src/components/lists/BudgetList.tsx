@@ -28,7 +28,8 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(budget: any, index: number) => {
           const isOverBudget = budget.totalSpent > budget.amount;
-          const percentage = Math.min((budget.totalSpent / budget.amount) * 100, 100);
+          const actualPercentage = (budget.totalSpent / budget.amount) * 100;
+          const clampedPercentage = Math.min(actualPercentage, 100);
           return (
             <List.Item>
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 h-full justify-between group">
@@ -73,17 +74,23 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                       </Popconfirm>
                     </div>
                   </div>
-                  <div className="w-full space-y-2 mt-2">
-                    <div className="flex justify-between items-center text-sm font-semibold">
-                      <span className={isOverBudget ? "text-red-500" : "text-primary"}>{percentage.toFixed(0)}%</span>
-                      <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
-                        {isOverBudget 
-                          ? `OVER: ${format(budget.totalSpent - budget.amount)}` 
-                          : `LEFT: ${format(budget.amount - budget.totalSpent)}`}
-                      </span>
+                  <div className="w-full space-y-3 mt-4">
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Spent / Budget</p>
+                        <p className="text-sm font-semibold">{format(budget.totalSpent)} <span className="text-muted-foreground font-normal">/ {format(budget.amount)}</span></p>
+                      </div>
+                      <div className="text-right">
+                        <span className={isOverBudget ? "text-red-500 font-bold" : "text-primary font-bold"}>{actualPercentage.toFixed(1)}%</span>
+                        <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
+                          {isOverBudget 
+                            ? `OVER: ${format(budget.totalSpent - budget.amount)}` 
+                            : `LEFT: ${format(budget.amount - budget.totalSpent)}`}
+                        </p>
+                      </div>
                     </div>
                     <Progress 
-                      value={percentage} 
+                      value={clampedPercentage} 
                       className="h-3" 
                       indicatorColor={isOverBudget ? "#ef4444" : undefined}
                     />

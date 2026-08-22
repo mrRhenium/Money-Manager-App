@@ -100,17 +100,23 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
         </div>
       </div>
 
-      <div className="w-full space-y-2 mt-4">
-        <div className="flex justify-between items-center text-sm font-semibold">
-          <span className={utilization > 70 ? "text-red-500" : "text-emerald-600"}>{utilization.toFixed(1)}%</span>
-          <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
-            LEFT: {formatIndianNumber(card.availableLimit.toString())}
-          </span>
+      <div className="w-full space-y-3 mt-4">
+        <div className="flex justify-between items-end">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Used / Limit</p>
+            <p className="text-sm font-semibold">₹{formatIndianNumber(card.currentOutstanding.toString())} <span className="text-muted-foreground font-normal">/ ₹{formatIndianNumber(card.creditLimit.toString())}</span></p>
+          </div>
+          <div className="text-right">
+            <span className={utilization > 70 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>
+            <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
+              LEFT: ₹{formatIndianNumber(card.availableLimit.toString())}
+            </p>
+          </div>
         </div>
-        <Progress
-          value={utilization}
-          className="h-3"
-          indicatorColor={utilization > 70 ? "#ef4444" : "#10b981"}
+        <Progress 
+          value={Math.min(utilization, 100)} 
+          className="h-3" 
+          indicatorColor={utilization > 70 ? "#ef4444" : "#10b981"} 
         />
       </div>
 

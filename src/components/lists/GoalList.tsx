@@ -25,8 +25,9 @@ export function GoalList({ goals }: { goals: any[] }) {
         dataSource={goals}
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(goal: any) => {
-          const progressPercent = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
-          const isCompleted = goal.status === "completed" || progressPercent >= 100;
+          const actualPercentage = (goal.currentAmount / goal.targetAmount) * 100;
+          const clampedPercentage = Math.min(actualPercentage, 100);
+          const isCompleted = goal.status === "completed" || actualPercentage >= 100;
 
           return (
             <List.Item>
@@ -59,21 +60,26 @@ export function GoalList({ goals }: { goals: any[] }) {
                   <div className="flex justify-between items-end mb-2">
                     <div>
                       <p className="font-semibold text-lg text-foreground truncate">{goal.name}</p>
-                      <p className="text-sm font-medium text-muted-foreground mt-0.5">{format(goal.currentAmount)} / {format(goal.targetAmount)}</p>
                     </div>
                   </div>
 
-                  <div className="w-full space-y-2 pt-2">
-                    <div className="flex justify-between items-center text-sm font-semibold">
-                      <span style={{ color: goal.color }}>{progressPercent.toFixed(0)}%</span>
-                      <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
-                        {isCompleted 
-                          ? <span className="text-emerald-500">COMPLETED!</span> 
-                          : `LEFT: ${format(goal.targetAmount - goal.currentAmount)}`}
-                      </span>
+                  <div className="w-full space-y-3 pt-2">
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Saved / Target</p>
+                        <p className="text-sm font-semibold">{format(goal.currentAmount)} <span className="text-muted-foreground font-normal">/ {format(goal.targetAmount)}</span></p>
+                      </div>
+                      <div className="text-right">
+                        <span style={{ color: goal.color }} className="font-bold">{actualPercentage.toFixed(1)}%</span>
+                        <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
+                          {isCompleted 
+                            ? <span className="text-emerald-500">COMPLETED!</span> 
+                            : `LEFT: ${format(goal.targetAmount - goal.currentAmount)}`}
+                        </p>
+                      </div>
                     </div>
                     <Progress 
-                      value={progressPercent} 
+                      value={clampedPercentage} 
                       className="h-3" 
                       indicatorColor={goal.color}
                     />

@@ -84,25 +84,21 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                       <span>{card.last4Digits}</span>
                     </div>
 
-                    <div className="flex justify-between items-end text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground opacity-80 mb-0.5">Outstanding</p>
-                        <p className="font-bold">{format(card.currentOutstanding)}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground opacity-80 mb-0.5">Available Limit</p>
-                        <p className="font-bold">{format(card.availableLimit)}</p>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
-                <div className="mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50 w-full space-y-2">
-                  <div className="flex justify-between items-center text-sm font-semibold">
-                    <span className={isHighUtilization ? "text-red-500" : "text-emerald-600"}>{utilization.toFixed(1)}%</span>
-                    <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
-                      LEFT: {format(card.availableLimit)}
-                    </span>
+                <div className="mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50 w-full space-y-3">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Used / Limit</p>
+                      <p className="text-sm font-semibold">{format(card.currentOutstanding)} <span className="text-muted-foreground font-normal">/ {format(card.creditLimit)}</span></p>
+                    </div>
+                    <div className="text-right">
+                      <span className={isHighUtilization ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>
+                      <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
+                        LEFT: {format(card.availableLimit)}
+                      </p>
+                    </div>
                   </div>
                   <Progress 
                     value={Math.min(utilization, 100)} 

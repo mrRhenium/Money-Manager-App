@@ -160,7 +160,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
         {activeLoans.map(renderLoanCard)}
         {activeLoans.length === 0 && (
           <div className="col-span-full py-12 text-center bg-muted/20 border border-dashed rounded-xl">
@@ -174,7 +174,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
           <h2 className="text-xl font-bold flex items-center gap-2 pt-6">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Completed Loans
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 opacity-75">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 opacity-75">
             {completedLoans.map(renderLoanCard)}
           </div>
         </>

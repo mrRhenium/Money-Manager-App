@@ -10,7 +10,7 @@ export function formatIndianNumber(value: string | number): string {
   
   // Split into integer and fractional parts
   const parts = cleanValue.split(".");
-  let integerPart = parts[0];
+  const integerPart = parts[0];
   const decimalPart = parts.length > 1 ? "." + parts[1].slice(0, 2) : ""; // limit to 2 decimal places
   
   if (!integerPart) return decimalPart ? "0" + decimalPart : "";

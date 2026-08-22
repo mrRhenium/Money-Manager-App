@@ -131,7 +131,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   }, [open, step, manualEntry]);
 
   // Parse UPI URL
-  const parseUpiUrl = (url: string) => {
+  function parseUpiUrl(url: string) {
     if (!url.startsWith("upi://pay")) {
       return null;
     }
@@ -158,7 +158,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     }
   };
 
-  const handleScanSuccess = (rawText: string) => {
+  function handleScanSuccess(rawText: string) {
     const parsed = parseUpiUrl(rawText);
     if (!parsed) {
       toast.error("This doesn't look like a valid UPI QR code");

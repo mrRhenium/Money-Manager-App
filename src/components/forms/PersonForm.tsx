@@ -80,7 +80,7 @@ export function PersonForm({ person }: { person?: any }) {
     try {
       const props = ['name', 'tel'];
       const opts = { multiple: false };
-      // @ts-ignore
+      // @ts-expect-error navigator.contacts is a non-standard API supported only on mobile browsers
       const contacts = await navigator.contacts.select(props, opts);
       if (contacts && contacts.length > 0) {
         const c = contacts[0];

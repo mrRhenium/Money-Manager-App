@@ -14,7 +14,9 @@ import {
   Landmark,
   Tags,
   TrendingUp,
-  History
+  History,
+  Repeat,
+  QrCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +30,12 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
     { href: "/categories", icon: Tags, label: "Categories" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/budgets", icon: PieChart, label: "Budgets" },
+    { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
     { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/people", icon: Users, label: "People" },
     { href: "/audit-logs", icon: History, label: "Audit Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
+    { href: "/my-upi", icon: QrCode, label: "My UPI & QR" },
   ];
 
   if (role === "ADMIN") {

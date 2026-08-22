@@ -49,3 +49,23 @@ export async function sendTestNotification() {
     return { success: false, error: "Failed to send notification" };
   }
 }
+
+export async function sendPushNotification(userId: string, title: string, body: string) {
+  await dbConnect();
+  const user = await User.findById(userId);
+
+  if (!user || !user.pushSubscription) {
+    return { success: false, error: "No subscription found" };
+  }
+
+  try {
+    await webpush.sendNotification(
+      user.pushSubscription,
+      JSON.stringify({ title, body })
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending push notification to user", userId, error);
+    return { success: false, error: "Failed" };
+  }
+}

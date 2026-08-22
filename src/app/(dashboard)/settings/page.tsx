@@ -14,7 +14,7 @@ import { getUserProfile, updateProfile, updateThemeColor } from "@/actions/user"
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 import { useToast } from "@/hooks/useToast";
-import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy } from "lucide-react";
+import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
@@ -37,13 +37,8 @@ function SettingsContent() {
   
   const [name, setName] = useState(session?.user?.name || "");
   const [mobile, setMobile] = useState("");
-  const [upiIds, setUpiIds] = useState<string[]>([]);
   const [image, setImage] = useState<string>("");
-  const [qrCode, setQrCode] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
-  const [selectedUpiForQr, setSelectedUpiForQr] = useState<string>("");
-  const [qrModalOpen, setQrModalOpen] = useState(false);
   const [themeColor, setThemeColor] = useState((session?.user as any)?.themeColor || "#0ea5e9");
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isThemeLoading, setIsThemeLoading] = useState(false);
@@ -103,12 +98,7 @@ function SettingsContent() {
       if (user.name) setName(user.name);
       if (user.mobile) setMobile(user.mobile);
       if (user.themeColor) setThemeColor(user.themeColor);
-      if (user.upiIds) {
-        setUpiIds(user.upiIds);
-        if (user.upiIds.length > 0) setSelectedUpiForQr(user.upiIds[0]);
-      }
       if (user.image) setImage(user.image);
-      if (user.qrCode) setQrCode(user.qrCode);
     }).catch(console.error);
   }, [session]);
 
@@ -154,7 +144,7 @@ function SettingsContent() {
   const handleProfileSave = async () => {
     try {
       setIsProfileLoading(true);
-      await updateProfile({ name, mobile, qrCode, image, upiIds: upiIds.filter(v => v.trim() !== "") });
+      await updateProfile({ name, mobile, image });
       await updateSession({ name, image }); // Refresh session data
       toast.success("Profile updated successfully!");
     } catch (error: any) {
@@ -190,22 +180,6 @@ function SettingsContent() {
     }
   };
 
-  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    
-    try {
-      setIsUploading(true);
-      const url = await uploadImageToCloudinary(file, "money-manager/qrcodes");
-      setQrCode(url);
-      toast.success("QR Code uploaded! Don't forget to save changes.");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to upload QR Code");
-    } finally {
-      setIsUploading(false);
-      if (e.target) e.target.value = "";
-    }
-  };
 
   async function handleSubscribe() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -221,7 +195,7 @@ function SettingsContent() {
       }
 
       // Instead of waiting forever for .ready, let's check if it's registered first
-      let registration = await navigator.serviceWorker.getRegistration();
+      const registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
         toast.error("Service worker not registered. Push notifications are disabled in development mode.");
         return;
@@ -241,19 +215,25 @@ function SettingsContent() {
   }
 
   const renderProfileCard = (isMobileView = false) => {
-    const generatedUpiUrl = selectedUpiForQr ? `upi://pay?pa=${selectedUpiForQr}&pn=${encodeURIComponent(name || "User")}` : "";
-
     const content = (
       <div className="space-y-4">
         <div className="flex items-center gap-4 mb-6">
-          <div className="relative w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground text-2xl overflow-hidden group border">
-            {image ? (
-              <img src={image} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-8 h-8" />
-            )}
-            <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-              {isAvatarUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <UploadCloud className="w-5 h-5 text-white" />}
+          <div className="relative w-16 h-16 shrink-0 group">
+            <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center text-secondary-foreground text-2xl overflow-hidden border">
+              {image ? (
+                <img src={image} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-8 h-8" />
+              )}
+              <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer rounded-full">
+                {isAvatarUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <UploadCloud className="w-5 h-5 text-white" />}
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
+              </label>
+            </div>
+            
+            {/* Persistent Edit Icon Badge */}
+            <label className="absolute bottom-0 right-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform">
+              <PenLine className="w-3 h-3" />
               <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
             </label>
           </div>
@@ -287,141 +267,7 @@ function SettingsContent() {
           <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
         </div>
 
-        <div className="space-y-3 pt-4 border-t">
-          <div className="flex items-center justify-between">
-            <Label>My UPI IDs</Label>
-            <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ""])} className="h-7 text-xs">
-              <Plus className="w-3 h-3 mr-1" /> Add UPI ID
-            </Button>
-          </div>
-          {upiIds.map((vpa, idx) => (
-            <div key={idx} className="flex gap-2">
-              <Input
-                placeholder="e.g. name@bank"
-                value={vpa}
-                onChange={(e) => {
-                  const newIds = [...upiIds];
-                  newIds[idx] = e.target.value;
-                  setUpiIds(newIds);
-                }}
-              />
-              <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(vpa, "UPI ID")} disabled={!vpa}>
-                <Copy className="w-4 h-4" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => {
-                setUpiIds(upiIds.filter((_, i) => i !== idx));
-              }}>
-                <Trash className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
-          {upiIds.length === 0 && <p className="text-xs text-muted-foreground italic">No UPI IDs added.</p>}
-        </div>
-
-        <div className="space-y-3 pt-4 border-t">
-          <Label>My Receiving QR Code</Label>
-          <div className="flex flex-col gap-4">
-            {upiIds.length > 0 ? (
-              <div className="flex flex-col gap-4 items-start">
-                <div className="space-y-1 w-full max-w-sm">
-                  <Label className="text-xs">Select UPI ID for QR Code</Label>
-                  <select 
-                    className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    value={selectedUpiForQr}
-                    onChange={(e) => setSelectedUpiForQr(e.target.value)}
-                  >
-                    {upiIds.filter(v => v.trim() !== "").map((vpa, i) => (
-                      <option key={i} value={vpa}>{vpa}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {generatedUpiUrl && (
-                  <div className="flex flex-col gap-2">
-                    <button 
-                      type="button" 
-                      onClick={() => setQrModalOpen(true)}
-                      className="p-4 bg-white rounded-2xl shadow-sm border self-start hover:shadow-md transition-shadow cursor-pointer relative group"
-                    >
-                      <QRCodeSVG 
-                        value={generatedUpiUrl} 
-                        size={150} 
-                        level="M" 
-                        imageSettings={{
-                          src: "/favicon.png",
-                          x: undefined,
-                          y: undefined,
-                          height: 32,
-                          width: 32,
-                          excavate: true,
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black/5 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                        <span className="bg-black/60 text-white text-xs px-2 py-1 rounded-full font-medium shadow-sm">Click to Enlarge</span>
-                      </div>
-                    </button>
-
-                    <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
-                      <DialogContent className="sm:max-w-md flex flex-col items-center justify-center p-8 border-none bg-white/95 backdrop-blur shadow-2xl">
-                        <DialogHeader className="mb-4">
-                          <DialogTitle className="text-center text-xl font-bold">My QR Code</DialogTitle>
-                        </DialogHeader>
-                        <div className="p-6 bg-white rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.1)] border-4 border-primary/10">
-                          <QRCodeSVG 
-                            value={generatedUpiUrl} 
-                            size={280} 
-                            level="M" 
-                            imageSettings={{
-                              src: "/favicon.png",
-                              x: undefined,
-                              y: undefined,
-                              height: 60,
-                              width: 60,
-                              excavate: true,
-                            }}
-                          />
-                        </div>
-                        <p className="mt-6 text-sm font-semibold text-center text-foreground bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
-                          {selectedUpiForQr}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2 text-center max-w-xs">
-                          Scan this QR code with any UPI app (GPay, PhonePe, Paytm, etc.) to pay {name}.
-                        </p>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">Add a UPI ID above to automatically generate your QR code.</p>
-            )}
-            
-            <div className="pt-2">
-              <Label className="text-xs text-muted-foreground mb-2 block">Or upload a custom QR image</Label>
-              <div className="flex items-center gap-4">
-                {qrCode ? (
-                  <div className="relative group w-16 h-16 border rounded-lg overflow-hidden shrink-0">
-                    <img src={qrCode} alt="Custom QR Code" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                      <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-white hover:text-red-400" onClick={() => setQrCode("")}>
-                        <Trash className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="qr-upload" className="cursor-pointer inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
-                    {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UploadCloud className="w-4 h-4 mr-2" />}
-                    {isUploading ? "Uploading..." : qrCode ? "Change Custom QR" : "Upload Custom QR"}
-                  </Label>
-                  <input id="qr-upload" type="file" accept="image/*" className="hidden" onChange={handleQrUpload} disabled={isUploading} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <Button className="mt-4 w-full md:w-auto" onClick={handleProfileSave} disabled={isProfileLoading || isUploading || isAvatarUploading}>
+        <Button className="mt-4 w-full md:w-auto" onClick={handleProfileSave} disabled={isProfileLoading || isAvatarUploading}>
           {isProfileLoading ? "Saving..." : "Save Changes"}
         </Button>
       </div>

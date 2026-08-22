@@ -257,6 +257,31 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
               )}
             </div>
 
+            {/* Optional Person for Expense/Income */}
+            {(selectedType === "expense" || selectedType === "income") && (
+              <FormField
+                control={form.control}
+                name="personId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Users className="w-4 h-4 text-muted-foreground" /> Related Person (Optional)</FormLabel>
+                    <FormControl>
+                      <Select
+                        showSearch
+                        allowClear
+                        placeholder="Tag a person (e.g., spent on Family)"
+                        className="w-full h-10"
+                        optionFilterProp="label"
+                        options={people.map(p => ({ label: p.name, value: p._id }))}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             {/* Row 2: Currency and Amount */}
             <div className="grid grid-cols-2 gap-4">
               <FormField

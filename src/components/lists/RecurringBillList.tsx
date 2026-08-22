@@ -52,7 +52,7 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredBills.map((bill, index) => {
           const dueDate = new Date(bill.nextDueDate);
           const isOverdue = dueDate < new Date() && dueDate.toDateString() !== new Date().toDateString();

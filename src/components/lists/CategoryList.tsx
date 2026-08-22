@@ -102,7 +102,7 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
                       dataSource={filteredExpenses}
                       pagination={{ pageSize: 12, size: "small", position: "bottom", align: "end" }}
                       renderItem={renderCategoryItem}
-                      grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
+                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
                     />
                   )}
                 </div>
@@ -122,7 +122,7 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
                       dataSource={filteredIncomes}
                       pagination={{ pageSize: 12, size: "small", position: "bottom", align: "end" }}
                       renderItem={renderCategoryItem}
-                      grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
+                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
                     />
                   )}
                 </div>

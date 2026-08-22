@@ -69,7 +69,7 @@ export function AccountForm({ account }: { account?: any }) {
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} className="sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Landmark className="w-5 h-5" />

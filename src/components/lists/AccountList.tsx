@@ -68,7 +68,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
 
       {filteredAccounts.length > 0 && (
         <List
-          grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
+          grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
           dataSource={filteredAccounts}
           pagination={{ pageSize: 12, position: "bottom", align: "end" }}
         renderItem={(account: any, index: number) => (

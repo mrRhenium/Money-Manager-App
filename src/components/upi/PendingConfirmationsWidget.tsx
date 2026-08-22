@@ -88,7 +88,7 @@ export function PendingConfirmationsWidget() {
           </CardContent>
         </Card>
       } />
-      <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto p-6 rounded-2xl">
+      <DialogContent className="sm:max-w-2xl md:max-w-3xl max-h-[80vh] overflow-y-auto p-6 rounded-2xl">
         <DialogHeader className="pb-4 border-b">
           <DialogTitle className="text-lg font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
             <Smartphone className="w-5 h-5 animate-pulse" />

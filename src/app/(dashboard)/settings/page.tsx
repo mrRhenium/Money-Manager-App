@@ -550,6 +550,7 @@ function SettingsContent() {
         }
       }}>
         <DialogContent 
+          initialFocus={false}
           className="w-[95vw] max-w-lg p-5 rounded-2xl max-h-[85vh] overflow-y-auto"
         >
           <DialogHeader>

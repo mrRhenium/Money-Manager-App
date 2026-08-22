@@ -48,6 +48,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          image: user.image || null,
           role: user.role,
           timezone: user.timezone || "UTC",
           themeColor: (user as any).themeColor || null,
@@ -66,6 +67,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role;
         token.timezone = (user as any).timezone || "UTC";
         token.themeColor = (user as any).themeColor || null;
+        if (user.image) token.picture = user.image;
       }
       if (trigger === "update") {
         if (session?.themeColor !== undefined) {
@@ -77,16 +79,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (session?.name !== undefined) {
           token.name = session.name;
         }
+        if (session?.image !== undefined) {
+          token.picture = session.image;
+        }
         
         try {
           const dbConnect = (await import("./db")).default;
           const User = (await import("@/models/User")).default;
           await dbConnect();
-          const dbUser = await User.findById(token.id).select("timezone themeColor name");
+          const dbUser = await User.findById(token.id).select("timezone themeColor name image");
           if (dbUser) {
             token.timezone = dbUser.timezone || "UTC";
             token.themeColor = dbUser.themeColor || null;
             token.name = dbUser.name;
+            if (dbUser.image) token.picture = dbUser.image;
           }
         } catch (e) {
           console.error("Failed to sync database on update", e);
@@ -98,6 +104,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user && token) {
         session.user.id = token.id as string;
         session.user.role = token.role as "USER" | "ADMIN";
+        session.user.image = (token.picture as string) || null;
         (session.user as any).timezone = token.timezone as string;
         (session.user as any).themeColor = token.themeColor as string | null;
       }

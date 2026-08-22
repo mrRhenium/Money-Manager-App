@@ -19,7 +19,7 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
   return (
     <div className="w-full">
       <List
-        grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 3, xl: 3, xxl: 4 }}
+        grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
         dataSource={budgets}
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(budget: any, index: number) => {

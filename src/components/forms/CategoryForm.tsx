@@ -75,7 +75,7 @@ export function CategoryForm({ category }: { category?: any }) {
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-lg md:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} className="sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <FolderPlus className="w-5 h-5" />

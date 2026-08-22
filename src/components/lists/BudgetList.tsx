@@ -26,14 +26,16 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
           const isOverBudget = budget.totalSpent > budget.amount;
           return (
             <List.Item>
-              <div className="rounded-xl border bg-card text-card-foreground shadow p-6 flex flex-col gap-4 h-full justify-between">
+              <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 h-full justify-between group">
                 <div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CategoryIcon name={budget.categoryId?.icon} color={budget.categoryId?.color} className="w-4 h-4" />
-                      <h3 className="font-semibold">{budget.categoryId?.name}</h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="shrink-0">
+                        <CategoryIcon name={budget.categoryId?.icon} color={budget.categoryId?.color} className="w-4 h-4" />
+                      </div>
+                      <h3 className="font-semibold truncate" title={budget.categoryId?.name}>{budget.categoryId?.name}</h3>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <BudgetForm categories={categories} budget={budget} />
                       <Popconfirm
                         title="Delete Budget"

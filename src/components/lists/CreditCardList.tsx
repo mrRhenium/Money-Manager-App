@@ -30,10 +30,10 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                   className="rounded-2xl p-6 text-white shadow-lg overflow-hidden h-56 flex flex-col justify-between"
                   style={{ background: `linear-gradient(135deg, ${card.color} 0%, #1a1a1a 150%)` }}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-bold text-lg opacity-90">{card.bankName}</h3>
-                      <p className="text-sm opacity-80">{card.cardName}</p>
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg opacity-90 truncate" title={card.bankName}>{card.bankName}</h3>
+                      <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
                     </div>
                     <div className="flex items-center gap-1 z-10" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <CreditCardForm card={card} />

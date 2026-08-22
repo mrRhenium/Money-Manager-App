@@ -23,17 +23,17 @@ export function AccountList({ accounts }: { accounts: any[] }) {
         pagination={{ pageSize: 12, position: "bottom", align: "end" }}
         renderItem={(account: any) => (
           <List.Item>
-            <div className="rounded-xl border bg-card text-card-foreground shadow p-6 h-full flex flex-col justify-between">
+            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 h-full flex flex-col justify-between group">
               <div>
-                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <h3 className="tracking-tight text-sm font-medium capitalize">{account.name}</h3>
-                  <span className="text-xs text-muted-foreground uppercase bg-secondary px-2 py-1 rounded-md">{account.type}</span>
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2 min-w-0">
+                  <h3 className="tracking-tight text-sm font-medium capitalize truncate" title={account.name}>{account.name}</h3>
+                  <span className="text-[10px] text-muted-foreground font-semibold uppercase bg-secondary px-2 py-0.5 rounded-md shrink-0 border">{account.type}</span>
                 </div>
                 <div className="pt-2">
-                  <div className="text-2xl font-bold">₹{account.balance.toLocaleString('en-IN')}</div>
+                  <div className="text-2xl font-bold truncate">₹{account.balance.toLocaleString('en-IN')}</div>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+              <div className="flex justify-end gap-1 border-t pt-3 mt-4">
                 <AccountForm account={account} />
                 <Popconfirm
                   title="Delete Account"

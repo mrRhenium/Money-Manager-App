@@ -129,19 +129,86 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
     }
   ];
 
-  const changes = selectedLog ? getChangedProperties(selectedLog.previousValue, selectedLog.currentValue) : [];
+  const getActionStyle = (action: string) => {
+    if (action === "CREATE") return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    if (action === "DELETE") return "bg-red-500/10 text-red-600 border-red-500/20";
+    return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+  };
+
+  const sortedLogs = [...logs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const [mobilePage, setMobilePage] = useState(1);
+  const mobilePageSize = 10;
+  const totalPages = Math.ceil(sortedLogs.length / mobilePageSize);
+  const pagedLogs = sortedLogs.slice((mobilePage - 1) * mobilePageSize, mobilePage * mobilePageSize);
 
   return (
-    <div className="bg-card rounded-2xl overflow-hidden">
-      <Table
-        columns={columns}
-        dataSource={logs}
-        rowKey="_id"
-        pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
-        className="audit-logs-table"
-        locale={{ emptyText: "No audit logs found." }}
-      />
+    <div>
+      {/* Desktop Table */}
+      <div className="hidden md:block bg-card rounded-2xl overflow-hidden">
+        <Table
+          columns={columns}
+          dataSource={logs}
+          rowKey="_id"
+          pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
+          className="audit-logs-table"
+          locale={{ emptyText: "No audit logs found." }}
+        />
+      </div>
 
+      {/* Mobile Card List */}
+      <div className="md:hidden space-y-3">
+        {pagedLogs.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground text-sm">No audit logs found.</div>
+        )}
+        {pagedLogs.map((log: any) => (
+          <button
+            key={log._id}
+            onClick={() => setSelectedLog(log)}
+            className="w-full text-left p-4 rounded-2xl border bg-card hover:bg-secondary/20 transition-all active:scale-[0.98] space-y-2.5"
+          >
+            <div className="flex items-center justify-between">
+              <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${getActionStyle(log.action)}`}>
+                {log.action}
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-secondary text-secondary-foreground border">
+                {log.entityType}
+              </span>
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-foreground truncate">{getFriendlyEntityName(log)}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{formatDate(log.createdAt, "standard", userTimezone)}</p>
+            </div>
+          </button>
+        ))}
+
+        {/* Mobile Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-3 pb-1">
+            <button
+              onClick={() => setMobilePage(p => Math.max(1, p - 1))}
+              disabled={mobilePage === 1}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg border bg-card disabled:opacity-40 hover:bg-secondary/50 transition-colors"
+            >
+              Prev
+            </button>
+            <span className="text-xs text-muted-foreground font-medium">
+              {mobilePage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setMobilePage(p => Math.min(totalPages, p + 1))}
+              disabled={mobilePage === totalPages}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg border bg-card disabled:opacity-40 hover:bg-secondary/50 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+
+      {(() => {
+        const changes = selectedLog ? getChangedProperties(selectedLog.previousValue, selectedLog.currentValue) : [];
+        return (
         <Modal
           title={
             <div className="flex items-center gap-2 border-b pb-3 pr-6">
@@ -275,6 +342,8 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
             </div>
           )}
         </Modal>
+        );
+      })()}
     </div>
   );
 }

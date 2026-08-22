@@ -85,9 +85,13 @@ function SettingsContent() {
     async function checkSubscription() {
       try {
         if ("serviceWorker" in navigator && "PushManager" in window) {
-          const registration = await navigator.serviceWorker.ready;
-          const subscription = await registration.pushManager.getSubscription();
-          setIsSubscribed(!!subscription);
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration) {
+            const subscription = await registration.pushManager.getSubscription();
+            setIsSubscribed(!!subscription);
+          } else {
+            setIsSubscribed(false);
+          }
         }
       } catch {
         // Silently fail if service worker is not available
@@ -134,20 +138,31 @@ function SettingsContent() {
       return;
     }
 
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      toast.warning("Permission denied");
-      return;
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        toast.warning("Permission denied by browser.");
+        return;
+      }
+
+      // Instead of waiting forever for .ready, let's check if it's registered first
+      let registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        toast.error("Service worker not registered. Push notifications are disabled in development mode.");
+        return;
+      }
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+
+      await subscribeUser(subscription);
+      setIsSubscribed(true);
+      toast.success("Push notifications enabled successfully!");
+    } catch (e: any) {
+      toast.error("Failed to subscribe: " + e.message);
     }
-
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-    });
-
-    await subscribeUser(subscription);
-    setIsSubscribed(true);
   }
 
   const renderProfileCard = (isMobileView = false) => {

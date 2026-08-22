@@ -23,18 +23,18 @@ export function PersonList({ people }: { people: any[] }) {
         pagination={{ pageSize: 12, position: "bottom", align: "end" }}
         renderItem={(person: any) => (
           <List.Item>
-            <div className="rounded-xl border bg-card text-card-foreground shadow p-6 flex flex-col justify-between h-full">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground">
+            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group">
+              <div className="flex items-start justify-between mb-4 gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                     <UserIcon className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold">{person.name}</h3>
-                    <p className="text-xs text-muted-foreground">{person.relation}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold truncate" title={person.name}>{person.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{person.relation}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <PersonForm person={person} />
                   <Popconfirm
                     title="Delete Contact"

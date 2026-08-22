@@ -245,10 +245,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     try {
       setLoading(true);
 
-      // Save payee VPA if toggle is active
-      if (savePayee) {
-        await savePersonVpa(payeeName, vpa, savePayeeRelation);
-      }
+      // Save payee VPA unconditionally
+      await savePersonVpa(payeeName, vpa, "Merchant");
 
       // Create transaction immediately with awaiting_confirmation status
       const txn = await createTransaction({
@@ -546,34 +544,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 />
               </div>
 
-              <div className="flex flex-col gap-2 p-3 bg-secondary/30 rounded-lg border mt-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-muted-foreground">Save to Payee Book</span>
-                  <input
-                    type="checkbox"
-                    checked={savePayee}
-                    onChange={e => setSavePayee(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 accent-primary"
-                  />
-                </div>
-                {savePayee && (
-                  <div className="pt-2 border-t border-border/50">
-                    <Label className="text-xs mb-1 block">Relation Type</Label>
-                    <Select
-                      value={savePayeeRelation}
-                      onChange={setSavePayeeRelation}
-                      className="w-full h-8"
-                      options={[
-                        { label: 'Merchant', value: 'Merchant' },
-                        { label: 'Shopkeeper', value: 'Shopkeeper' },
-                        { label: 'Friend', value: 'Friend' },
-                        { label: 'Family', value: 'Family' },
-                        { label: 'Colleague', value: 'Colleague' },
-                        { label: 'Other', value: 'Other' },
-                      ]}
-                    />
-                  </div>
-                )}
+              <div className="text-[10px] text-muted-foreground italic text-center mt-4">
+                This UPI ID will be automatically saved to your Payee Book for quicker access next time.
               </div>
             </div>
 

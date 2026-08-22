@@ -38,6 +38,7 @@ export function SidebarClient({ user }: { user: any }) {
               src="/icon-192x192.png" 
               alt="Money Manager Logo" 
               fill
+              sizes="40px"
               className="rounded-xl object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
@@ -67,7 +68,7 @@ export function SidebarClient({ user }: { user: any }) {
           <Link href="/settings" className="flex items-center gap-3 overflow-hidden hover:opacity-80 transition-opacity cursor-pointer">
             <div className="relative min-w-[40px] h-[40px] rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center font-bold text-primary ring-2 ring-background shrink-0 shadow-sm">
               {user?.image ? (
-                <Image src={user.image} alt="Profile" fill className="object-cover" />
+                <Image src={user.image} alt="Profile" fill sizes="40px" className="object-cover" />
               ) : (
                 user?.name?.charAt(0) || "U"
               )}

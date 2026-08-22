@@ -5,7 +5,13 @@ import Transaction, { TransactionType } from "@/models/Transaction";
 import Account from "@/models/Account";
 import CreditCard from "@/models/CreditCard";
 import CardStatement from "@/models/CardStatement";
+import Category from "@/models/Category";
 import User from "@/models/User";
+
+// Force models to register for populate
+import "@/models/Category";
+import "@/models/Account";
+
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";

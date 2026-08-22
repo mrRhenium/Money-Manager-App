@@ -295,6 +295,22 @@ function SettingsContent() {
           </div>
           <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
         </div>
+        <div className="space-y-2 pt-2">
+          <Label>Base Currency</Label>
+          <Select 
+            value={currency} 
+            onChange={handleCurrencyChange} 
+            disabled={isCurrencyLoading}
+            className="w-full h-10"
+            options={[
+              { label: 'Indian Rupee (INR)', value: 'INR' },
+              { label: 'US Dollar (USD)', value: 'USD' },
+              { label: 'Euro (EUR)', value: 'EUR' },
+              { label: 'British Pound (GBP)', value: 'GBP' },
+            ]}
+          />
+          <p className="text-xs text-muted-foreground">This sets the default symbol and formatting everywhere in the app.</p>
+        </div>
 
         <Button className="mt-4 w-full md:w-auto" onClick={handleProfileSave} disabled={isProfileLoading || isAvatarUploading}>
           {isProfileLoading ? "Saving..." : "Save Changes"}
@@ -348,23 +364,6 @@ function SettingsContent() {
               Reset Default
             </Button>
           </div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label>Base Currency</Label>
-          <Select 
-            value={currency} 
-            onChange={handleCurrencyChange} 
-            disabled={isCurrencyLoading}
-            className="w-full h-10"
-            options={[
-              { label: 'Indian Rupee (INR)', value: 'INR' },
-              { label: 'US Dollar (USD)', value: 'USD' },
-              { label: 'Euro (EUR)', value: 'EUR' },
-              { label: 'British Pound (GBP)', value: 'GBP' },
-            ]}
-          />
-          <p className="text-xs text-muted-foreground">This sets the default symbol and formatting everywhere in the app.</p>
         </div>
       </div>
     );

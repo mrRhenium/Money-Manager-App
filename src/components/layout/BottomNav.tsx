@@ -13,7 +13,7 @@ export function BottomNav() {
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
-    { label: "Wallets", href: "/transactions", icon: Wallet },
+    { label: "Transactions", href: "/transactions", icon: Wallet },
     { label: "Add", href: "#", icon: QrCode, isMain: true },
     { label: "Budgets", href: "/budgets", icon: PieChart },
     { label: "Menu", href: "#", icon: Menu, isMenu: true },

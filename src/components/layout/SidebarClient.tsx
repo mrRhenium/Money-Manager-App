@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "../theme-toggle";
 import { SidebarMenu } from "./SidebarMenu";
@@ -33,10 +34,11 @@ export function SidebarClient({ user }: { user: any }) {
       <div className="h-20 flex items-center px-6 border-b border-border/40 shrink-0 overflow-hidden">
         <Link href="/" className="flex items-center gap-3 no-underline group/logo">
           <div className="relative flex items-center justify-center min-w-[40px] h-[40px] rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold shadow-lg shadow-primary/20 group-hover/logo:shadow-primary/40 transition-shadow">
-            <img 
+            <Image 
               src="/icon-192x192.png" 
               alt="Money Manager Logo" 
-              className="w-full h-full rounded-xl object-cover absolute inset-0"
+              fill
+              className="rounded-xl object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
@@ -63,9 +65,9 @@ export function SidebarClient({ user }: { user: any }) {
           isCollapsed ? "justify-center p-2" : "justify-between bg-card/60 backdrop-blur-md border border-border/50 p-2 shadow-sm"
         )}>
           <Link href="/settings" className="flex items-center gap-3 overflow-hidden hover:opacity-80 transition-opacity cursor-pointer">
-            <div className="min-w-[40px] h-[40px] rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center font-bold text-primary ring-2 ring-background shrink-0 shadow-sm">
+            <div className="relative min-w-[40px] h-[40px] rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center font-bold text-primary ring-2 ring-background shrink-0 shadow-sm">
               {user?.image ? (
-                <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
+                <Image src={user.image} alt="Profile" fill className="object-cover" />
               ) : (
                 user?.name?.charAt(0) || "U"
               )}

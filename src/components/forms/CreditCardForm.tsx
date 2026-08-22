@@ -99,7 +99,7 @@ export function CreditCardForm({ card }: { card?: any }) {
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="gap-2 rounded-xl">
+          <Button className="w-full sm:w-auto gap-2 rounded-xl">
             <Plus className="w-4 h-4" />
             Add Credit Card
           </Button>

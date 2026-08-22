@@ -90,7 +90,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
+          <Button className="w-full sm:w-auto font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
             <Plus className="w-4 h-4 mr-2" />
             Add Goal
           </Button>

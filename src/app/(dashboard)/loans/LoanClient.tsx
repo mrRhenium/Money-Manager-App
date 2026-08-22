@@ -53,8 +53,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
 
     return (
       <Card key={loan._id} className="relative overflow-hidden group hover:shadow-md transition-shadow">
-        <div className={`absolute top-0 left-0 w-1.5 h-full`} style={{ backgroundColor: loan.color }} />
-        <CardContent className="p-5 pl-6">
+        <CardContent className="p-5">
           <div className="flex justify-between items-start mb-4 gap-2">
             <div className="flex items-center gap-3 min-w-0">
               <div 

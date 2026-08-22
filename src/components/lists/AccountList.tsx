@@ -6,7 +6,27 @@ import { Input } from "@/components/ui/input";
 import { Select } from "antd";
 import { AccountForm } from "../forms/AccountForm";
 import { deleteAccount } from "@/actions/account";
-import { Trash, Search, Filter } from "lucide-react";
+import { Trash, Search, Filter, Landmark, Wallet, Banknote, CreditCard } from "lucide-react";
+
+const getAccountIcon = (type: string) => {
+  switch (type.toLowerCase()) {
+    case 'bank': return <Landmark className="w-5 h-5" />;
+    case 'cash': return <Banknote className="w-5 h-5" />;
+    case 'card': return <CreditCard className="w-5 h-5" />;
+    case 'wallet': return <Wallet className="w-5 h-5" />;
+    default: return <Wallet className="w-5 h-5" />;
+  }
+};
+
+const getAccountColor = (type: string) => {
+  switch (type.toLowerCase()) {
+    case 'bank': return '#3b82f6'; // blue
+    case 'cash': return '#10b981'; // emerald
+    case 'card': return '#f59e0b'; // amber
+    case 'wallet': return '#8b5cf6'; // violet
+    default: return '#6b7280'; // gray
+  }
+};
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -73,51 +93,60 @@ export function AccountList({ accounts }: { accounts: any[] }) {
           grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
           dataSource={filteredAccounts}
           pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-        renderItem={(account: any, index: number) => (
+        renderItem={(account: any) => (
           <List.Item>
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 h-full flex flex-col justify-between group">
-              <div>
-                <div className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
-                    <h3 className="tracking-tight text-sm font-medium capitalize truncate" title={account.name}>{account.name}</h3>
+            <div className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
+              <div className="flex justify-between items-start gap-4 z-10">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
+                    style={{ backgroundColor: getAccountColor(account.type) }}
+                  >
+                    {getAccountIcon(account.type)}
                   </div>
-                  <span className="text-[10px] text-muted-foreground font-semibold uppercase bg-secondary px-2 py-0.5 rounded-md shrink-0 border">{account.type}</span>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-lg leading-tight line-clamp-1 capitalize" title={account.name}>{account.name}</h3>
+                    <p className="text-[10px] text-muted-foreground uppercase font-semibold mt-1 tracking-wider">
+                      {account.type}
+                    </p>
+                  </div>
                 </div>
-                <div className="pt-2">
-                  <div className="text-2xl font-bold truncate">{format(account.balance)}</div>
-                </div>
-              </div>
-              <div className="flex justify-end gap-1 border-t pt-3 mt-4">
-                <AccountForm account={account} />
-                <Popconfirm
-                  title="Delete Account"
-                  description="Are you sure you want to delete this account?"
-                  onConfirm={async () => {
-                    try {
-                      const res = await deleteAccount(account._id);
-                      if (res && !res.success) {
+
+                <div className="flex items-center gap-1 transition-opacity shrink-0">
+                  <AccountForm account={account} />
+                  <Popconfirm
+                    title="Delete Account"
+                    description="Are you sure you want to delete this account?"
+                    onConfirm={async () => {
+                      try {
+                        const res = await deleteAccount(account._id);
+                        if (res && !res.success) {
+                          Modal.error({
+                            title: "Cannot Delete Account",
+                            content: res.error || "This account is in use elsewhere.",
+                            okText: "Close",
+                          });
+                        }
+                      } catch (err: any) {
                         Modal.error({
                           title: "Cannot Delete Account",
-                          content: res.error || "This account is in use elsewhere.",
+                          content: err.message || "This account is in use elsewhere.",
                           okText: "Close",
                         });
                       }
-                    } catch (err: any) {
-                      Modal.error({
-                        title: "Cannot Delete Account",
-                        content: err.message || "This account is in use elsewhere.",
-                        okText: "Close",
-                      });
-                    }
-                  }}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                    <Trash className="w-4 h-4" />
-                  </Button>
-                </Popconfirm>
+                    }}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                      <Trash className="w-4 h-4" />
+                    </Button>
+                  </Popconfirm>
+                </div>
+              </div>
+
+              <div className="z-10 mt-auto pt-4">
+                <div className="text-3xl font-bold truncate tracking-tight">{format(account.balance)}</div>
               </div>
             </div>
           </List.Item>

@@ -133,7 +133,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className={triggerClassName || "font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"}>
+          <Button className={`w-full sm:w-auto ${triggerClassName || "font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"}`}>
             <Plus className="w-4 h-4 mr-2" />
             Add Investment
           </Button>

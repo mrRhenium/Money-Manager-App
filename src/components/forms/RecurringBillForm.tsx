@@ -90,7 +90,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className={triggerClassName}>
+          <Button className={`w-full sm:w-auto ${triggerClassName || ""}`}>
             <Plus className="w-4 h-4 mr-2" />
             Add Auto-Pay / Subscription
           </Button>

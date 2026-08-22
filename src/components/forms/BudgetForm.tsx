@@ -79,7 +79,7 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             Set Budget
           </Button>

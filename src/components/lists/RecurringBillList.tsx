@@ -60,28 +60,31 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
           const isToday = dueDate.toDateString() === new Date().toDateString();
 
           return (
-            <div key={bill._id} className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
-              
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${bill.color || '#6366f1'}15` }}>
-                    <CategoryIcon name={bill.icon} color={bill.color} className="w-5 h-5" />
+            <div key={bill._id} className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
+              <div className="flex justify-between items-start gap-4 z-10">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner" 
+                    style={{ backgroundColor: bill.color || '#6366f1' }}
+                  >
+                    <CategoryIcon name={bill.icon} className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-base leading-tight mb-0.5">{bill.name}</h3>
-                    <p className="text-sm font-medium text-foreground">{format(bill.amount)} <span className="text-muted-foreground text-xs font-normal">/ {bill.frequency}</span></p>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-lg leading-tight line-clamp-1" title={bill.name}>{bill.name}</h3>
+                    <p className="text-sm font-semibold mt-1">
+                      {format(bill.amount)} <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground font-normal">/ {bill.frequency}</span>
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 transition-opacity shrink-0">
                   <RecurringBillForm accounts={accounts} categories={categories} bill={bill} />
                   <Popconfirm
                     title="Delete Subscription"
                     description="Are you sure you want to delete this subscription?"
                     onConfirm={() => handleDelete(bill._id)}
-                    okText="Yes, Delete"
-                    cancelText="Cancel"
+                    okText="Yes"
+                    cancelText="No"
                   >
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors cursor-pointer">
                       <Trash className="w-4 h-4" />
@@ -90,31 +93,38 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
                 </div>
               </div>
 
-              <div className="space-y-2 mt-4 pt-4 border-t border-border/50">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5" /> From</span>
-                  <span className="font-medium truncate max-w-[120px]">{bill.accountId?.name || "Not set"}</span>
-                </div>
-                {bill.autoPayPlatform && (
+              <div className="z-10 mt-auto">
+                <div className="space-y-3 pt-4 border-t border-border/50">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5" /> Platform</span>
-                    <span className="font-medium truncate max-w-[120px]">{bill.autoPayPlatform}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Wallet className="w-3 h-3" /> FROM</span>
+                    <span className="font-semibold truncate max-w-[120px]">{bill.accountId?.name || "Not set"}</span>
                   </div>
-                )}
+                  {bill.autoPayPlatform && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Smartphone className="w-3 h-3" /> PLATFORM</span>
+                      <span className="font-semibold truncate max-w-[120px]">{bill.autoPayPlatform}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-5 flex items-center justify-between">
+                  <Badge variant={isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-bold px-3 py-1">
+                    {isOverdue ? "Overdue" : isToday ? "Due Today" : `Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
+                  </Badge>
+                  
+                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold rounded-full hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-colors" onClick={() => {
+                    toast.info("In a future update, this will automatically log the payment and advance the due date!");
+                  }}>
+                    <CheckCircle className="w-4 h-4 mr-1.5" /> Mark Paid
+                  </Button>
+                </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
-                <Badge variant={isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-medium">
-                  {isOverdue ? "Overdue" : isToday ? "Due Today" : `Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
-                </Badge>
-                
-                <Button variant="outline" size="sm" className="h-7 text-xs rounded-full" onClick={() => {
-                  // In the future, this could pre-fill a TransactionForm and increment the nextDueDate
-                  toast.info("In a future update, this will automatically log the payment and advance the due date!");
-                }}>
-                  <CheckCircle className="w-3.5 h-3.5 mr-1" /> Mark Paid
-                </Button>
-              </div>
+              {/* Decorative background circle */}
+              <div 
+                className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
+                style={{ backgroundColor: bill.color || '#6366f1' }}
+              />
             </div>
           );
         })}

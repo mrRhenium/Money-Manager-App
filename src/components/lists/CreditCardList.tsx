@@ -40,6 +40,21 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                         <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
                       </div>
                     </div>
+                    <div className="flex items-center gap-1 z-10 shrink-0">
+                      <div className="bg-white/25 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md mt-1">
+                        {card.cardNetwork}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-end">
+                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 font-mono text-base sm:text-lg md:text-xl tracking-widest opacity-90">
+                      <span>••••</span>
+                      <span>••••</span>
+                      <span>••••</span>
+                      <span>{card.last4Digits}</span>
+                    </div>
+
                     <div className="flex items-center gap-1 z-10 shrink-0" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <CreditCardForm card={card} />
                       <Popconfirm
@@ -70,20 +85,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                           <Trash className="w-4 h-4" />
                         </Button>
                       </Popconfirm>
-                      <div className="bg-white/25 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
-                        {card.cardNetwork}
-                      </div>
                     </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 font-mono text-base sm:text-lg md:text-xl tracking-widest mb-4 opacity-90">
-                      <span>••••</span>
-                      <span>••••</span>
-                      <span>••••</span>
-                      <span>{card.last4Digits}</span>
-                    </div>
-
                   </div>
                 </div>
 

@@ -51,8 +51,21 @@ export function GoalList({ goals }: { goals: any[] }) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 transition-opacity">
+                  <div className="flex items-center gap-1 transition-opacity shrink-0">
                     <GoalForm goal={goal} onUpdate={() => {}} />
+                    <Popconfirm
+                      title="Delete Goal"
+                      description="Are you sure you want to delete this savings goal?"
+                      onConfirm={async () => {
+                        await deleteGoal(goal._id);
+                      }}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </Popconfirm>
                   </div>
                 </div>
 
@@ -89,19 +102,6 @@ export function GoalList({ goals }: { goals: any[] }) {
                 {!isCompleted && (
                   <div className="flex gap-2 shrink-0 z-10 pt-2">
                     <AddFundsModal goal={goal} onUpdate={() => {}} />
-                    <Popconfirm
-                      title="Delete Goal"
-                      description="Are you sure you want to delete this savings goal?"
-                      onConfirm={async () => {
-                        await deleteGoal(goal._id);
-                      }}
-                      okText="Yes"
-                      cancelText="No"
-                    >
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                        <Trash className="w-4 h-4" />
-                      </Button>
-                    </Popconfirm>
                   </div>
                 )}
                 

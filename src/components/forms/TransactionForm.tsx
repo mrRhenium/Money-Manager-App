@@ -80,6 +80,7 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
 
   const selectedType = form.watch("type");
   const selectedPaymentMode = form.watch("paymentMode");
+  const watchedOriginalCurrency = form.watch("originalCurrency");
   const filteredCategories = categories.filter(c => c.type === selectedType || selectedType === "lend" || selectedType === "borrow" || selectedType === "settlement");
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -325,7 +326,7 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
                     <FormControl>
                       <CurrencyInput
                         placeholder="e.g. 1,50,000"
-                        currency={form.watch("originalCurrency") || "INR"}
+                        currency={watchedOriginalCurrency || "INR"}
                         onCurrencyChange={(val) => form.setValue("originalCurrency", val)}
                         {...field}
                         onChange={(e) => {

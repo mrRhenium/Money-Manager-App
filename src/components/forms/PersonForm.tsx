@@ -10,14 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createPerson, updatePerson } from "@/actions/person";
-import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser, PenLine, QrCode } from "lucide-react";
+import { useFieldArray } from "react-hook-form";
+import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser, PenLine, QrCode, Trash } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
+  relation: z.enum(["Friend", "Family", "Colleague", "Merchant", "Shopkeeper", "Other"]),
   name: z.string().min(2, "Name must be at least 2 characters"),
-  relation: z.enum(["Friend", "Family", "Colleague", "Other"]),
-  phone: z.string().optional(),
-  vpa: z.string().optional(),
+  phones: z.array(z.object({ value: z.string() })).optional(),
+  vpas: z.array(z.object({ value: z.string() })).optional(),
 });
 
 export function PersonForm({ person }: { person?: any }) {
@@ -26,24 +27,42 @@ export function PersonForm({ person }: { person?: any }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      name: person?.name || "",
       relation: person?.relation || "Friend",
-      phone: person?.phone || "",
-      vpa: person?.vpa || "",
+      name: person?.name || "",
+      phones: person?.phones?.length ? person.phones.map((p: string) => ({ value: p })) : [],
+      vpas: person?.vpas?.length ? person.vpas.map((v: string) => ({ value: v })) : [],
     },
+  });
+
+  const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
+    name: "phones",
+    control: form.control,
+  });
+
+  const { fields: vpaFields, append: appendVpa, remove: removeVpa } = useFieldArray({
+    name: "vpas",
+    control: form.control,
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const transformedValues = {
+        name: values.name,
+        relation: values.relation,
+        phones: values.phones?.map(p => p.value).filter(Boolean) || [],
+        vpas: values.vpas?.map(v => v.value).filter(Boolean) || [],
+      };
+
       if (person?._id) {
-        await updatePerson(person._id, values);
+        await updatePerson(person._id, transformedValues);
       } else {
-        await createPerson(values);
+        await createPerson(transformedValues);
       }
       setOpen(false);
       form.reset();
-    } catch (error) {
-      console.error("Failed to save person", error);
+      toast.success(person ? "Contact updated" : "Contact added");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save contact");
     }
   }
 
@@ -64,7 +83,8 @@ export function PersonForm({ person }: { person?: any }) {
           form.setValue("name", c.name[0]);
         }
         if (c.tel && c.tel.length > 0) {
-          form.setValue("phone", c.tel[0]);
+          const currentPhones = form.getValues("phones") || [];
+          form.setValue("phones", [...currentPhones, { value: c.tel[0] }]);
         }
       }
     } catch (err) {
@@ -113,19 +133,6 @@ export function PersonForm({ person }: { person?: any }) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><User className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Enter Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="relation"
               render={({ field }) => (
                 <FormItem>
@@ -140,6 +147,8 @@ export function PersonForm({ person }: { person?: any }) {
                         { label: 'Friend', value: 'Friend' },
                         { label: 'Family', value: 'Family' },
                         { label: 'Colleague', value: 'Colleague' },
+                        { label: 'Merchant', value: 'Merchant' },
+                        { label: 'Shopkeeper', value: 'Shopkeeper' },
                         { label: 'Other', value: 'Other' },
                       ]}
                       {...field}
@@ -151,30 +160,77 @@ export function PersonForm({ person }: { person?: any }) {
             />
             <FormField
               control={form.control}
-              name="phone"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /> Phone Number (Optional)</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><User className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="+91 9876543210" {...field} />
+                    <Input placeholder="e.g. Enter Name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="vpa"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><QrCode className="w-4 h-4 text-muted-foreground" /> UPI VPA (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. name@bank" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <FormLabel className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /> Phone Numbers</FormLabel>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendPhone({ value: "" })} className="h-7 text-xs">
+                  <Plus className="w-3 h-3 mr-1" /> Add
+                </Button>
+              </div>
+              {phoneFields.map((field, index) => (
+                <FormField
+                  key={field.id}
+                  control={form.control}
+                  name={`phones.${index}.value`}
+                  render={({ field: inputField }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex gap-2">
+                          <Input placeholder="+91 9876543210" {...inputField} />
+                          <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removePhone(index)}>
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+              {phoneFields.length === 0 && <p className="text-xs text-muted-foreground italic">No phone numbers added.</p>}
+            </div>
+
+            <div className="space-y-3 pt-2 pb-2">
+              <div className="flex items-center justify-between">
+                <FormLabel className="flex items-center gap-2"><QrCode className="w-4 h-4 text-muted-foreground" /> UPI VPAs</FormLabel>
+                <Button type="button" variant="outline" size="sm" onClick={() => appendVpa({ value: "" })} className="h-7 text-xs">
+                  <Plus className="w-3 h-3 mr-1" /> Add
+                </Button>
+              </div>
+              {vpaFields.map((field, index) => (
+                <FormField
+                  key={field.id}
+                  control={form.control}
+                  name={`vpas.${index}.value`}
+                  render={({ field: inputField }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex gap-2">
+                          <Input placeholder="e.g. name@bank" {...inputField} />
+                          <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeVpa(index)}>
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+              {vpaFields.length === 0 && <p className="text-xs text-muted-foreground italic">No UPI VPAs added.</p>}
+            </div>
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{person ? "Save Changes" : "Add Contact"}</Button>
           </form>
         </Form>

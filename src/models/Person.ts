@@ -3,9 +3,9 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 export interface IPerson extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
-  phone?: string;
-  relation: "Friend" | "Family" | "Colleague" | "Other";
-  vpa?: string;
+  phones: string[];
+  relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other";
+  vpas: string[];
   avatarUrl?: string;
   createdAt: Date;
 }
@@ -14,19 +14,20 @@ const PersonSchema: Schema<IPerson> = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true },
-    phone: { type: String },
+    phones: [{ type: String }],
     relation: {
       type: String,
-      enum: ["Friend", "Family", "Colleague", "Other"],
+      enum: ["Friend", "Family", "Colleague", "Merchant", "Shopkeeper", "Other"],
       default: "Other",
     },
-    vpa: { type: String },
+    vpas: [{ type: String }],
     avatarUrl: { type: String },
   },
   { timestamps: true }
 );
 
 PersonSchema.index({ userId: 1 });
+PersonSchema.index({ userId: 1, name: 1 }, { unique: true });
 
 const Person: Model<IPerson> =
   mongoose.models.Person || mongoose.model<IPerson>("Person", PersonSchema);

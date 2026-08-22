@@ -9,9 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { createTransaction, confirmTransaction } from "@/actions/transaction";
 import { getCategories } from "@/actions/category";
 import { getAccounts } from "@/actions/account";
-import { savePersonVpa } from "@/actions/person";
+import { getPeople, savePersonVpa } from "@/actions/person";
 import { useToast } from "@/hooks/useToast";
-import { Camera, AlertCircle, CheckCircle, Smartphone, Loader2, Landmark, Tag } from "lucide-react";
+import { Camera, AlertCircle, CheckCircle, Smartphone, Loader2, Landmark, Tag, Users } from "lucide-react";
 import { Select } from "antd";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 
@@ -44,6 +44,12 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   // Options loaded from DB
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [people, setPeople] = useState<any[]>([]);
+  
+  // Quick Select State
+  const [selectedPersonId, setSelectedPersonId] = useState("");
+  type RelationType = "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other";
+  const [savePayeeRelation, setSavePayeeRelation] = useState<RelationType>("Merchant");
 
   // States
   const [loading, setLoading] = useState(false);
@@ -56,6 +62,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   useEffect(() => {
     if (open) {
       getCategories().then(setCategories).catch(console.error);
+      getPeople().then(setPeople).catch(console.error);
       getAccounts().then(accs => {
         setAccounts(accs);
         // Default to first bank/wallet/cash account if available
@@ -240,7 +247,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
       // Save payee VPA if toggle is active
       if (savePayee) {
-        await savePersonVpa(payeeName, vpa);
+        await savePersonVpa(payeeName, vpa, savePayeeRelation);
       }
 
       // Create transaction immediately with awaiting_confirmation status
@@ -333,6 +340,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     setCategoryId("");
     setCreatedTxnId(null);
     setGeneratedUpiUrl("");
+    setSelectedPersonId("");
+    setSavePayeeRelation("Merchant");
   };
 
   return (
@@ -390,13 +399,59 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
               </div>
             ) : (
               <div className="space-y-4">
+                <div className="space-y-2 pb-2 border-b">
+                  <Label>Quick Select Saved Contact</Label>
+                  <Select
+                    showSearch
+                    placeholder="Search by name or VPA"
+                    className="w-full h-10"
+                    optionFilterProp="label"
+                    value={selectedPersonId || undefined}
+                    onChange={(val) => {
+                      setSelectedPersonId(val);
+                      const person = people.find(p => p._id === val);
+                      if (person) {
+                        setPayeeName(person.name);
+                        if (person.vpas && person.vpas.length === 1) {
+                          setVpa(person.vpas[0]);
+                        } else {
+                          setVpa("");
+                        }
+                      }
+                    }}
+                    options={people.map(p => ({
+                      label: `${p.name} (${p.relation})`,
+                      value: p._id,
+                    }))}
+                  />
+                  
+                  {selectedPersonId && people.find(p => p._id === selectedPersonId)?.vpas?.length > 1 && (
+                    <div className="mt-3">
+                      <Label className="text-xs text-muted-foreground mb-1 block">Select which UPI ID to pay:</Label>
+                      <Select
+                        className="w-full h-9"
+                        placeholder="Select a VPA"
+                        value={vpa || undefined}
+                        onChange={setVpa}
+                        options={people.find(p => p._id === selectedPersonId)?.vpas.map((v: string) => ({
+                          label: v,
+                          value: v
+                        }))}
+                      />
+                    </div>
+                  )}
+                </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="manual-vpa">UPI VPA (Virtual Payment Address)</Label>
                   <Input
                     id="manual-vpa"
                     placeholder="e.g. merchant@ybl, recipient@okaxis"
                     value={vpa}
-                    onChange={e => setVpa(e.target.value)}
+                    onChange={e => {
+                      setVpa(e.target.value);
+                      setSelectedPersonId("");
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -404,7 +459,10 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                   <Input
                     id="manual-name"
                     value={payeeName}
-                    onChange={e => setPayeeName(e.target.value)}
+                    onChange={e => {
+                      setPayeeName(e.target.value);
+                      setSelectedPersonId("");
+                    }}
                   />
                 </div>
                 <div className="flex gap-3">
@@ -488,14 +546,34 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border mt-2">
-                <span className="text-xs font-semibold text-muted-foreground">Save to Payee Book</span>
-                <input
-                  type="checkbox"
-                  checked={savePayee}
-                  onChange={e => setSavePayee(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 accent-primary"
-                />
+              <div className="flex flex-col gap-2 p-3 bg-secondary/30 rounded-lg border mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground">Save to Payee Book</span>
+                  <input
+                    type="checkbox"
+                    checked={savePayee}
+                    onChange={e => setSavePayee(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 accent-primary"
+                  />
+                </div>
+                {savePayee && (
+                  <div className="pt-2 border-t border-border/50">
+                    <Label className="text-xs mb-1 block">Relation Type</Label>
+                    <Select
+                      value={savePayeeRelation}
+                      onChange={setSavePayeeRelation}
+                      className="w-full h-8"
+                      options={[
+                        { label: 'Merchant', value: 'Merchant' },
+                        { label: 'Shopkeeper', value: 'Shopkeeper' },
+                        { label: 'Friend', value: 'Friend' },
+                        { label: 'Family', value: 'Family' },
+                        { label: 'Colleague', value: 'Colleague' },
+                        { label: 'Other', value: 'Other' },
+                      ]}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

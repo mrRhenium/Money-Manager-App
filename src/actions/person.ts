@@ -48,12 +48,26 @@ export async function getPeople() {
 
 import { logAuditEvent } from "@/actions/auditLog";
 
-export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Other"; phone?: string }) {
+export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[] }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
   
+  // Uniqueness checks
+  const existingName = await Person.findOne({ userId: session.user.id, name: data.name });
+  if (existingName) throw new Error("A contact with this name already exists.");
+
+  if (data.phones && data.phones.length > 0) {
+    const existingPhone = await Person.findOne({ userId: session.user.id, phones: { $in: data.phones } });
+    if (existingPhone) throw new Error(`One of the phone numbers is already used by ${existingPhone.name}.`);
+  }
+
+  if (data.vpas && data.vpas.length > 0) {
+    const existingVpa = await Person.findOne({ userId: session.user.id, vpas: { $in: data.vpas } });
+    if (existingVpa) throw new Error(`One of the UPI VPAs is already used by ${existingVpa.name}.`);
+  }
+
   const person = await Person.create({
     ...data,
     userId: session.user.id,
@@ -92,13 +106,13 @@ export async function deletePerson(id: string) {
   }
 }
 
-export async function savePersonVpa(name: string, vpa: string) {
+export async function savePersonVpa(name: string, vpa: string, relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other" = "Merchant") {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
 
-  let person = await Person.findOne({ userId: session.user.id, vpa });
+  let person = await Person.findOne({ userId: session.user.id, vpas: vpa });
   let oldPersonSnapshot = person ? JSON.parse(JSON.stringify(person)) : null;
 
   if (!person) {
@@ -107,15 +121,18 @@ export async function savePersonVpa(name: string, vpa: string) {
   }
 
   if (person) {
-    person.vpa = vpa;
-    await person.save();
-    await logAuditEvent("Person", person._id.toString(), "UPDATE", oldPersonSnapshot, person);
+    if (!person.vpas) person.vpas = [];
+    if (!person.vpas.includes(vpa)) {
+      person.vpas.push(vpa);
+      await person.save();
+      await logAuditEvent("Person", person._id.toString(), "UPDATE", oldPersonSnapshot, person);
+    }
   } else {
     person = await Person.create({
       userId: session.user.id,
       name,
-      vpa,
-      relation: "Other"
+      vpas: [vpa],
+      relation
     });
     await logAuditEvent("Person", person._id.toString(), "CREATE", undefined, person);
   }
@@ -124,17 +141,31 @@ export async function savePersonVpa(name: string, vpa: string) {
   return JSON.parse(JSON.stringify(person));
 }
 
-export async function updatePerson(id: string, data: { name: string; relation: string; vpa?: string }) {
+export async function updatePerson(id: string, data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[] }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
 
+  // Uniqueness checks
+  const existingName = await Person.findOne({ userId: session.user.id, name: data.name, _id: { $ne: id } });
+  if (existingName) throw new Error("A contact with this name already exists.");
+
+  if (data.phones && data.phones.length > 0) {
+    const existingPhone = await Person.findOne({ userId: session.user.id, phones: { $in: data.phones }, _id: { $ne: id } });
+    if (existingPhone) throw new Error(`One of the phone numbers is already used by ${existingPhone.name}.`);
+  }
+
+  if (data.vpas && data.vpas.length > 0) {
+    const existingVpa = await Person.findOne({ userId: session.user.id, vpas: { $in: data.vpas }, _id: { $ne: id } });
+    if (existingVpa) throw new Error(`One of the UPI VPAs is already used by ${existingVpa.name}.`);
+  }
+
   const oldPerson = await Person.findOne({ _id: id, userId: session.user.id });
 
   const person = await Person.findOneAndUpdate(
     { _id: id, userId: session.user.id },
-    { $set: { name: data.name, relation: data.relation, vpa: data.vpa } },
+    { $set: { name: data.name, relation: data.relation, phones: data.phones || [], vpas: data.vpas || [] } },
     { new: true }
   );
 

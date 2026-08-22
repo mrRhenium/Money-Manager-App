@@ -42,6 +42,10 @@ export async function createAccount(data: { name: string; type: "bank" | "cash" 
 }
 
 import Transaction from "@/models/Transaction";
+import RecurringBill from "@/models/RecurringBill";
+import RecurringRule from "@/models/RecurringRule";
+import InsurancePolicy from "@/models/InsurancePolicy";
+import Investment from "@/models/Investment";
 
 export async function deleteAccount(id: string) {
   try {
@@ -54,6 +58,26 @@ export async function deleteAccount(id: string) {
     const txCount = await Transaction.countDocuments({ accountId: id });
     if (txCount > 0) {
       return { success: false, error: `This Account cannot be deleted because it is used in ${txCount} transaction(s).` };
+    }
+
+    const billCount = await RecurringBill.countDocuments({ accountId: id });
+    if (billCount > 0) {
+      return { success: false, error: `This Account cannot be deleted because it is used in ${billCount} subscription(s).` };
+    }
+
+    const ruleCount = await RecurringRule.countDocuments({ accountId: id });
+    if (ruleCount > 0) {
+      return { success: false, error: `This Account cannot be deleted because it is used in ${ruleCount} automation rule(s).` };
+    }
+
+    const insuranceCount = await InsurancePolicy.countDocuments({ linkedAccountId: id });
+    if (insuranceCount > 0) {
+      return { success: false, error: `This Account cannot be deleted because it is linked to ${insuranceCount} insurance policy(s).` };
+    }
+
+    const investmentCount = await Investment.countDocuments({ linkedAccountId: id });
+    if (investmentCount > 0) {
+      return { success: false, error: `This Account cannot be deleted because it is linked to ${investmentCount} investment(s).` };
     }
 
     const account = await Account.findOne({ _id: id, userId: session.user.id });

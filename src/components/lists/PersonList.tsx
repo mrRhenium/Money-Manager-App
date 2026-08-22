@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Popconfirm, Modal } from "antd";
+import { List, Popconfirm, Modal, Tabs } from "antd";
 import { User as UserIcon, Trash, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useState, useMemo } from "react";
 export function PersonList({ people }: { people: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [relationFilter, setRelationFilter] = useState("All");
+  const [activeTab, setActiveTab] = useState("merchants");
 
   const filteredPeople = useMemo(() => {
     return people.filter((person) => {
@@ -25,6 +26,15 @@ export function PersonList({ people }: { people: any[] }) {
       return matchesSearch && matchesRelation;
     });
   }, [people, searchQuery, relationFilter]);
+
+  const filteredMerchants = useMemo(() => {
+    return filteredPeople.filter(p => p.relation === "Merchant" || p.relation === "Shopkeeper");
+  }, [filteredPeople]);
+
+  const filteredPersonal = useMemo(() => {
+    return filteredPeople.filter(p => p.relation !== "Merchant" && p.relation !== "Shopkeeper");
+  }, [filteredPeople]);
+
   if (people.length === 0) {
     return (
       <div className="col-span-full p-8 text-center border rounded-xl border-dashed w-full">
@@ -32,6 +42,64 @@ export function PersonList({ people }: { people: any[] }) {
       </div>
     );
   }
+
+  const renderPersonItem = (person: any, index: number) => (
+    <List.Item>
+      <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group">
+        <div className="flex items-start justify-between mb-4 gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors" style={{ backgroundColor: `${person.color || '#0ea5e9'}20`, color: person.color || '#0ea5e9' }}>
+              <UserIcon className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-semibold truncate" title={person.name}>{person.name}</h3>
+              <p className="text-xs text-muted-foreground truncate">{person.relation}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <PersonForm person={person} />
+            <Popconfirm
+              title="Delete Contact"
+              description="Are you sure you want to delete this contact?"
+              onConfirm={async () => {
+                try {
+                  const res = await deletePerson(person._id);
+                  if (res && !res.success) {
+                    Modal.error({
+                      title: "Cannot Delete Contact",
+                      content: res.error || "This contact is in use elsewhere.",
+                      okText: "Close",
+                    });
+                  }
+                } catch (err: any) {
+                  Modal.error({
+                    title: "Cannot Delete Contact",
+                    content: err.message || "This contact is in use elsewhere.",
+                    okText: "Close",
+                  });
+                }
+              }}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                <Trash className="w-4 h-4" />
+              </Button>
+            </Popconfirm>
+          </div>
+        </div>
+        <div className="pt-2 border-t flex items-center justify-between mt-auto">
+          <span className="text-sm text-muted-foreground">Net Balance</span>
+          <span className={`font-bold ${person.netBalance > 0 ? "text-emerald-500" : person.netBalance < 0 ? "text-red-500" : "text-muted-foreground"}`}>
+            {person.netBalance > 0 ? `+₹${person.netBalance.toLocaleString("en-IN")}` : 
+             person.netBalance < 0 ? `-₹${Math.abs(person.netBalance).toLocaleString("en-IN")}` : 
+             "Settled"}
+          </span>
+        </div>
+      </div>
+    </List.Item>
+  );
 
   return (
     <div className="w-full space-y-4">
@@ -65,76 +133,54 @@ export function PersonList({ people }: { people: any[] }) {
         </div>
       </div>
 
-      {filteredPeople.length === 0 && (
-        <div className="p-8 text-center border rounded-xl border-dashed">
-          <p className="text-muted-foreground">No people match your filters.</p>
-        </div>
-      )}
-
-      {filteredPeople.length > 0 && (
-        <List
-          grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
-          dataSource={filteredPeople}
-          pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-        renderItem={(person: any, index: number) => (
-          <List.Item>
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group">
-              <div className="flex items-start justify-between mb-4 gap-2">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors" style={{ backgroundColor: `${person.color || '#0ea5e9'}20`, color: person.color || '#0ea5e9' }}>
-                    <UserIcon className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-semibold truncate" title={person.name}>{person.name}</h3>
-                    <p className="text-xs text-muted-foreground truncate">{person.relation}</p>
-                  </div>
+      <div className="bg-card rounded-xl border shadow-sm p-4">
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={[
+            {
+              key: "merchants",
+              label: "Merchants & Shopkeepers",
+              children: (
+                <div className="pt-2">
+                  {filteredMerchants.length === 0 ? (
+                    <div className="p-8 text-center border rounded-xl border-dashed">
+                      <p className="text-muted-foreground">No merchants match your filters.</p>
+                    </div>
+                  ) : (
+                    <List
+                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+                      dataSource={filteredMerchants}
+                      pagination={{ pageSize: 12, position: "bottom", align: "end" }}
+                      renderItem={renderPersonItem}
+                    />
+                  )}
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <PersonForm person={person} />
-                  <Popconfirm
-                    title="Delete Contact"
-                    description="Are you sure you want to delete this contact?"
-                    onConfirm={async () => {
-                      try {
-                        const res = await deletePerson(person._id);
-                        if (res && !res.success) {
-                          Modal.error({
-                            title: "Cannot Delete Contact",
-                            content: res.error || "This contact is in use elsewhere.",
-                            okText: "Close",
-                          });
-                        }
-                      } catch (err: any) {
-                        Modal.error({
-                          title: "Cannot Delete Contact",
-                          content: err.message || "This contact is in use elsewhere.",
-                          okText: "Close",
-                        });
-                      }
-                    }}
-                    okText="Yes"
-                    cancelText="No"
-                  >
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                      <Trash className="w-4 h-4" />
-                    </Button>
-                  </Popconfirm>
+              ),
+            },
+            {
+              key: "personal",
+              label: "Personal & Others",
+              children: (
+                <div className="pt-2">
+                  {filteredPersonal.length === 0 ? (
+                    <div className="p-8 text-center border rounded-xl border-dashed">
+                      <p className="text-muted-foreground">No personal contacts match your filters.</p>
+                    </div>
+                  ) : (
+                    <List
+                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+                      dataSource={filteredPersonal}
+                      pagination={{ pageSize: 12, position: "bottom", align: "end" }}
+                      renderItem={renderPersonItem}
+                    />
+                  )}
                 </div>
-              </div>
-              <div className="pt-2 border-t flex items-center justify-between mt-auto">
-                <span className="text-sm text-muted-foreground">Net Balance</span>
-                <span className={`font-bold ${person.netBalance > 0 ? "text-emerald-500" : person.netBalance < 0 ? "text-red-500" : "text-muted-foreground"}`}>
-                  {person.netBalance > 0 ? `+₹${person.netBalance.toLocaleString("en-IN")}` : 
-                   person.netBalance < 0 ? `-₹${Math.abs(person.netBalance).toLocaleString("en-IN")}` : 
-                   "Settled"}
-                </span>
-              </div>
-            </div>
-          </List.Item>
-        )}
-      />
-      )}
+              ),
+            },
+          ]}
+        />
+      </div>
     </div>
   );
 }

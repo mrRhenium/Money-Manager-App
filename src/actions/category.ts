@@ -57,6 +57,8 @@ export async function createCategory(data: { name: string; type: "expense" | "in
 
 import Transaction from "@/models/Transaction";
 import Budget from "@/models/Budget";
+import RecurringBill from "@/models/RecurringBill";
+import RecurringRule from "@/models/RecurringRule";
 
 export async function deleteCategory(id: string) {
   try {
@@ -75,6 +77,18 @@ export async function deleteCategory(id: string) {
     const budgetCount = await Budget.countDocuments({ categoryId: id });
     if (budgetCount > 0) {
       return { success: false, error: `This Category cannot be deleted because it is used in ${budgetCount} budget(s).` };
+    }
+
+    // Check if category is used in any recurring bills
+    const billCount = await RecurringBill.countDocuments({ categoryId: id });
+    if (billCount > 0) {
+      return { success: false, error: `This Category cannot be deleted because it is used in ${billCount} subscription(s).` };
+    }
+
+    // Check if category is used in any recurring rules
+    const ruleCount = await RecurringRule.countDocuments({ categoryId: id });
+    if (ruleCount > 0) {
+      return { success: false, error: `This Category cannot be deleted because it is used in ${ruleCount} automation rule(s).` };
     }
 
     // Fetch before delete

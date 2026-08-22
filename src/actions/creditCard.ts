@@ -106,17 +106,14 @@ export async function deleteCreditCard(id: string) {
 
     const cardSnapshot = JSON.parse(JSON.stringify(card));
 
-    // Soft delete or status closed
     const txCount = await Transaction.countDocuments({ creditCardId: id });
     if (txCount > 0) {
-      card.status = "closed";
-      await card.save();
-      await logAuditEvent("CreditCard", id, "UPDATE", cardSnapshot, card);
-    } else {
-      await CreditCard.deleteOne({ _id: id });
-      await CardStatement.deleteMany({ cardId: id });
-      await logAuditEvent("CreditCard", id, "DELETE", cardSnapshot, undefined);
+      return { success: false, error: `This Credit Card cannot be deleted because it is used in ${txCount} transaction(s).` };
     }
+
+    await CreditCard.deleteOne({ _id: id });
+    await CardStatement.deleteMany({ cardId: id });
+    await logAuditEvent("CreditCard", id, "DELETE", cardSnapshot, undefined);
 
     revalidatePath("/credit-cards");
     return { success: true };

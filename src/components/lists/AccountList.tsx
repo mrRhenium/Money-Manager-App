@@ -2,11 +2,24 @@
 
 import { List, Popconfirm, Modal } from "antd";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "antd";
 import { AccountForm } from "../forms/AccountForm";
 import { deleteAccount } from "@/actions/account";
-import { Trash } from "lucide-react";
+import { Trash, Search, Filter } from "lucide-react";
+import { useState, useMemo } from "react";
 
 export function AccountList({ accounts }: { accounts: any[] }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter((acc) => {
+      const matchesSearch = acc.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = typeFilter === "All" || acc.type === typeFilter;
+      return matchesSearch && matchesType;
+    });
+  }, [accounts, searchQuery, typeFilter]);
   if (accounts.length === 0) {
     return (
       <div className="p-8 text-center border rounded-xl border-dashed col-span-full">
@@ -16,11 +29,48 @@ export function AccountList({ accounts }: { accounts: any[] }) {
   }
 
   return (
-    <div className="w-full">
-      <List
-        grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
-        dataSource={accounts}
-        pagination={{ pageSize: 12, position: "bottom", align: "end" }}
+    <div className="w-full space-y-4">
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search accounts..."
+            className="pl-9 bg-background"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2 sm:w-[200px]">
+          <Filter className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
+          <Select
+            className="w-full h-10"
+            value={typeFilter}
+            onChange={setTypeFilter}
+            options={[
+              { label: "All Types", value: "All" },
+              { label: "Bank Account", value: "Bank" },
+              { label: "Cash", value: "Cash" },
+              { label: "Credit Card", value: "Credit Card" },
+              { label: "E-Wallet", value: "Wallet" },
+              { label: "Investment", value: "Investment" },
+              { label: "Other", value: "Other" },
+            ]}
+          />
+        </div>
+      </div>
+
+      {filteredAccounts.length === 0 && (
+        <div className="p-8 text-center border rounded-xl border-dashed">
+          <p className="text-muted-foreground">No accounts match your filters.</p>
+        </div>
+      )}
+
+      {filteredAccounts.length > 0 && (
+        <List
+          grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
+          dataSource={filteredAccounts}
+          pagination={{ pageSize: 12, position: "bottom", align: "end" }}
         renderItem={(account: any) => (
           <List.Item>
             <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 h-full flex flex-col justify-between group">
@@ -68,6 +118,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
           </List.Item>
         )}
       />
+      )}
     </div>
   );
 }

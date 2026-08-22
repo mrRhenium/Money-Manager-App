@@ -1,12 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
-import { Table, Button, Modal, Badge } from "antd";
+import React, { useState, useMemo } from "react";
+import { Table, Button, Modal, Badge, Select } from "antd";
+import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/helpers";
-import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity } from "lucide-react";
+import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search, Filter } from "lucide-react";
 
 export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezone: string }) {
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [actionFilter, setActionFilter] = useState("All");
 
   const getFriendlyEntityName = (log: any) => {
     const data = log.currentValue || log.previousValue || {};
@@ -135,20 +139,45 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
     return "bg-blue-500/10 text-blue-600 border-blue-500/20";
   };
 
-  const sortedLogs = [...logs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      const q = searchQuery.toLowerCase();
+      const entityName = getFriendlyEntityName(log).toLowerCase();
+      
+      const matchesSearch = entityName.includes(q);
+      const matchesType = typeFilter === "All" || log.entityType === typeFilter;
+      const matchesAction = actionFilter === "All" || log.action === actionFilter;
+      
+      return matchesSearch && matchesType && matchesAction;
+    });
+  }, [logs, searchQuery, typeFilter, actionFilter]);
 
   const [mobilePage, setMobilePage] = useState(1);
   const mobilePageSize = 10;
-  const totalPages = Math.ceil(sortedLogs.length / mobilePageSize);
-  const pagedLogs = sortedLogs.slice((mobilePage - 1) * mobilePageSize, mobilePage * mobilePageSize);
+  const totalPages = Math.ceil(filteredLogs.length / mobilePageSize);
+  const pagedLogs = filteredLogs.slice((mobilePage - 1) * mobilePageSize, mobilePage * mobilePageSize);
 
   return (
     <div>
+      <div className="flex flex-col md:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search by entity name..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={typeFilter} onChange={setTypeFilter} className="w-full md:w-40" options={[{label: "All Types", value: "All"}, {label: "Transaction", value: "Transaction"}, {label: "Category", value: "Category"}, {label: "Account", value: "Account"}, {label: "Person", value: "Person"}, {label: "CreditCard", value: "CreditCard"}, {label: "Budget", value: "Budget"}]} />
+        <Select value={actionFilter} onChange={setActionFilter} className="w-full md:w-40" options={[{label: "All Actions", value: "All"}, {label: "Create", value: "CREATE"}, {label: "Update", value: "UPDATE"}, {label: "Delete", value: "DELETE"}]} />
+      </div>
+
       {/* Desktop Table */}
       <div className="hidden md:block bg-card rounded-2xl overflow-hidden">
         <Table
           columns={columns}
-          dataSource={logs}
+          dataSource={filteredLogs}
           rowKey="_id"
           pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
           className="audit-logs-table"

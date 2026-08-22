@@ -8,8 +8,12 @@ export interface IInvestment extends Document {
   name: string;
   folioNumber?: string;
   platform?: string;
+  schemeCode?: string;
+  ticker?: string;
   investedAmount: number;
   currentValue: number;
+  absoluteGain?: number;
+  percentGain?: number;
   units?: number;
   purchasePrice?: number;
   currentPrice?: number;
@@ -21,6 +25,8 @@ export interface IInvestment extends Document {
   linkedAccountId?: mongoose.Types.ObjectId;
   autoDebitEnabled: boolean;
   autoDebitDay?: number;
+  autoPriceUpdateEnabled: boolean;
+  lastAutoUpdatedAt?: Date;
   status: "active" | "matured" | "closed" | "sold";
   riskCategory?: "Low" | "Medium" | "High";
   notes?: string;
@@ -42,11 +48,15 @@ const InvestmentSchema: Schema<IInvestment> = new Schema(
     name: { type: String, required: true },
     folioNumber: { type: String },
     platform: { type: String },
+    schemeCode: { type: String },
+    ticker: { type: String },
     investedAmount: { type: Number, required: true },
     currentValue: { type: Number, required: true },
     units: { type: Number },
     purchasePrice: { type: Number },
     currentPrice: { type: Number },
+    absoluteGain: { type: Number },
+    percentGain: { type: Number },
     startDate: { type: Date, required: true },
     maturityDate: { type: Date },
     interestRate: { type: Number },
@@ -55,6 +65,8 @@ const InvestmentSchema: Schema<IInvestment> = new Schema(
     linkedAccountId: { type: Schema.Types.ObjectId, ref: "Account" },
     autoDebitEnabled: { type: Boolean, default: false },
     autoDebitDay: { type: Number },
+    autoPriceUpdateEnabled: { type: Boolean, default: true },
+    lastAutoUpdatedAt: { type: Date },
     status: { type: String, enum: ["active", "matured", "closed", "sold"], default: "active" },
     riskCategory: { type: String, enum: ["Low", "Medium", "High"] },
     notes: { type: String },

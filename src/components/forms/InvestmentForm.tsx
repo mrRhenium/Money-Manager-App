@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,9 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select } from "antd";
+import { Select, Switch } from "antd";
+import AsyncSelect from "react-select/async";
 import { createInvestment, updateInvestment } from "@/actions/investment";
-import { Plus, TrendingUp, PenLine, Landmark, Calendar, Banknote } from "lucide-react";
+import { searchMutualFunds, searchStocks } from "@/actions/lookup";
+import { Plus, TrendingUp, PenLine, Landmark, AlertCircle } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
@@ -22,6 +24,10 @@ const formSchema = z.object({
   platform: z.string().optional(),
   investedAmount: z.string().refine(val => !isNaN(parseIndianNumber(val)), "Valid amount required"),
   currentValue: z.string().refine(val => !isNaN(parseIndianNumber(val)), "Valid amount required"),
+  units: z.string().optional(),
+  schemeCode: z.string().optional(),
+  ticker: z.string().optional(),
+  autoPriceUpdateEnabled: z.boolean().default(true),
   startDate: z.string().min(1, "Start date required"),
   frequency: z.enum(["OneTime", "Monthly", "Quarterly", "Yearly"]),
   linkedAccountId: z.string().optional(),
@@ -34,7 +40,7 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
   const [icon, setIcon] = useState(investment?.icon || "TrendingUp");
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       investmentType: investment?.investmentType || "MutualFund",
       name: investment?.name || "",
@@ -42,11 +48,39 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
       platform: investment?.platform || "",
       investedAmount: investment?.investedAmount ? investment.investedAmount.toString() : "",
       currentValue: investment?.currentValue ? investment.currentValue.toString() : "",
+      units: investment?.units ? investment.units.toString() : "",
+      schemeCode: investment?.schemeCode || "",
+      ticker: investment?.ticker || "",
+      autoPriceUpdateEnabled: investment?.autoPriceUpdateEnabled ?? true,
       startDate: investment?.startDate ? new Date(investment.startDate).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
       frequency: investment?.frequency || "OneTime",
       linkedAccountId: investment?.linkedAccountId || undefined,
     },
   });
+
+  const watchType = form.watch("investmentType");
+  const watchAutoUpdate = form.watch("autoPriceUpdateEnabled");
+  const isAutoPricedAsset = watchType === "MutualFund" || watchType === "Stocks";
+
+  const loadMutualFunds = async (inputValue: string) => {
+    if (inputValue.length < 3) return [];
+    const results = await searchMutualFunds(inputValue);
+    return results.map((r: any) => ({
+      label: `${r.schemeName} (${r.fundHouse})`,
+      value: r.schemeCode,
+      nav: r.latestNAV
+    }));
+  };
+
+  const loadStocks = async (inputValue: string) => {
+    if (inputValue.length < 2) return [];
+    const results = await searchStocks(inputValue);
+    return results.map((r: any) => ({
+      label: `${r.companyName} (${r.ticker})`,
+      value: r.ticker,
+      price: r.latestPrice
+    }));
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -54,11 +88,18 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
         ...values,
         investedAmount: parseIndianNumber(values.investedAmount),
         currentValue: parseIndianNumber(values.currentValue),
+        units: values.units ? parseFloat(values.units) : undefined,
         startDate: new Date(values.startDate),
         currency,
         color,
         icon,
       };
+
+      if (!isAutoPricedAsset) {
+        payload.autoPriceUpdateEnabled = false;
+        payload.schemeCode = undefined;
+        payload.ticker = undefined;
+      }
 
       if (investment) {
         await updateInvestment(investment._id, payload);
@@ -107,7 +148,7 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
                       <Select
                         className="w-full h-10"
                         options={[
-                          { label: 'SIP / Mutual Fund', value: 'SIP' },
+                          { label: 'Mutual Fund', value: 'MutualFund' },
                           { label: 'Stocks', value: 'Stocks' },
                           { label: 'Fixed Deposit (FD)', value: 'FD' },
                           { label: 'PPF', value: 'PPF' },
@@ -116,26 +157,129 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
                           { label: 'Other', value: 'Other' },
                         ]}
                         {...field}
+                        onChange={(val) => {
+                          field.onChange(val);
+                          // Reset auto fields when switching types
+                          form.setValue("schemeCode", "");
+                          form.setValue("ticker", "");
+                          if (val === "MutualFund" || val === "Stocks") {
+                            form.setValue("autoPriceUpdateEnabled", true);
+                          } else {
+                            form.setValue("autoPriceUpdateEnabled", false);
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              
+              {isAutoPricedAsset ? (
+                <FormField
+                  control={form.control}
+                  name={watchType === "MutualFund" ? "schemeCode" : "ticker"}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Search {watchType === "MutualFund" ? "Mutual Fund" : "Stock Symbol"}</FormLabel>
+                      <FormControl>
+                        <AsyncSelect
+                          cacheOptions
+                          defaultOptions={false}
+                          loadOptions={watchType === "MutualFund" ? loadMutualFunds : loadStocks}
+                          onChange={(option: any) => {
+                            if (option) {
+                              field.onChange(option.value);
+                              form.setValue("name", option.label.split(' (')[0]);
+                              if (option.nav || option.price) {
+                                const currentUnits = form.getValues("units");
+                                if (currentUnits && !isNaN(parseFloat(currentUnits))) {
+                                  const val = parseFloat(currentUnits) * (option.nav || option.price);
+                                  form.setValue("currentValue", formatIndianNumber(val.toString()));
+                                }
+                              }
+                            } else {
+                              field.onChange("");
+                            }
+                          }}
+                          placeholder={`Type to search ${watchType === "MutualFund" ? "funds..." : "stocks..."}`}
+                          className="text-sm"
+                          styles={{
+                            control: (base) => ({
+                              ...base,
+                              minHeight: '40px',
+                              borderRadius: '0.5rem',
+                            })
+                          }}
+                        />
+                      </FormControl>
+                      <p className="text-[10px] text-muted-foreground mt-1">If not found, type the name manually below.</p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Investment Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. HDFC Midcap Opportunities" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            {isAutoPricedAsset && (
+              <div className="bg-secondary/50 p-3 rounded-lg border flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm">Auto-update Price/NAV</h4>
+                  <p className="text-xs text-muted-foreground">Automatically fetch the latest price daily.</p>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="autoPriceUpdateEnabled"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-y-0">
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {isAutoPricedAsset && form.getValues(watchType === "MutualFund" ? "schemeCode" : "ticker") === "" && watchAutoUpdate && (
+              <p className="text-xs text-amber-500 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> Auto price updates unavailable until this asset is selected from search. You will need to update value manually for now.
+              </p>
+            )}
+
+            {/* If it is auto priced but search is empty, we still need to allow manual name entry */}
+            {isAutoPricedAsset && (
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Investment Name</FormLabel>
+                    <FormLabel>Asset Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. HDFC Midcap Opportunities" {...field} />
+                      <Input placeholder="Fund or Stock Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -157,17 +301,40 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
                   </FormItem>
                 )}
               />
+              
+              {isAutoPricedAsset ? (
+                <FormField
+                  control={form.control}
+                  name="units"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Quantity / Units Held</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g. 10.5" 
+                          {...field} 
+                          type="number"
+                          step="any"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : null}
+
               <FormField
                 control={form.control}
                 name="currentValue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current Value</FormLabel>
+                    <FormLabel>Current Value {isAutoPricedAsset && watchAutoUpdate && "(Auto-calculated)"}</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="e.g. 55,000"
                         {...field}
                         onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
+                        disabled={isAutoPricedAsset && watchAutoUpdate && form.getValues(watchType === "MutualFund" ? "schemeCode" : "ticker") !== ""}
                       />
                     </FormControl>
                     <FormMessage />

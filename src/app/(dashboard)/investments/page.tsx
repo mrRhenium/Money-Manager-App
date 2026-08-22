@@ -3,8 +3,12 @@ import { getInvestments } from "@/actions/investment";
 import { getAccounts } from "@/actions/account";
 import { InvestmentForm } from "@/components/forms/InvestmentForm";
 import { InvestmentTable } from "@/components/tables/InvestmentTable";
-import { TrendingUp, PieChart, Info } from "lucide-react";
+import { TrendingUp, PieChart, Info, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
 
 export default async function InvestmentsPage() {
   const [investments, accounts] = await Promise.all([
@@ -17,6 +21,19 @@ export default async function InvestmentsPage() {
   const totalReturns = currentTotal - totalInvested;
   const returnsPercentage = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
 
+  const latestSync = investments
+    .map((i: any) => i.lastAutoUpdatedAt ? new Date(i.lastAutoUpdatedAt).getTime() : 0)
+    .sort((a: number, b: number) => b - a)[0];
+
+  // Group by category
+  const categories: Record<string, { invested: number, current: number }> = {};
+  investments.forEach((inv: any) => {
+    const type = inv.investmentType || "Other";
+    if (!categories[type]) categories[type] = { invested: 0, current: 0 };
+    categories[type].invested += (inv.investedAmount || 0);
+    categories[type].current += (inv.currentValue || 0);
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -25,6 +42,12 @@ export default async function InvestmentsPage() {
           <p className="text-muted-foreground">Track your wealth growth across all asset classes.</p>
         </div>
         <div className="flex items-center gap-4">
+          {latestSync > 0 && (
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full border">
+              <RefreshCw className="w-3 h-3" />
+              Synced {dayjs(latestSync).fromNow()}
+            </div>
+          )}
           <InvestmentForm accounts={accounts} />
         </div>
       </div>
@@ -63,6 +86,27 @@ export default async function InvestmentsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {Object.keys(categories).length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {Object.entries(categories).map(([type, data]) => {
+            const ret = data.current - data.invested;
+            const pct = data.invested > 0 ? (ret / data.invested) * 100 : 0;
+            const isPos = ret >= 0;
+            return (
+              <Card key={type} className="shadow-sm">
+                <CardContent className="p-3">
+                  <div className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">{type}</div>
+                  <div className="text-sm font-bold">₹{data.current.toLocaleString("en-IN")}</div>
+                  <div className={`text-xs mt-1 ${isPos ? "text-emerald-500" : "text-destructive"}`}>
+                    {isPos ? "+" : ""}₹{ret.toLocaleString("en-IN")} ({isPos ? "+" : ""}{pct.toFixed(1)}%)
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       <div className="bg-card rounded-2xl shadow-sm border p-4 md:p-6">
         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">

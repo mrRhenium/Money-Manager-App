@@ -43,7 +43,21 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
       title: "Current Value",
       dataIndex: "currentValue",
       key: "currentValue",
-      render: (amount: number) => <span className="font-medium">₹{amount.toLocaleString("en-IN")}</span>,
+      render: (amount: number, record: any) => (
+        <div>
+          <span className="font-medium">₹{amount.toLocaleString("en-IN")}</span>
+          {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && (
+            <div className="text-[10px] text-muted-foreground" title={new Date(record.lastAutoUpdatedAt).toLocaleString()}>
+              Auto-synced
+            </div>
+          )}
+          {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && (
+             <div className="text-[10px] text-amber-500">
+               Pending sync
+             </div>
+          )}
+        </div>
+      )
     },
     {
       title: "Returns",

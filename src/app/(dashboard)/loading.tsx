@@ -1,7 +1,6 @@
 "use client";
 
 import { Skeleton, Card } from "antd";
-import { Sparkles } from "lucide-react";
 
 export default function DashboardLoading() {
   return (
@@ -11,7 +10,6 @@ export default function DashboardLoading() {
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-2 mb-2">
             <Skeleton.Button active size="large" style={{ width: 200, height: 32, borderRadius: 8 }} />
-            <Sparkles className="w-7 h-7 text-primary/50" />
           </div>
           <Skeleton.Button active size="small" style={{ width: 300, height: 20, borderRadius: 8 }} />
         </div>

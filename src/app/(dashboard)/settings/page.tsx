@@ -171,7 +171,12 @@ function SettingsContent() {
       setIsAvatarUploading(true);
       const url = await uploadImageToCloudinary(file, "money-manager/avatars");
       setImage(url);
-      toast.success("Avatar uploaded! Don't forget to save changes.");
+      
+      // Auto-save the avatar immediately
+      await updateProfile({ name, mobile, image: url });
+      await updateSession({ name, image: url });
+      
+      toast.success("Profile picture updated successfully!");
     } catch (err: any) {
       toast.error(err.message || "Failed to upload Avatar");
     } finally {

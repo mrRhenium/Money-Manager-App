@@ -6,6 +6,8 @@ export interface IBudget extends Document {
   month: string; // Format: "YYYY-MM"
   amount: number;
   rollover: boolean; // Unused budget carries over to next month
+  color?: string;
+  icon?: string;
   createdAt: Date;
 }
 
@@ -16,6 +18,8 @@ const BudgetSchema: Schema<IBudget> = new Schema(
     month: { type: String, required: true }, // e.g. "2024-08"
     amount: { type: Number, required: true },
     rollover: { type: Boolean, default: false },
+    color: { type: String, default: "#f59e0b" },
+    icon: { type: String, default: "PiggyBank" },
   },
   { timestamps: true }
 );

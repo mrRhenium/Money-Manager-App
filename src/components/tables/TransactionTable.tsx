@@ -23,6 +23,12 @@ export function TransactionTable({
 }) {
   const columns = [
     {
+      title: "#",
+      key: "srNo",
+      width: 50,
+      render: (_: any, __: any, index: number) => <span className="text-muted-foreground font-medium">{index + 1}</span>,
+    },
+    {
       title: "Date",
       dataIndex: "date",
       key: "date",

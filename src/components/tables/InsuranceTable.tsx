@@ -7,17 +7,29 @@ import { Trash, Eye } from "lucide-react";
 import Link from "next/link";
 import { InsuranceForm } from "../forms/InsuranceForm";
 import { formatDate } from "@/lib/helpers";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 export function InsuranceTable({ policies, accounts }: { policies: any[], accounts: any[] }) {
   const columns = [
+    {
+      title: "#",
+      key: "srNo",
+      width: 50,
+      render: (_: any, __: any, index: number) => <span className="text-muted-foreground font-medium">{index + 1}</span>,
+    },
     {
       title: "Policy",
       dataIndex: "policyName",
       key: "policyName",
       render: (name: string, record: any) => (
-        <div>
-          <div className="font-semibold">{name}</div>
-          <div className="text-xs text-muted-foreground">{record.provider} ({record.type})</div>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${record.color || '#10b981'}15` }}>
+            <CategoryIcon name={record.icon} color={record.color} className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="font-semibold">{name}</div>
+            <div className="text-xs text-muted-foreground">{record.provider} ({record.type})</div>
+          </div>
         </div>
       )
     },

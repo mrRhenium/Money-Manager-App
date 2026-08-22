@@ -14,6 +14,7 @@ import { Plus, PenLine, Repeat, Coins, Calendar, Wallet, Smartphone, Folder } fr
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -39,6 +40,8 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currency, setCurrency] = useState(bill?.currency || "INR");
+  const [color, setColor] = useState(bill?.color || "#6366f1");
+  const [icon, setIcon] = useState(bill?.icon || "Repeat");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -61,6 +64,8 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
         amount: parseIndianNumber(values.amount),
         categoryId: values.categoryId || undefined,
         accountId: values.accountId || undefined,
+        color,
+        icon,
       };
 
       if (bill?._id) {
@@ -231,6 +236,11 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+              <ColorPicker value={color} onChange={setColor} id="billColor" />
+              <IconPicker value={icon} onChange={setIcon} />
+            </div>
 
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
               {isLoading ? "Saving..." : (bill ? "Save Changes" : "Add Subscription")}

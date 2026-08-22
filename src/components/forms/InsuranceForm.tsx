@@ -13,6 +13,7 @@ import { createInsurancePolicy, updateInsurancePolicy } from "@/actions/insuranc
 import { Plus, Shield, PenLine, Landmark, Calendar, Activity } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   type: z.enum(["Life", "Health", "Vehicle", "Home", "Travel", "Other"]),
@@ -31,6 +32,8 @@ const formSchema = z.object({
 export function InsuranceForm({ policy, accounts }: { policy?: any, accounts: any[] }) {
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState(policy?.currency || "INR");
+  const [color, setColor] = useState(policy?.color || "#10b981");
+  const [icon, setIcon] = useState(policy?.icon || "Shield");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,6 +62,8 @@ export function InsuranceForm({ policy, accounts }: { policy?: any, accounts: an
         endDate: values.endDate ? new Date(values.endDate) : undefined,
         renewalDate: values.renewalDate ? new Date(values.renewalDate) : undefined,
         currency,
+        color,
+        icon,
       };
 
       if (policy) {
@@ -292,6 +297,11 @@ export function InsuranceForm({ policy, accounts }: { policy?: any, accounts: an
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+              <ColorPicker value={color} onChange={setColor} id="insuranceColor" />
+              <IconPicker value={icon} onChange={setIcon} />
+            </div>
 
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{policy ? "Save Changes" : "Save Policy"}</Button>
           </form>

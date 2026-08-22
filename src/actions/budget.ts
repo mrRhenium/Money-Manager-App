@@ -58,7 +58,7 @@ export async function getBudgetsWithProgress(month: string) {
   return JSON.parse(JSON.stringify(budgetsWithProgress));
 }
 
-export async function upsertBudget(data: { categoryId: string; month: string; amount: number; rollover?: boolean }) {
+export async function upsertBudget(data: { categoryId: string; month: string; amount: number; rollover?: boolean; color?: string; icon?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -99,7 +99,7 @@ export async function deleteBudget(id: string) {
   }
 }
 
-export async function updateBudget(id: string, data: { amount: number; categoryId: string }) {
+export async function updateBudget(id: string, data: { amount: number; categoryId: string; color?: string; icon?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -109,7 +109,7 @@ export async function updateBudget(id: string, data: { amount: number; categoryI
 
   const budget = await Budget.findOneAndUpdate(
     { _id: id, userId: session.user.id },
-    { $set: { amount: data.amount, categoryId: data.categoryId } },
+    { $set: { amount: data.amount, categoryId: data.categoryId, color: data.color, icon: data.icon } },
     { new: true }
   );
 

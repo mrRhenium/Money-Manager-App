@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatIndianNumber } from "@/lib/numberHelper";
 import { Repeat, Edit2, Trash, Smartphone, Wallet, CheckCircle, Search } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -52,19 +53,20 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredBills.map((bill) => {
+        {filteredBills.map((bill, index) => {
           const dueDate = new Date(bill.nextDueDate);
           const isOverdue = dueDate < new Date() && dueDate.toDateString() !== new Date().toDateString();
           const isToday = dueDate.toDateString() === new Date().toDateString();
 
           return (
             <div key={bill._id} className="bg-card border border-border/50 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+              <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center z-10">{index + 1}</div>
               <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
               
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Repeat className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${bill.color || '#6366f1'}15` }}>
+                    <CategoryIcon name={bill.icon} color={bill.color} className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg line-clamp-1">{bill.name}</h3>

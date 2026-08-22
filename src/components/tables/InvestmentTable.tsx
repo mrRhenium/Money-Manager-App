@@ -7,17 +7,29 @@ import { Trash, Eye } from "lucide-react";
 import Link from "next/link";
 import { InvestmentForm } from "../forms/InvestmentForm";
 import { formatDate } from "@/lib/helpers";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 export function InvestmentTable({ investments, accounts }: { investments: any[], accounts: any[] }) {
   const columns = [
+    {
+      title: "#",
+      key: "srNo",
+      width: 50,
+      render: (_: any, __: any, index: number) => <span className="text-muted-foreground font-medium">{index + 1}</span>,
+    },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
       render: (name: string, record: any) => (
-        <div>
-          <div className="font-semibold">{name}</div>
-          <div className="text-xs text-muted-foreground">{record.investmentType}</div>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${record.color || '#8b5cf6'}15` }}>
+            <CategoryIcon name={record.icon} color={record.color} className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="font-semibold">{name}</div>
+            <div className="text-xs text-muted-foreground">{record.investmentType}</div>
+          </div>
         </div>
       )
     },

@@ -13,6 +13,7 @@ import { Select } from "antd";
 import { upsertBudget, updateBudget } from "@/actions/budget";
 import { Plus, Target, Folder, Banknote, CalendarDays, PenLine } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
+import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
@@ -31,6 +32,8 @@ interface BudgetFormProps {
 
 export function BudgetForm({ categories, budget }: BudgetFormProps) {
   const [open, setOpen] = useState(false);
+  const [color, setColor] = useState(budget?.color || "#f59e0b");
+  const [icon, setIcon] = useState(budget?.icon || "PiggyBank");
   
   const currentMonth = getCurrentFormatted("YYYY-MM");
 
@@ -50,11 +53,13 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
     try {
       const parsedAmount = parseIndianNumber(values.amount);
       if (budget?._id) {
-        await updateBudget(budget._id, { amount: parsedAmount, categoryId: values.categoryId });
+        await updateBudget(budget._id, { amount: parsedAmount, categoryId: values.categoryId, color, icon });
       } else {
         await upsertBudget({
           ...values,
           amount: parsedAmount,
+          color,
+          icon,
         });
       }
       setOpen(false);
@@ -142,6 +147,11 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+              <ColorPicker value={color} onChange={setColor} id="budgetColor" />
+              <IconPicker value={icon} onChange={setIcon} />
             </div>
 
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{budget ? "Save Changes" : "Save Budget"}</Button>

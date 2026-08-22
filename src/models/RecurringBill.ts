@@ -10,6 +10,8 @@ export interface IRecurringBill extends Document {
   categoryId?: mongoose.Types.ObjectId;
   accountId?: mongoose.Types.ObjectId;
   isActive: boolean;
+  color?: string;
+  icon?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +27,8 @@ const RecurringBillSchema: Schema<IRecurringBill> = new Schema(
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     isActive: { type: Boolean, default: true },
+    color: { type: String, default: "#6366f1" },
+    icon: { type: String, default: "Repeat" },
   },
   { timestamps: true }
 );

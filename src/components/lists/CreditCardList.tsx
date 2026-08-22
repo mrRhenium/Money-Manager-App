@@ -19,13 +19,14 @@ export function CreditCardList({ cards }: { cards: any[] }) {
         grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 3, xl: 3, xxl: 4 }}
         dataSource={cards}
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
-        renderItem={(card: any) => {
+        renderItem={(card: any, index: number) => {
           const utilization = (card.currentOutstanding / card.creditLimit) * 100;
           const isHighUtilization = utilization > 70;
 
           return (
             <List.Item>
               <Link href={`/credit-cards/${card._id}`} className="group relative block cursor-pointer transition-transform hover:-translate-y-1 h-full">
+                <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-white/20 text-white text-[10px] font-bold flex items-center justify-center z-10 backdrop-blur-sm">{index + 1}</div>
                 <div 
                   className="rounded-2xl p-6 text-white shadow-lg overflow-hidden h-56 flex flex-col justify-between"
                   style={{ background: `linear-gradient(135deg, ${card.color} 0%, #1a1a1a 150%)` }}

@@ -71,9 +71,10 @@ export function AccountList({ accounts }: { accounts: any[] }) {
           grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
           dataSource={filteredAccounts}
           pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-        renderItem={(account: any) => (
+        renderItem={(account: any, index: number) => (
           <List.Item>
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 h-full flex flex-col justify-between group">
+            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 h-full flex flex-col justify-between group relative">
+              <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">{index + 1}</div>
               <div>
                 <div className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2 min-w-0">
                   <h3 className="tracking-tight text-sm font-medium capitalize truncate" title={account.name}>{account.name}</h3>

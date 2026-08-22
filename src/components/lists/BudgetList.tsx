@@ -22,16 +22,17 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
         grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 3, xl: 3, xxl: 4 }}
         dataSource={budgets}
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
-        renderItem={(budget: any) => {
+        renderItem={(budget: any, index: number) => {
           const isOverBudget = budget.totalSpent > budget.amount;
           return (
             <List.Item>
-              <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 h-full justify-between group">
+              <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 h-full justify-between group relative">
+                <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">{index + 1}</div>
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="shrink-0">
-                        <CategoryIcon name={budget.categoryId?.icon} color={budget.categoryId?.color} className="w-4 h-4" />
+                        <CategoryIcon name={budget.icon || budget.categoryId?.icon} color={budget.color || budget.categoryId?.color} className="w-4 h-4" />
                       </div>
                       <h3 className="font-semibold truncate" title={budget.categoryId?.name}>{budget.categoryId?.name}</h3>
                     </div>

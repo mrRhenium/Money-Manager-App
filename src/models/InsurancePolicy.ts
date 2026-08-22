@@ -17,6 +17,8 @@ export interface IInsurancePolicy extends Document {
   linkedAccountId?: mongoose.Types.ObjectId;
   status: "active" | "lapsed" | "matured" | "claimed" | "cancelled";
   currency: string;
+  color?: string;
+  icon?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,6 +51,8 @@ const InsurancePolicySchema: Schema<IInsurancePolicy> = new Schema(
       default: "active" 
     },
     currency: { type: String, default: "INR" },
+    color: { type: String, default: "#10b981" },
+    icon: { type: String, default: "Shield" },
   },
   { timestamps: true }
 );

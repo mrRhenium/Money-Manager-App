@@ -20,10 +20,11 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
   const filteredIncomes = useMemo(() => {
     return incomeCategories.filter(cat => cat.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [incomeCategories, searchQuery]);
-  const renderCategoryItem = (cat: any) => (
+  const renderCategoryItem = (cat: any, index: number) => (
     <List.Item className="!p-0 !border-0 mb-2">
       <div className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm w-full">
         <div className="flex items-center gap-3">
+          <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center shrink-0">{index + 1}</span>
           <CategoryIcon name={cat.icon} color={cat.color} className="w-5 h-5" />
           <span className="font-medium">{cat.name}</span>
         </div>

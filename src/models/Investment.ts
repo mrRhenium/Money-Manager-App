@@ -25,6 +25,8 @@ export interface IInvestment extends Document {
   riskCategory?: "Low" | "Medium" | "High";
   notes?: string;
   currency: string;
+  color?: string;
+  icon?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +59,8 @@ const InvestmentSchema: Schema<IInvestment> = new Schema(
     riskCategory: { type: String, enum: ["Low", "Medium", "High"] },
     notes: { type: String },
     currency: { type: String, default: "INR" },
+    color: { type: String, default: "#8b5cf6" },
+    icon: { type: String, default: "TrendingUp" },
   },
   { timestamps: true }
 );

@@ -13,6 +13,7 @@ import { createInvestment, updateInvestment } from "@/actions/investment";
 import { Plus, TrendingUp, PenLine, Landmark, Calendar, Banknote } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   investmentType: z.enum(["SIP", "MutualFund", "Stocks", "FD", "RD", "PPF", "EPF", "NPS", "Gold", "Crypto", "Bonds", "RealEstate", "Other"]),
@@ -29,6 +30,8 @@ const formSchema = z.object({
 export function InvestmentForm({ investment, accounts }: { investment?: any, accounts: any[] }) {
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState(investment?.currency || "INR");
+  const [color, setColor] = useState(investment?.color || "#8b5cf6");
+  const [icon, setIcon] = useState(investment?.icon || "TrendingUp");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,6 +56,8 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
         currentValue: parseIndianNumber(values.currentValue),
         startDate: new Date(values.startDate),
         currency,
+        color,
+        icon,
       };
 
       if (investment) {
@@ -228,6 +233,11 @@ export function InvestmentForm({ investment, accounts }: { investment?: any, acc
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+              <ColorPicker value={color} onChange={setColor} id="investmentColor" />
+              <IconPicker value={icon} onChange={setIcon} />
+            </div>
 
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{investment ? "Save Changes" : "Save Investment"}</Button>
           </form>

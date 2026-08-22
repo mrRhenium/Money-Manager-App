@@ -2,6 +2,7 @@
 
 import { List, Popconfirm, Modal } from "antd";
 import { User as UserIcon, Trash, Search, Filter } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "antd";
@@ -76,13 +77,14 @@ export function PersonList({ people }: { people: any[] }) {
           grid={{ gutter: 16, xs: 1, sm: 2, md: 2, lg: 3, xl: 3, xxl: 4 }}
           dataSource={filteredPeople}
           pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-        renderItem={(person: any) => (
+        renderItem={(person: any, index: number) => (
           <List.Item>
-            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group">
+            <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group relative">
+              <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">{index + 1}</div>
               <div className="flex items-start justify-between mb-4 gap-2">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <UserIcon className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors" style={{ backgroundColor: `${person.color || '#0ea5e9'}20` }}>
+                    <CategoryIcon name={person.icon} color={person.color} className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-semibold truncate" title={person.name}>{person.name}</h3>

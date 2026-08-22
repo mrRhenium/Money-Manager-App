@@ -7,6 +7,8 @@ export interface IPerson extends Document {
   relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other";
   vpas: string[];
   avatarUrl?: string;
+  color?: string;
+  icon?: string;
   createdAt: Date;
 }
 
@@ -22,6 +24,8 @@ const PersonSchema: Schema<IPerson> = new Schema(
     },
     vpas: [{ type: String }],
     avatarUrl: { type: String },
+    color: { type: String, default: "#0ea5e9" },
+    icon: { type: String, default: "Users" },
   },
   { timestamps: true }
 );

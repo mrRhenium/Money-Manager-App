@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Popconfirm } from "antd";
+import { Table, Popconfirm, List } from "antd";
 import { formatDate } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 import { TransactionForm } from "../forms/TransactionForm";
@@ -163,15 +163,111 @@ export function TransactionTable({
   ];
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
-      <Table 
-        columns={columns} 
-        dataSource={transactions} 
-        rowKey="_id"
-        pagination={{ pageSize: 10, position: ["bottomRight"], showSizeChanger: true }}
-        scroll={{ x: 'max-content' }}
-        className="w-full"
-      />
-    </div>
+    <>
+      <div className="hidden md:block rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
+        <Table 
+          columns={columns} 
+          dataSource={transactions} 
+          rowKey="_id"
+          pagination={{ pageSize: 10, position: ["bottomRight"], showSizeChanger: true }}
+          scroll={{ x: 'max-content' }}
+          className="w-full"
+        />
+      </div>
+      <div className="md:hidden w-full">
+        <List
+          dataSource={transactions}
+          pagination={{ pageSize: 10, align: "center", size: "small" }}
+          renderItem={(record: any) => {
+            const isTransfer = record.type === "transfer";
+            const isNegative = record.type === "expense" || record.type === "lend";
+            const isPositive = record.type === "income";
+            const isQr = record.paymentSource === "upi_scan" || (record.upiPayeeName && record.upiPayeeVpa);
+
+            return (
+              <List.Item className="border-none px-0 py-2">
+                <div className="bg-card w-full border shadow-sm rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${isPositive ? 'bg-emerald-500' : isNegative ? 'bg-red-500' : 'bg-blue-500'}`} />
+                  
+                  <div className="flex justify-between items-start pl-1">
+                    <div className="flex items-center gap-3">
+                      {isTransfer ? (
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-blue-500/10 text-blue-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></svg>
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: record.categoryId ? `${record.categoryId.color}20` : '#f3f4f6' }}>
+                          {record.categoryId ? (
+                            <CategoryIcon name={record.categoryId.icon} color={record.categoryId.color} className="w-5 h-5" />
+                          ) : (
+                            <span className="text-muted-foreground w-5 h-5" />
+                          )}
+                        </div>
+                      )}
+                      <div className="flex flex-col">
+                        <span className="font-bold text-foreground text-base leading-tight">
+                          {isTransfer ? "Internal Transfer" : (record.categoryId?.name || "Uncategorized")}
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-0.5 font-medium">
+                          {formatDate(record.date, "standard", userTimezone)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={`font-bold text-lg whitespace-nowrap ${isPositive ? "text-emerald-500" : (isNegative ? "text-red-500" : "text-blue-500")}`}>
+                      {isNegative ? "-" : (isPositive ? "+" : "")}{format(record.amount)}
+                    </div>
+                  </div>
+
+                  <div className="pl-1 text-sm flex flex-col gap-2 mt-1">
+                    <div className="flex items-center gap-1.5 text-muted-foreground bg-muted/50 px-2.5 py-1.5 rounded-lg w-fit">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-landmark shrink-0"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+                      {isTransfer && record.toAccountId ? (
+                        <span className="flex items-center gap-1.5 text-xs">
+                          <span className="font-medium text-foreground/80 truncate max-w-[100px] sm:max-w-none">{record.accountId?.name || "-"}</span>
+                          <span className="text-muted-foreground/60">→</span>
+                          <span className="font-medium text-foreground/80 truncate max-w-[100px] sm:max-w-none">{record.toAccountId?.name || "-"}</span>
+                        </span>
+                      ) : (
+                        <span className="font-medium text-foreground/80 truncate text-xs">{record.accountId?.name || "-"}</span>
+                      )}
+                    </div>
+
+                    {isQr ? (
+                      <div className="flex flex-col gap-1 py-0.5">
+                        {record.note && <span className="font-semibold text-sm text-foreground">{record.note}</span>}
+                        <div className="inline-flex items-center gap-1.5 bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-lg text-xs w-fit text-primary">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                          <span className="font-bold">UPI:</span>
+                          <span className="font-medium text-foreground opacity-90 truncate">{record.upiPayeeName}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      record.note && <div className="text-foreground/90 text-sm truncate">{record.note}</div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t mt-1">
+                    <TransactionForm accounts={accounts} categories={categories} people={people} transaction={record} />
+                    <Popconfirm
+                      title="Delete Transaction"
+                      description="Are you sure you want to delete this transaction?"
+                      onConfirm={() => deleteTransaction(record._id)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg">
+                        <Trash className="w-4 h-4 mr-1.5" />
+                        Delete
+                      </Button>
+                    </Popconfirm>
+                  </div>
+                </div>
+              </List.Item>
+            );
+          }}
+        />
+      </div>
+    </>
   );
 }

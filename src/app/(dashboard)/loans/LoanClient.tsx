@@ -167,8 +167,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
         {activeLoans.map(renderLoanCard)}
         {activeLoans.length === 0 && (
           <div className="col-span-full py-12 text-center bg-muted/20 border border-dashed rounded-xl">
-            <p className="text-muted-foreground mb-4">No active loans found.</p>
-            <LoanForm accounts={accounts} />
+            <p className="text-muted-foreground">No active loans found.</p>
           </div>
         )}
       </div>

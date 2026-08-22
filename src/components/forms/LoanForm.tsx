@@ -12,9 +12,14 @@ import { Select } from "antd";
 import { Plus, Landmark, PenLine } from "lucide-react";
 import { upsertLoan } from "@/actions/loan";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
-import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { ColorPicker } from "@/components/ui/IconColorPicker";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { useCurrency } from "@/hooks/useCurrency";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
+
+const iconsList = [
+  "Landmark", "Banknote", "Wallet", "CreditCard", "Building", "Home", "Car", "Briefcase", "GraduationCap", "User"
+];
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -102,7 +107,7 @@ export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?:
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="type"
@@ -139,7 +144,7 @@ export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?:
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="principalAmount"
@@ -180,7 +185,7 @@ export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?:
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="emiAmount"
@@ -215,7 +220,7 @@ export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?:
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="startDate"
@@ -264,9 +269,25 @@ export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?:
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 border-t pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
                <ColorPicker value={color} onChange={setColor} id="loanColor" />
-               <IconPicker value={icon} onChange={setIcon} />
+               <div className="flex flex-col gap-2">
+                 <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Icon</FormLabel>
+                 <Select
+                   className="w-full h-10"
+                   value={icon}
+                   onChange={setIcon}
+                   options={iconsList.map(i => ({
+                     label: (
+                       <div className="flex items-center gap-2">
+                         <CategoryIcon name={i} className="w-4 h-4" color={color} />
+                         <span>{i}</span>
+                       </div>
+                     ),
+                     value: i
+                   }))}
+                 />
+               </div>
             </div>
 
             <Button type="submit" className="w-full mt-4" disabled={loading}>

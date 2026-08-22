@@ -6,6 +6,7 @@ import InsurancePolicy from "@/models/InsurancePolicy";
 import User from "@/models/User";
 import { sendPushNotification } from "@/actions/push";
 import { formatCurrency } from "@/lib/currencyFormatter";
+import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 
 // This route should ideally be protected by a cron secret in production
 export async function GET(request: Request) {
@@ -20,6 +21,9 @@ export async function GET(request: Request) {
     // Find all active bills due in the next 3 days
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
+    // Fetch live currency rates for backend conversion
+    const rates = await fetchExchangeRates();
     
     const threeDaysFromNow = new Date(today);
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
@@ -50,7 +54,9 @@ export async function GET(request: Request) {
         timeText = `in ${diffDays} days`;
       }
 
-      const formattedAmount = formatCurrency(amount, userCurrency);
+      const rate = getConversionRate(userCurrency, rates);
+      const convertedAmount = amount * rate;
+      const formattedAmount = formatCurrency(convertedAmount, userCurrency);
       const body = `Your ${title} ${entityType} of ${formattedAmount} is due ${timeText}.`;
       const result = await sendPushNotification(userId.toString(), "Upcoming Payment Reminder", body);
       if (result.success) notificationsSent++;

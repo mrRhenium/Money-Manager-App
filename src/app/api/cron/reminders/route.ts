@@ -6,6 +6,7 @@ import CreditCard from "@/models/CreditCard";
 import User from "@/models/User";
 import { getRelativeDaysDifference, formatDateString } from "@/lib/dateTimeHelper";
 import { formatCurrency } from "@/lib/currencyFormatter";
+import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 
 // Configuration for web-push
 // In a real app, VAPID keys would be loaded from env vars
@@ -20,6 +21,9 @@ export async function GET(request: Request) {
 
   try {
     await dbConnect();
+    
+    // Fetch live currency rates for backend conversion
+    const rates = await fetchExchangeRates();
     
     // Find statements that are not fully paid
     const statements = await CardStatement.find({
@@ -39,15 +43,18 @@ export async function GET(request: Request) {
       
       // Calculate diff in days
       const daysUntilDue = getRelativeDaysDifference(dueDate, new Date());
-      const userCurrency = user?.currency || "INR";
+      const userCurrency = (user as any).currency || "INR";
+      const rate = getConversionRate(userCurrency, rates);
+      const amount = statement.totalAmount - statement.amountPaid;
+      const convertedAmount = amount * rate;
 
       let message = "";
       
       if (daysUntilDue <= 5 && daysUntilDue >= 0) {
         if (daysUntilDue === 0) {
-          message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ${formatCurrency(statement.totalAmount - statement.amountPaid, userCurrency)} is due TODAY!`;
+          message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ${formatCurrency(convertedAmount, userCurrency)} is due TODAY!`;
         } else {
-          message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ${formatCurrency(statement.totalAmount - statement.amountPaid, userCurrency)} is due in ${daysUntilDue} days on ${formatDateString(dueDate, "M/D/YYYY")}.`;
+          message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ${formatCurrency(convertedAmount, userCurrency)} is due in ${daysUntilDue} days on ${formatDateString(dueDate, "M/D/YYYY")}.`;
         }
       } else if (daysUntilDue < 0) {
         message = `OVERDUE: Your ${card.bankName} ${card.cardName} bill was due ${Math.abs(daysUntilDue)} days ago. Please pay immediately to avoid penalties.`;

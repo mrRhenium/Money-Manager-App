@@ -10,7 +10,7 @@ import { InvestmentForm } from "@/components/forms/InvestmentForm";
 import { InvestmentHistoryChart } from "@/components/dashboard/InvestmentHistoryChart";
 import { InvestmentUpdateForm } from "@/components/forms/InvestmentUpdateForm";
 import { auth } from "@/lib/auth";
-import { formatCurrency } from "@/lib/currencyFormatter";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
 export default async function InvestmentDetailsPage({ params }: { params: { id: string } }) {
   const session = await auth();
@@ -55,14 +55,14 @@ export default async function InvestmentDetailsPage({ params }: { params: { id: 
         <Card>
           <CardHeader className="pb-2">
             <p className="text-muted-foreground mb-1 font-medium">Invested</p>
-            <p className="text-3xl font-bold">{formatCurrency(investment.investedAmount, userCurrency)}</p>
+            <p className="text-3xl font-bold"><CurrencyDisplay amount={investment.investedAmount} /></p>
           </CardHeader>
         </Card>
         
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-2">
             <p className="text-muted-foreground mb-1 font-medium">Current Value</p>
-            <p className="text-3xl font-bold">{formatCurrency(investment.currentValue, userCurrency)}</p>
+            <p className="text-3xl font-bold"><CurrencyDisplay amount={investment.currentValue} /></p>
           </CardHeader>
         </Card>
 
@@ -72,7 +72,7 @@ export default async function InvestmentDetailsPage({ params }: { params: { id: 
           </CardHeader>
           <CardContent>
             <div className={`mt-2 ${isPos ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'} px-4 py-2 rounded-xl inline-flex items-center gap-2`}>
-              <span className="font-bold text-xl">{isPos ? "+" : ""}{formatCurrency(ret, userCurrency)}</span>
+              <CurrencyDisplay amount={ret} showSign={isPos} className="font-bold text-xl" />
               <span className="font-semibold opacity-90">({isPos ? "+" : ""}{retPct.toFixed(2)}%)</span>
             </div>
           </CardContent>

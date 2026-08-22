@@ -30,7 +30,7 @@ import { isSameMonthAndYear, getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
 import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
-import { formatCurrency } from "@/lib/currencyFormatter";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
 import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
 
@@ -201,7 +201,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{formatCurrency(totalBalance, userCurrency)}</div>
+            <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
             <p className="text-xs text-muted-foreground mt-1">Across all accounts</p>
           </CardContent>
         </Card>
@@ -214,7 +214,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">+{formatCurrency(monthlyIncome, userCurrency)}</div>
+            <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={monthlyIncome} showSign={true} /></div>
             <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
               <Activity className="w-3 h-3" /> This month
             </p>
@@ -229,7 +229,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">-{formatCurrency(monthlyExpense, userCurrency)}</div>
+            <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={-monthlyExpense} /></div>
             <p className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
               <Activity className="w-3 h-3" /> This month
             </p>
@@ -247,11 +247,11 @@ export default async function DashboardPage() {
             <div className="flex flex-col gap-1.5 mt-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">To Receive</span>
-                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(totalOweUs, userCurrency)}</span>
+                <CurrencyDisplay amount={totalOweUs} className="text-sm font-semibold text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">To Pay</span>
-                <span className="text-sm font-semibold text-red-600 dark:text-red-400">{formatCurrency(totalWeOwe, userCurrency)}</span>
+                <CurrencyDisplay amount={totalWeOwe} className="text-sm font-semibold text-red-600 dark:text-red-400" />
               </div>
             </div>
           </CardContent>
@@ -266,7 +266,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">{formatCurrency(totalOutstanding, userCurrency)}</div>
+              <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalOutstanding} /></div>
               {totalOutstanding > 0 ? (
                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                    <AlertCircle className="w-3 h-3" /> Unpaid dues
@@ -318,9 +318,11 @@ export default async function DashboardPage() {
                       <p className="text-xs text-muted-foreground mt-0.5">{formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}</p>
                     </div>
                   </div>
-                  <div className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
-                    {t.type === 'expense' || t.type === 'lend' ? '-' : '+'}{formatCurrency(t.amount, userCurrency)}
-                  </div>
+                  <CurrencyDisplay 
+                    amount={t.type === 'expense' || t.type === 'lend' ? -t.amount : t.amount} 
+                    className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}
+                    showSign={t.type === 'income'} 
+                  />
                 </div>
               ))}
               {transactions.length === 0 && (

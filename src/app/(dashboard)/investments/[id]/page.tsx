@@ -12,13 +12,14 @@ import { InvestmentUpdateForm } from "@/components/forms/InvestmentUpdateForm";
 import { auth } from "@/lib/auth";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
-export default async function InvestmentDetailsPage({ params }: { params: { id: string } }) {
+export default async function InvestmentDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const userCurrency = (session.user as any).currency || "INR";
 
+  const { id } = await params;
   const [data, accounts] = await Promise.all([
-    getInvestmentById(params.id),
+    getInvestmentById(id),
     getAccounts()
   ]);
 

@@ -9,11 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, ColorPicker } from "antd";
+import { Select } from "antd";
 import { createCreditCard, updateCreditCard } from "@/actions/creditCard";
 import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette, PenLine } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { useCurrency } from "@/hooks/useCurrency";
+import { ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   cardName: z.string().min(2, "Name must be at least 2 characters"),
@@ -232,9 +233,7 @@ export function CreditCardForm({ card }: { card?: any }) {
             </div>
 
             <FormField control={form.control} name="color" render={({ field }) => (
-              <FormItem><FormLabel className="flex items-center gap-2"><Palette className="w-4 h-4 text-muted-foreground" /> Card Visual Color</FormLabel><FormControl>
-                <div className="flex gap-2"><Input type="color" id="creditCardColorInput" className="w-12 h-10 p-1" {...field} /><Input {...field} onClick={() => document.getElementById("creditCardColorInput")?.click()} /></div>
-              </FormControl><FormMessage /></FormItem>
+              <ColorPicker value={field.value} onChange={field.onChange} id="creditCardColorInput" />
             )} />
 
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{card ? "Save Changes" : "Register Card"}</Button>

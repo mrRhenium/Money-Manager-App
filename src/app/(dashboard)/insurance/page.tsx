@@ -5,6 +5,7 @@ import { InsuranceForm } from "@/components/forms/InsuranceForm";
 import { InsuranceTable } from "@/components/tables/InsuranceTable";
 import { Shield, ShieldAlert, PieChart, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
 export default async function InsurancePage() {
   const [policies, accounts] = await Promise.all([
@@ -43,7 +44,7 @@ export default async function InsurancePage() {
             <Activity className="w-4 h-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalCoverage.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold"><CurrencyDisplay amount={totalCoverage} /></div>
           </CardContent>
         </Card>
 
@@ -53,7 +54,7 @@ export default async function InsurancePage() {
             <ShieldAlert className="w-4 h-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalPremium.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold"><CurrencyDisplay amount={totalPremium} /></div>
           </CardContent>
         </Card>
       </div>

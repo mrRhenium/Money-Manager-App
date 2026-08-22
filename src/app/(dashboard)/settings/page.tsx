@@ -144,25 +144,16 @@ function SettingsContent() {
     }
   };
 
-  const handleCurrencyChange = async (newCurrency: string) => {
-    try {
-      setIsCurrencyLoading(true);
-      await updateCurrency(newCurrency);
-      await updateSession({ currency: newCurrency });
-      setCurrency(newCurrency);
-      toast.success("Base currency updated successfully!");
-    } catch (error: any) {
-      toast.error("Failed to update currency: " + error.message);
-    } finally {
-      setIsCurrencyLoading(false);
-    }
+  const handleCurrencyChange = (newCurrency: string) => {
+    setCurrency(newCurrency);
   };
 
   const handleProfileSave = async () => {
     try {
       setIsProfileLoading(true);
       await updateProfile({ name, mobile, image });
-      await updateSession({ name, image }); // Refresh session data
+      await updateCurrency(currency);
+      await updateSession({ name, image, currency }); // Refresh session data
       toast.success("Profile updated successfully!");
     } catch (error: any) {
       toast.error(error.message);

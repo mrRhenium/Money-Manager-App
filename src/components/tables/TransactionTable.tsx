@@ -68,7 +68,19 @@ export function TransactionTable({
             </div>
           );
         }
-        if (!record.categoryId) return <span className="text-muted-foreground">-</span>;
+        if (!record.categoryId) {
+          if (record.note?.toLowerCase().includes("emi payment")) {
+            return (
+              <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-red-500/10 text-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                </div>
+                <span>EMI Payment</span>
+              </div>
+            );
+          }
+          return <span className="text-muted-foreground">-</span>;
+        }
         return (
           <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
             <CategoryIcon name={record.categoryId.icon} color={record.categoryId.color} className="w-4 h-4 shrink-0" />
@@ -196,9 +208,11 @@ export function TransactionTable({
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></svg>
                         </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: record.categoryId ? `${record.categoryId.color}20` : '#f3f4f6' }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: record.categoryId ? `${record.categoryId.color}20` : (record.note?.toLowerCase().includes("emi payment") ? '#fee2e2' : '#f3f4f6') }}>
                           {record.categoryId ? (
                             <CategoryIcon name={record.categoryId.icon} color={record.categoryId.color} className="w-5 h-5" />
+                          ) : record.note?.toLowerCase().includes("emi payment") ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
                           ) : (
                             <span className="text-muted-foreground w-5 h-5" />
                           )}
@@ -206,7 +220,7 @@ export function TransactionTable({
                       )}
                       <div className="flex flex-col">
                         <span className="font-bold text-foreground text-base leading-tight">
-                          {isTransfer ? "Internal Transfer" : (record.categoryId?.name || "Uncategorized")}
+                          {isTransfer ? "Internal Transfer" : (record.categoryId?.name || (record.note?.toLowerCase().includes("emi payment") ? "EMI Payment" : "Uncategorized"))}
                         </span>
                         <span className="text-xs text-muted-foreground mt-0.5 font-medium">
                           {formatDate(record.date, "standard", userTimezone)}

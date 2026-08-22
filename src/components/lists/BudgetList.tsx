@@ -36,7 +36,7 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
                       <div className="shrink-0">
-                        <CategoryIcon name={budget.icon || budget.categoryId?.icon} color={budget.color || budget.categoryId?.color} className="w-4 h-4" />
+                        <CategoryIcon name={budget.icon || budget.categoryId?.icon} color={budget.color || budget.categoryId?.color} className="w-5 h-5" />
                       </div>
                       <h3 className="font-semibold truncate" title={budget.categoryId?.name}>{budget.categoryId?.name}</h3>
                     </div>

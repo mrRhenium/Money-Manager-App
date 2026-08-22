@@ -66,8 +66,8 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${bill.color || '#6366f1'}15` }}>
-                    <CategoryIcon name={bill.icon} color={bill.color} className="w-6 h-6" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${bill.color || '#6366f1'}15` }}>
+                    <CategoryIcon name={bill.icon} color={bill.color} className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="font-bold text-base leading-tight mb-0.5">{bill.name}</h3>
@@ -110,7 +110,7 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
                 
                 <Button variant="outline" size="sm" className="h-7 text-xs rounded-full" onClick={() => {
                   // In the future, this could pre-fill a TransactionForm and increment the nextDueDate
-                  window.alert("In a future update, this will automatically log the payment and advance the due date!");
+                  toast.info("In a future update, this will automatically log the payment and advance the due date!");
                 }}>
                   <CheckCircle className="w-3.5 h-3.5 mr-1" /> Mark Paid
                 </Button>

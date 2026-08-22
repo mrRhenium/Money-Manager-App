@@ -3,7 +3,8 @@ import { getInvestments } from "@/actions/investment";
 import { getAccounts } from "@/actions/account";
 import { InvestmentForm } from "@/components/forms/InvestmentForm";
 import { InvestmentTable } from "@/components/tables/InvestmentTable";
-import { TrendingUp, PieChart, Info, RefreshCw } from "lucide-react";
+import { TrendingUp, PieChart, RefreshCw } from "lucide-react";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -58,7 +59,7 @@ export default async function InvestmentsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Invested</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalInvested.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold"><CurrencyDisplay amount={totalInvested} /></div>
           </CardContent>
         </Card>
         
@@ -67,7 +68,7 @@ export default async function InvestmentsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Current Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{currentTotal.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold"><CurrencyDisplay amount={currentTotal} /></div>
           </CardContent>
         </Card>
 
@@ -78,7 +79,7 @@ export default async function InvestmentsPage() {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${totalReturns >= 0 ? "text-emerald-500" : "text-destructive"}`}>
-              {totalReturns >= 0 ? "+" : ""}₹{totalReturns.toLocaleString("en-IN")}
+              <CurrencyDisplay amount={totalReturns} showSign />
               <span className="text-sm font-medium ml-2 opacity-80">
               ({totalReturns >= 0 ? "+" : ""}{returnsPercentage.toFixed(2)}%)
               </span>
@@ -97,9 +98,9 @@ export default async function InvestmentsPage() {
               <Card key={type} className="shadow-sm">
                 <CardContent className="p-3">
                   <div className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">{type}</div>
-                  <div className="text-sm font-bold">₹{data.current.toLocaleString("en-IN")}</div>
+                  <div className="text-sm font-bold"><CurrencyDisplay amount={data.current} /></div>
                   <div className={`text-xs mt-1 ${isPos ? "text-emerald-500" : "text-destructive"}`}>
-                    {isPos ? "+" : ""}₹{ret.toLocaleString("en-IN")} ({isPos ? "+" : ""}{pct.toFixed(1)}%)
+                    <CurrencyDisplay amount={ret} showSign /> ({isPos ? "+" : ""}{pct.toFixed(1)}%)
                   </div>
                 </CardContent>
               </Card>

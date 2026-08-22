@@ -30,14 +30,14 @@ export function GoalList({ goals }: { goals: any[] }) {
 
           return (
             <List.Item>
-              <div className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-[220px] flex flex-col justify-between overflow-hidden">
+              <div className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
                 <div className="flex justify-between items-start gap-4 z-10">
                   <div className="flex items-center gap-3">
                     <div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
                       style={{ backgroundColor: goal.color }}
                     >
-                      <CategoryIcon name={goal.icon} className="w-6 h-6" />
+                      <CategoryIcon name={goal.icon} className="w-5 h-5" />
                     </div>
                     <div>
                       <h3 className="font-bold text-lg leading-tight line-clamp-1" title={goal.name}>{goal.name}</h3>
@@ -55,7 +55,7 @@ export function GoalList({ goals }: { goals: any[] }) {
                   </div>
                 </div>
 
-                <div className="z-10 mt-4">
+                <div className="z-10 mt-auto">
                   <div className="flex justify-between items-end mb-2">
                     <div>
                       <p className="font-semibold text-lg text-foreground truncate">{goal.name}</p>
@@ -78,7 +78,7 @@ export function GoalList({ goals }: { goals: any[] }) {
                 </div>
 
                 {!isCompleted && (
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-2 shrink-0 z-10 pt-2">
                     <AddFundsModal goal={goal} onUpdate={() => {}} />
                     <Popconfirm
                       title="Delete Goal"

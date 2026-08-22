@@ -31,7 +31,7 @@ export function AddFundsModal({ goal, onUpdate }: { goal: any, onUpdate: () => v
     
     setLoading(true);
     try {
-      await addFundsToGoal(goal.id, numAmount);
+      await addFundsToGoal(goal._id, numAmount);
       onUpdate();
       setOpen(false);
       setAmount("");

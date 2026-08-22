@@ -26,8 +26,8 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
       key: "name",
       render: (name: string, record: any) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${record.color || '#8b5cf6'}15` }}>
-            <CategoryIcon name={record.icon} color={record.color} className="w-4 h-4" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${record.color || '#8b5cf6'}15` }}>
+            <CategoryIcon name={record.icon} color={record.color} className="w-5 h-5" />
           </div>
           <div>
             <div className="font-semibold">{name}</div>

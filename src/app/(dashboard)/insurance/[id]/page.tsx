@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Shield, Calendar, Hash, Activity } from "lucide-react";
 import Link from "next/link";
 import { InsuranceForm } from "@/components/forms/InsuranceForm";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
-export default async function InsuranceDetailsPage({ params }: { params: { id: string } }) {
+export default async function InsuranceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const [data, accounts] = await Promise.all([
-    getInsurancePolicyById(params.id),
+    getInsurancePolicyById(id),
     getAccounts()
   ]);
 
@@ -45,7 +47,7 @@ export default async function InsuranceDetailsPage({ params }: { params: { id: s
             <CardTitle className="text-sm text-muted-foreground font-medium">Coverage (Sum Assured)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{policy.coverageAmount.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold"><CurrencyDisplay amount={policy.coverageAmount || 0} /></div>
           </CardContent>
         </Card>
         
@@ -54,7 +56,7 @@ export default async function InsuranceDetailsPage({ params }: { params: { id: s
             <CardTitle className="text-sm text-muted-foreground font-medium">Premium</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">₹{policy.premiumAmount.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold text-primary"><CurrencyDisplay amount={policy.premiumAmount || 0} /></div>
             <p className="text-xs text-muted-foreground">{policy.premiumFrequency}</p>
           </CardContent>
         </Card>
@@ -86,7 +88,7 @@ export default async function InsuranceDetailsPage({ params }: { params: { id: s
                   {payments.map((h: any) => (
                     <div key={h._id} className="flex justify-between items-center py-2 border-b">
                       <div>
-                        <div className="font-medium">₹{h.amount.toLocaleString("en-IN")}</div>
+                        <div className="font-medium"><CurrencyDisplay amount={h.amount || 0} /></div>
                         <div className="text-xs text-muted-foreground">{new Date(h.date || h.dueDate || h.createdAt).toLocaleDateString()}</div>
                       </div>
                       <div className="text-sm capitalize">{h.status}</div>

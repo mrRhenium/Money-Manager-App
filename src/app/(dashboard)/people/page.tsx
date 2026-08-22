@@ -1,5 +1,6 @@
 import { getPeople } from "@/actions/person";
 import { PersonForm } from "@/components/forms/PersonForm";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { PersonList } from "@/components/lists/PersonList";
 
 export default async function PeoplePage() {
@@ -24,7 +25,7 @@ export default async function PeoplePage() {
             <h3 className="tracking-tight text-sm font-medium">Money to Receive</h3>
           </div>
           <div className="pt-2">
-            <div className="text-2xl font-bold text-emerald-500">+₹{totalOweUs.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold text-emerald-500"><CurrencyDisplay amount={totalOweUs} showSign /></div>
           </div>
         </div>
         <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
@@ -32,7 +33,7 @@ export default async function PeoplePage() {
             <h3 className="tracking-tight text-sm font-medium">Money to Pay</h3>
           </div>
           <div className="pt-2">
-            <div className="text-2xl font-bold text-red-500">-₹{totalWeOwe.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold text-red-500"><CurrencyDisplay amount={-totalWeOwe} showSign /></div>
           </div>
         </div>
       </div>

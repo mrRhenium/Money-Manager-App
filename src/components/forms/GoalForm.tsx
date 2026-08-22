@@ -167,22 +167,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void
                 control={form.control}
                 name="color"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Color</FormLabel>
-                    <FormControl>
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {colorsList.map(color => (
-                          <div
-                            key={color}
-                            className={`w-8 h-8 rounded-full cursor-pointer transition-transform ${field.value === color ? "scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background" : "hover:scale-105"}`}
-                            style={{ backgroundColor: color }}
-                            onClick={() => field.onChange(color)}
-                          />
-                        ))}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                  <ColorPicker value={field.value} onChange={field.onChange} id="goalColor" />
                 )}
               />
             </div>

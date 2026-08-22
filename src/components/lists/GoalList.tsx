@@ -9,8 +9,11 @@ import { GoalForm } from "../forms/GoalForm";
 import { deleteGoal } from "@/actions/goal";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { AddFundsModal } from "../forms/AddFundsModal";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function GoalList({ goals }: { goals: any[] }) {
+  const { format } = useCurrency();
+
   if (goals.length === 0) {
     return null;
   }
@@ -48,7 +51,35 @@ export function GoalList({ goals }: { goals: any[] }) {
                   </div>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <GoalForm goal={goal} />
+                    <GoalForm goal={goal} onUpdate={() => {}} />
+                  </div>
+                </div>
+
+                <div className="z-10 mt-4">
+                  <div className="flex justify-between items-end mb-2">
+                    <div>
+                      <p className="font-semibold text-lg text-foreground truncate">{goal.name}</p>
+                      <p className="text-sm font-medium text-muted-foreground mt-0.5">{format(goal.currentAmount)} / {format(goal.targetAmount)}</p>
+                    </div>
+                  </div>
+
+                  <div className="relative pt-2">
+                    <div className="flex justify-between text-[10px] font-bold mb-1 px-0.5 text-muted-foreground uppercase tracking-wider">
+                      <span>{progressPercent.toFixed(0)}%</span>
+                      {isCompleted ? <span className="text-emerald-500">Completed!</span> : <span>Left: {format(goal.targetAmount - goal.currentAmount)}</span>}
+                    </div>
+                    <div className="h-3 w-full bg-muted/50 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full transition-all duration-500 ease-in-out" 
+                        style={{ width: `${progressPercent}%`, backgroundColor: goal.color }} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {!isCompleted && (
+                  <div className="flex gap-2 shrink-0">
+                    <AddFundsModal goal={goal} onUpdate={() => {}} />
                     <Popconfirm
                       title="Delete Goal"
                       description="Are you sure you want to delete this savings goal?"
@@ -62,38 +93,6 @@ export function GoalList({ goals }: { goals: any[] }) {
                         <Trash className="w-4 h-4" />
                       </Button>
                     </Popconfirm>
-                  </div>
-                </div>
-
-                <div className="z-10 mt-4">
-                  <div className="flex justify-between items-end mb-2">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-0.5">Saved</p>
-                      <p className="text-xl font-bold" style={{ color: goal.color }}>₹{goal.currentAmount.toLocaleString("en-IN")}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground mb-0.5">Target</p>
-                      <p className="text-sm font-semibold">₹{goal.targetAmount.toLocaleString("en-IN")}</p>
-                    </div>
-                  </div>
-
-                  <div className="relative pt-2">
-                    <div className="flex justify-between text-[10px] font-bold mb-1 px-0.5 text-muted-foreground uppercase tracking-wider">
-                      <span>{progressPercent.toFixed(0)}%</span>
-                      {isCompleted ? <span className="text-emerald-500">Completed!</span> : <span>Left: ₹{(goal.targetAmount - goal.currentAmount).toLocaleString("en-IN")}</span>}
-                    </div>
-                    <div className="h-3 w-full bg-muted/50 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full transition-all duration-500 ease-in-out" 
-                        style={{ width: `${progressPercent}%`, backgroundColor: goal.color }} 
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {!isCompleted && (
-                  <div className="absolute bottom-4 right-4 z-20">
-                    <AddFundsModal goalId={goal._id} goalName={goal.name} />
                   </div>
                 )}
                 

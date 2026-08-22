@@ -7,8 +7,10 @@ import { AlertCircle, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreditCardForm } from "../forms/CreditCardForm";
 import { deleteCreditCard } from "@/actions/creditCard";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function CreditCardList({ cards }: { cards: any[] }) {
+  const { format } = useCurrency();
   if (cards.length === 0) {
     return null; // The parent page handles empty state beautifully
   }
@@ -84,12 +86,12 @@ export function CreditCardList({ cards }: { cards: any[] }) {
 
                     <div className="flex justify-between items-end text-sm">
                       <div>
-                        <p className="opacity-70 text-xs">Outstanding</p>
-                        <p className="font-bold">₹{card.currentOutstanding.toLocaleString("en-IN")}</p>
+                        <p className="text-xs text-muted-foreground opacity-80 mb-0.5">Outstanding</p>
+                        <p className="font-bold">{format(card.currentOutstanding)}</p>
                       </div>
                       <div className="text-right">
-                        <p className="opacity-70 text-xs">Available</p>
-                        <p className="font-bold">₹{card.availableLimit.toLocaleString("en-IN")}</p>
+                        <p className="text-xs text-muted-foreground opacity-80 mb-0.5">Available Limit</p>
+                        <p className="font-bold">{format(card.availableLimit)}</p>
                       </div>
                     </div>
                   </div>

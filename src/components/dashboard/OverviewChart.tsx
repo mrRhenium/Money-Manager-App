@@ -1,12 +1,15 @@
 "use client";
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface OverviewChartProps {
   data: { name: string; value: number; color: string }[];
 }
 
 export function OverviewChart({ data }: OverviewChartProps) {
+  const { format } = useCurrency();
+
   if (!data || data.length === 0) {
     return (
       <div className="h-[300px] flex items-center justify-center text-muted-foreground">
@@ -33,7 +36,7 @@ export function OverviewChart({ data }: OverviewChartProps) {
             ))}
           </Pie>
           <Tooltip 
-            formatter={(value: any) => `₹${Number(value).toLocaleString("en-IN")}`}
+            formatter={(value: any) => format(Number(value))}
             contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
           />
           <Legend />

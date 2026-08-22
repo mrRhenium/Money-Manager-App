@@ -30,6 +30,7 @@ import { isSameMonthAndYear, getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
 import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
 
@@ -47,6 +48,7 @@ export default async function DashboardPage() {
   if (!session?.user) redirect("/login");
   
   const userTimezone = (session.user as any).timezone || "UTC";
+  const userCurrency = (session.user as any).currency || "INR";
 
   const [accounts, transactions, people, cards, investments, policies] = await Promise.all([
     getAccounts(),
@@ -182,7 +184,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">₹{totalBalance.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold text-foreground">{formatCurrency(totalBalance, userCurrency)}</div>
             <p className="text-xs text-muted-foreground mt-1">Across all accounts</p>
           </CardContent>
         </Card>
@@ -195,7 +197,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">+₹{monthlyIncome.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold text-foreground">+{formatCurrency(monthlyIncome, userCurrency)}</div>
             <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
               <Activity className="w-3 h-3" /> This month
             </p>
@@ -210,7 +212,7 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">-₹{monthlyExpense.toLocaleString("en-IN")}</div>
+            <div className="text-2xl font-bold text-foreground">-{formatCurrency(monthlyExpense, userCurrency)}</div>
             <p className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
               <Activity className="w-3 h-3" /> This month
             </p>
@@ -228,11 +230,11 @@ export default async function DashboardPage() {
             <div className="flex flex-col gap-1.5 mt-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">To Receive</span>
-                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">₹{totalOweUs.toLocaleString("en-IN")}</span>
+                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(totalOweUs, userCurrency)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">To Pay</span>
-                <span className="text-sm font-semibold text-red-600 dark:text-red-400">₹{totalWeOwe.toLocaleString("en-IN")}</span>
+                <span className="text-sm font-semibold text-red-600 dark:text-red-400">{formatCurrency(totalWeOwe, userCurrency)}</span>
               </div>
             </div>
           </CardContent>
@@ -247,7 +249,7 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">₹{totalOutstanding.toLocaleString("en-IN")}</div>
+              <div className="text-2xl font-bold text-foreground">{formatCurrency(totalOutstanding, userCurrency)}</div>
               {totalOutstanding > 0 ? (
                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                    <AlertCircle className="w-3 h-3" /> Unpaid dues
@@ -300,7 +302,7 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                   <div className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}>
-                    {t.type === 'expense' || t.type === 'lend' ? '-' : '+'}₹{t.amount.toLocaleString("en-IN")}
+                    {t.type === 'expense' || t.type === 'lend' ? '-' : '+'}{formatCurrency(t.amount, userCurrency)}
                   </div>
                 </div>
               ))}

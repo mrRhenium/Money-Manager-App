@@ -10,8 +10,9 @@ import { LogOut, User, Bell, Palette, Globe } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { subscribeUser, sendTestNotification } from "@/actions/push";
-import { getUserProfile, updateProfile, updateThemeColor } from "@/actions/user";
+import { getUserProfile, updateProfile, updateThemeColor, updateCurrency } from "@/actions/user";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { Select } from "antd";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 import { useToast } from "@/hooks/useToast";
 import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine } from "lucide-react";
@@ -40,8 +41,10 @@ function SettingsContent() {
   const [image, setImage] = useState<string>("");
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [themeColor, setThemeColor] = useState((session?.user as any)?.themeColor || "#0ea5e9");
+  const [currency, setCurrency] = useState((session?.user as any)?.currency || "INR");
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isThemeLoading, setIsThemeLoading] = useState(false);
+  const [isCurrencyLoading, setIsCurrencyLoading] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -138,6 +141,20 @@ function SettingsContent() {
       toast.error("Failed to update theme color: " + error.message);
     } finally {
       setIsThemeLoading(false);
+    }
+  };
+
+  const handleCurrencyChange = async (newCurrency: string) => {
+    try {
+      setIsCurrencyLoading(true);
+      await updateCurrency(newCurrency);
+      await updateSession({ currency: newCurrency });
+      setCurrency(newCurrency);
+      toast.success("Base currency updated successfully!");
+    } catch (error: any) {
+      toast.error("Failed to update currency: " + error.message);
+    } finally {
+      setIsCurrencyLoading(false);
     }
   };
 
@@ -327,9 +344,20 @@ function SettingsContent() {
         </div>
         
         <div className="space-y-2">
-          <Label>Currency</Label>
-          <Input value="Dynamic (Multi-Currency Enabled)" disabled />
-          <p className="text-xs text-muted-foreground">Log transactions in any currency, auto-converts to INR.</p>
+          <Label>Base Currency</Label>
+          <Select 
+            value={currency} 
+            onChange={handleCurrencyChange} 
+            disabled={isCurrencyLoading}
+            className="w-full h-10"
+            options={[
+              { label: 'Indian Rupee (INR)', value: 'INR' },
+              { label: 'US Dollar (USD)', value: 'USD' },
+              { label: 'Euro (EUR)', value: 'EUR' },
+              { label: 'British Pound (GBP)', value: 'GBP' },
+            ]}
+          />
+          <p className="text-xs text-muted-foreground">This sets the default symbol and formatting everywhere in the app.</p>
         </div>
       </div>
     );

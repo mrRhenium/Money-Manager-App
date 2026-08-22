@@ -12,8 +12,9 @@ import { getAccounts } from "@/actions/account";
 import { getPeople, savePersonVpa } from "@/actions/person";
 import { useToast } from "@/hooks/useToast";
 import { Camera, AlertCircle, CheckCircle, Smartphone, Loader2, Landmark, Tag, Users } from "lucide-react";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ScanAndPayModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface ScanAndPayModalProps {
 
 export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   const { toast } = useToast();
+  const { format, currencyCode } = useCurrency();
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -485,9 +487,9 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
             <div className="space-y-3">
               <div>
-                <Label htmlFor="amount">Amount (₹)</Label>
+                <Label htmlFor="amount">Amount ({currencyCode})</Label>
                 <div className="relative mt-1">
-                  <span className="absolute left-3 top-2.5 font-bold text-muted-foreground">₹</span>
+                  <span className="absolute left-3 top-2.5 font-bold text-muted-foreground">{currencyCode}</span>
                   <Input
                     id="amount"
                     type="text"
@@ -512,8 +514,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                   onChange={setAccountId}
                   className="w-full h-10 mt-1"
                   options={accounts.map(a => ({
-                    label: `${a.name} (₹${a.balance.toLocaleString('en-IN')})`,
-                    value: a._id
+                    value: a._id,
+                    label: `${a.name} (${format(a.balance)})`
                   }))}
                 />
               </div>
@@ -568,8 +570,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
               </div>
               <div>
                 <h4 className="font-bold text-lg text-foreground">Scan with UPI App</h4>
-                <p className="text-xs text-muted-foreground max-w-xs mt-1">
-                  Open GPay, PhonePe, or Paytm on another device and scan this QR to pay <span className="font-bold text-primary">₹{amount}</span> to <span className="font-bold">{payeeName}</span>.
+                <p className="text-muted-foreground text-sm leading-relaxed max-w-sm text-center">
+                  Open GPay, PhonePe, or Paytm on another device and scan this QR to pay <span className="font-bold text-primary">{format(Number(amount))}</span> to <span className="font-bold">{payeeName}</span>.
                 </p>
               </div>
             </div>
@@ -587,8 +589,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 <Smartphone className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-lg text-foreground">Confirm UPI Payment</h3>
-              <p className="text-sm text-muted-foreground max-w-xs">
-                Did you complete the payment of <span className="font-bold text-primary">₹{amount}</span> to <span className="font-bold">{payeeName}</span>?
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm text-center">
+                Did you complete the payment of <span className="font-bold text-primary">{format(Number(amount))}</span> to <span className="font-bold">{payeeName}</span>?
               </p>
             </div>
 

@@ -8,8 +8,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { Smartphone, Check, X, Clock, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { formatCurrency } from "@/lib/currencyFormatter";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function PendingConfirmationsWidget() {
+  const { format, currencyCode } = useCurrency();
   const { data: session } = useSession();
   const { toast } = useToast();
   
@@ -69,8 +72,8 @@ export function PendingConfirmationsWidget() {
         <Card className="cursor-pointer border border-amber-500/20 bg-amber-500/5 shadow-sm hover:bg-amber-500/10 transition-all duration-200">
           <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-600 flex items-center justify-center animate-pulse">
-                <Smartphone className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
+                <Smartphone className="w-6 h-6 animate-pulse" />
               </div>
               <div>
                 <h3 className="font-bold text-base text-amber-800 dark:text-amber-400">Pending UPI Confirmations</h3>
@@ -81,9 +84,9 @@ export function PendingConfirmationsWidget() {
             </div>
             <div className="text-left sm:text-right shrink-0 mt-2 sm:mt-0">
               <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider block sm:inline">Total Pending: </span>
-              <span className="text-2xl font-black text-amber-700 dark:text-amber-400 ml-1">
-                ₹{totalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-              </span>
+              <div className="font-bold text-base text-amber-700 dark:text-amber-400 flex items-center justify-start sm:justify-end">
+                {format(totalAmount)}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -107,8 +110,8 @@ export function PendingConfirmationsWidget() {
               <div key={txn._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-background rounded-xl border border-amber-500/20 gap-3 shadow-inner">
                 <div>
                   <p className="font-bold text-sm text-foreground">{payeeName}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Amount: <span className="font-semibold text-foreground">₹{txn.amount.toLocaleString("en-IN")}</span> • {new Date(txn.date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
+                  <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">
+                    Amount: <span className="font-semibold text-foreground">{format(txn.amount)}</span> • {new Date(txn.date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">

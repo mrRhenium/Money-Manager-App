@@ -6,8 +6,11 @@ import { BudgetForm } from "../forms/BudgetForm";
 import { deleteBudget } from "@/actions/budget";
 import { Trash } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function BudgetList({ budgets, categories }: { budgets: any[]; categories: any[] }) {
+  const { format } = useCurrency();
+
   if (budgets.length === 0) {
     return (
       <div className="col-span-full p-8 text-center border rounded-xl border-dashed">
@@ -24,6 +27,7 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(budget: any, index: number) => {
           const isOverBudget = budget.totalSpent > budget.amount;
+          const percentage = Math.min((budget.totalSpent / budget.amount) * 100, 100);
           return (
             <List.Item>
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4 h-full justify-between group">
@@ -68,9 +72,9 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                       </Popconfirm>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center text-sm mt-2 text-muted-foreground">
-                    <span>Spent / Target</span>
-                    <span>₹{budget.totalSpent.toLocaleString("en-IN")} / ₹{budget.amount.toLocaleString("en-IN")}</span>
+                  <div className="flex justify-between text-sm font-semibold mt-4 text-foreground/80">
+                    <span>{format(budget.totalSpent)} / {format(budget.amount)}</span>
+                    <span>{percentage.toFixed(0)}%</span>
                   </div>
                 </div>
 
@@ -81,12 +85,13 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                       style={{ width: `${budget.progress}%` }}
                     />
                   </div>
-                  
-                  {isOverBudget ? (
-                    <p className="text-xs font-medium text-red-500 text-right">Over budget by ₹{(budget.totalSpent - budget.amount).toLocaleString("en-IN")}</p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground text-right">₹{(budget.amount - budget.totalSpent).toLocaleString("en-IN")} remaining</p>
-                  )}
+                  <div className="mt-3">
+                    {isOverBudget ? (
+                      <p className="text-xs font-medium text-red-500 text-right">Over budget by {format(budget.totalSpent - budget.amount)}</p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-right">{format(budget.amount - budget.totalSpent)} remaining</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </List.Item>

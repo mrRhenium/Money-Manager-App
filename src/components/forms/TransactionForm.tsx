@@ -14,11 +14,13 @@ import { Select } from "antd";
 import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { useRef } from "react";
 import Tesseract from "tesseract.js";
-import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users, PenLine, Trash, UploadCloud } from "lucide-react";
+import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users, PenLine, Trash, UploadCloud, CreditCard } from "lucide-react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const formSchema = z.object({
   type: z.enum(["income", "expense", "lend", "borrow", "settlement", "transfer"]),
@@ -50,6 +52,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
   const [billImage, setBillImage] = useState<string>(transaction?.billImage || "");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { currencyCode } = useCurrency();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -80,7 +83,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
       const result = await Tesseract.recognize(file, "eng");
       const text = result.data.text;
       
-      const amountMatches = text.match(/(?:total|amount|pay|paid|rs\.?|\$|₹)\s*:?\s*(\d+[\.,]\d{2})/i) 
+      const amountMatches = text.match(/(?:total|amount|pay|paid|rs\.?|\$|₹|€|£)\s*:?\s*(\d+[\.,]\d{2})/i) 
                             || text.match(/(\d+\.\d{2})/g);
       
       if (amountMatches && amountMatches.length > 0) {

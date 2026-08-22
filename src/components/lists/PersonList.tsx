@@ -8,8 +8,10 @@ import { Select } from "antd";
 import { PersonForm } from "../forms/PersonForm";
 import { deletePerson } from "@/actions/person";
 import { useState, useMemo } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function PersonList({ people }: { people: any[] }) {
+  const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [relationFilter, setRelationFilter] = useState("All");
   const [activeTab, setActiveTab] = useState("merchants");
@@ -92,8 +94,8 @@ export function PersonList({ people }: { people: any[] }) {
         <div className="pt-2 border-t flex items-center justify-between mt-auto">
           <span className="text-sm text-muted-foreground">Net Balance</span>
           <span className={`font-bold ${person.netBalance > 0 ? "text-emerald-500" : person.netBalance < 0 ? "text-red-500" : "text-muted-foreground"}`}>
-            {person.netBalance > 0 ? `+₹${person.netBalance.toLocaleString("en-IN")}` : 
-             person.netBalance < 0 ? `-₹${Math.abs(person.netBalance).toLocaleString("en-IN")}` : 
+            {person.netBalance > 0 ? `+${format(person.netBalance)}` : 
+             person.netBalance < 0 ? `-${format(Math.abs(person.netBalance))}` : 
              "Settled"}
           </span>
         </div>

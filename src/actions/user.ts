@@ -69,3 +69,14 @@ export async function updateThemeColor(color: string | null) {
   
   return { success: true };
 }
+
+export async function updateCurrency(currency: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+  
+  await User.findByIdAndUpdate(session.user.id, { currency });
+  
+  return { success: true };
+}

@@ -3,7 +3,9 @@ import dbConnect from "@/lib/db";
 import RecurringBill from "@/models/RecurringBill";
 import Investment from "@/models/Investment";
 import InsurancePolicy from "@/models/InsurancePolicy";
+import User from "@/models/User";
 import { sendPushNotification } from "@/actions/push";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 // This route should ideally be protected by a cron secret in production
 export async function GET(request: Request) {
@@ -33,16 +35,23 @@ export async function GET(request: Request) {
     let notificationsSent = 0;
 
     const sendDueNotification = async (userId: string, title: string, amount: number, dueDate: Date, entityType: string) => {
+      const user = await User.findById(userId).select("currency");
+      const userCurrency = user?.currency || "INR";
+      
+      const diffTime = dueDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
       let timeText = "soon";
-      if (dueDate.toDateString() === today.toDateString()) {
+      if (diffDays === 0) {
         timeText = "today";
-      } else if (dueDate.getDate() === today.getDate() + 1) {
+      } else if (diffDays === 1) {
         timeText = "tomorrow";
       } else {
-        timeText = `on ${dueDate.toLocaleDateString()}`;
+        timeText = `in ${diffDays} days`;
       }
 
-      const body = `Your ${title} ${entityType} of ₹${amount} is due ${timeText}.`;
+      const formattedAmount = formatCurrency(amount, userCurrency);
+      const body = `Your ${title} ${entityType} of ${formattedAmount} is due ${timeText}.`;
       const result = await sendPushNotification(userId.toString(), "Upcoming Payment Reminder", body);
       if (result.success) notificationsSent++;
     };

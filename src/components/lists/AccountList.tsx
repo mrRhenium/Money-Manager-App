@@ -8,8 +8,10 @@ import { AccountForm } from "../forms/AccountForm";
 import { deleteAccount } from "@/actions/account";
 import { Trash, Search, Filter } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function AccountList({ accounts }: { accounts: any[] }) {
+  const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
 
@@ -83,7 +85,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
                   <span className="text-[10px] text-muted-foreground font-semibold uppercase bg-secondary px-2 py-0.5 rounded-md shrink-0 border">{account.type}</span>
                 </div>
                 <div className="pt-2">
-                  <div className="text-2xl font-bold truncate">₹{account.balance.toLocaleString('en-IN')}</div>
+                  <div className="text-2xl font-bold truncate">{format(account.balance)}</div>
                 </div>
               </div>
               <div className="flex justify-end gap-1 border-t pt-3 mt-4">

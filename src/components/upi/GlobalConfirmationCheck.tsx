@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { Smartphone, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { formatCurrency } from "@/lib/currencyFormatter";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function GlobalConfirmationCheck() {
   const { data: session } = useSession();
+  const { format } = useCurrency();
   const { toast } = useToast();
   
   const [awaitingTxns, setAwaitingTxns] = useState<any[]>([]);
@@ -97,7 +100,7 @@ export function GlobalConfirmationCheck() {
           </div>
           <DialogTitle className="font-bold text-lg text-foreground">Confirm UPI Payment</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground mt-1">
-            Did you complete the payment of <span className="font-bold text-primary">₹{activeTxn.amount}</span> to <span className="font-bold">{activeTxn.note?.replace("UPI Payment to ", "") || "UPI Recipient"}</span>?
+            Did you complete the payment of <span className="font-bold text-primary">{format(activeTxn.amount)}</span> to <span className="font-bold">{activeTxn.note?.replace("UPI Payment to ", "") || "UPI Recipient"}</span>?
           </DialogDescription>
         </DialogHeader>
 

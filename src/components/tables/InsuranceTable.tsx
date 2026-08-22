@@ -8,8 +8,11 @@ import Link from "next/link";
 import { InsuranceForm } from "../forms/InsuranceForm";
 import { formatDate } from "@/lib/helpers";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function InsuranceTable({ policies, accounts }: { policies: any[], accounts: any[] }) {
+  const { format } = useCurrency();
+
   const columns = [
     {
       title: "#",
@@ -37,7 +40,7 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
       title: "Coverage",
       dataIndex: "coverageAmount",
       key: "coverageAmount",
-      render: (amount: number) => `₹${amount.toLocaleString("en-IN")}`,
+      render: (amount: number) => format(amount),
     },
     {
       title: "Premium",
@@ -45,7 +48,7 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
       key: "premiumAmount",
       render: (amount: number, record: any) => (
         <div>
-          <div className="font-medium">₹{amount.toLocaleString("en-IN")}</div>
+          <div className="font-medium">{format(amount)}</div>
           <div className="text-xs text-muted-foreground">{record.premiumFrequency}</div>
         </div>
       )

@@ -4,8 +4,11 @@ import { Table } from "antd";
 import { ArrowUpRight } from "lucide-react";
 import { formatDate } from "@/lib/helpers";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function CreditCardTransactionTable({ transactions, userTimezone }: { transactions: any[], userTimezone: string }) {
+  const { format } = useCurrency();
+
   const columns = [
     {
       title: "Description",
@@ -40,8 +43,8 @@ export function CreditCardTransactionTable({ transactions, userTimezone }: { tra
       key: "amount",
       align: "right" as const,
       render: (_: any, record: any) => (
-        <span className="font-semibold text-foreground whitespace-nowrap">
-          -₹{record.amount.toLocaleString("en-IN")}
+        <span className="font-medium whitespace-nowrap text-red-500">
+          -{format(record.amount)}
         </span>
       ),
       sorter: (a: any, b: any) => a.amount - b.amount,

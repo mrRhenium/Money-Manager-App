@@ -1,16 +1,22 @@
 import React from "react";
 import { getInvestmentById } from "@/actions/investment";
 import { getAccounts } from "@/actions/account";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, TrendingUp, Calendar, Hash, Shield, DollarSign, Activity } from "lucide-react";
+import { ArrowLeft, TrendingUp, Calendar, Hash, Shield, Activity, Trash } from "lucide-react";
 import Link from "next/link";
 import { InvestmentForm } from "@/components/forms/InvestmentForm";
 import { InvestmentHistoryChart } from "@/components/dashboard/InvestmentHistoryChart";
 import { InvestmentUpdateForm } from "@/components/forms/InvestmentUpdateForm";
+import { auth } from "@/lib/auth";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 export default async function InvestmentDetailsPage({ params }: { params: { id: string } }) {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  const userCurrency = (session.user as any).currency || "INR";
+
   const [data, accounts] = await Promise.all([
     getInvestmentById(params.id),
     getAccounts()
@@ -48,20 +54,16 @@ export default async function InvestmentDetailsPage({ params }: { params: { id: 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Invested</CardTitle>
+            <p className="text-muted-foreground mb-1 font-medium">Invested</p>
+            <p className="text-3xl font-bold">{formatCurrency(investment.investedAmount, userCurrency)}</p>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{investment.investedAmount.toLocaleString("en-IN")}</div>
-          </CardContent>
         </Card>
         
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Current Value</CardTitle>
+            <p className="text-muted-foreground mb-1 font-medium">Current Value</p>
+            <p className="text-3xl font-bold">{formatCurrency(investment.currentValue, userCurrency)}</p>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">₹{investment.currentValue.toLocaleString("en-IN")}</div>
-          </CardContent>
         </Card>
 
         <Card>
@@ -69,22 +71,18 @@ export default async function InvestmentDetailsPage({ params }: { params: { id: 
             <CardTitle className="text-sm text-muted-foreground font-medium">Absolute Returns</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${isPos ? 'text-emerald-500' : 'text-destructive'}`}>
-              {isPos ? "+" : ""}₹{ret.toLocaleString("en-IN")}
-            </div>
-            <div className={`text-sm ${isPos ? 'text-emerald-500' : 'text-destructive'}`}>
-              {isPos ? "+" : ""}{retPct.toFixed(2)}%
+            <div className={`mt-2 ${isPos ? 'text-emerald-500 bg-emerald-500/10' : 'text-red-500 bg-red-500/10'} px-4 py-2 rounded-xl inline-flex items-center gap-2`}>
+              <span className="font-bold text-xl">{isPos ? "+" : ""}{formatCurrency(ret, userCurrency)}</span>
+              <span className="font-semibold opacity-90">({isPos ? "+" : ""}{retPct.toFixed(2)}%)</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground font-medium">Update NAV/Value</CardTitle>
+            <p className="text-sm font-medium mb-3 text-muted-foreground uppercase tracking-wider">Manual Update</p>
+            <InvestmentUpdateForm investment={{ id: investment._id }} />
           </CardHeader>
-          <CardContent>
-            <InvestmentUpdateForm investmentId={investment._id} currentValue={investment.currentValue} />
-          </CardContent>
         </Card>
       </div>
 

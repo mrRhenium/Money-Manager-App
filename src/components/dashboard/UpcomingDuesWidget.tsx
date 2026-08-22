@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2 } from "lucide-react";
-import { formatIndianNumber } from "@/lib/numberHelper";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function UpcomingDuesWidget({ dues }: { dues: any[] }) {
+  const { format } = useCurrency();
   if (!dues || dues.length === 0) return null;
 
   return (
@@ -52,7 +53,7 @@ export function UpcomingDuesWidget({ dues }: { dues: any[] }) {
                 
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <div className="font-bold text-sm">₹{formatIndianNumber(due.amount)}</div>
+                    <div className="font-bold text-sm">{format(due.amount)}</div>
                     <div className="text-xs text-muted-foreground uppercase">{due.type}</div>
                   </div>
                   <Button size="sm" variant={isOverdue ? "destructive" : "secondary"} className="h-8 shadow-sm">

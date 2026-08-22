@@ -9,10 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select } from "antd";
+import { Select, ColorPicker } from "antd";
 import { createCreditCard, updateCreditCard } from "@/actions/creditCard";
 import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette, PenLine } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const formSchema = z.object({
   cardName: z.string().min(2, "Name must be at least 2 characters"),
@@ -35,6 +36,8 @@ const formSchema = z.object({
 export function CreditCardForm({ card }: { card?: any }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { currencyCode } = useCurrency();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -56,12 +59,14 @@ export function CreditCardForm({ card }: { card?: any }) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setError("");
+    setLoading(true);
     
     // Validate Dates
     const start = parseToDate(values.startingDate);
     const end = parseToDate(values.expiryDate);
     if (end <= start) {
       setError("Expiry date must be after starting date.");
+      setLoading(false);
       return;
     }
 
@@ -80,6 +85,8 @@ export function CreditCardForm({ card }: { card?: any }) {
       form.reset();
     } catch (err: any) {
       setError(err.message || "Failed to save credit card");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -160,7 +167,7 @@ export function CreditCardForm({ card }: { card?: any }) {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="creditLimit" render={({ field }) => (
-                <FormItem><FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Credit Limit (₹)</FormLabel><FormControl>
+                <FormItem><FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Credit Limit ({currencyCode})</FormLabel><FormControl>
                   <Input 
                     type="text" 
                     placeholder="e.g. 5,00,000"

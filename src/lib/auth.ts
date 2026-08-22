@@ -52,6 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: user.role,
           timezone: user.timezone || "UTC",
           themeColor: (user as any).themeColor || null,
+          currency: (user as any).currency || "INR",
         };
       },
     }),
@@ -67,6 +68,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role;
         token.timezone = (user as any).timezone || "UTC";
         token.themeColor = (user as any).themeColor || null;
+        token.currency = (user as any).currency || "INR";
         if (user.image) token.picture = user.image;
       }
       if (trigger === "update") {
@@ -75,6 +77,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         if (session?.timezone !== undefined) {
           token.timezone = session.timezone;
+        }
+        if (session?.currency !== undefined) {
+          token.currency = session.currency;
         }
         if (session?.name !== undefined) {
           token.name = session.name;
@@ -87,10 +92,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const dbConnect = (await import("./db")).default;
           const User = (await import("@/models/User")).default;
           await dbConnect();
-          const dbUser = await User.findById(token.id).select("timezone themeColor name image");
+          const dbUser = await User.findById(token.id).select("timezone themeColor currency name image");
           if (dbUser) {
             token.timezone = dbUser.timezone || "UTC";
             token.themeColor = dbUser.themeColor || null;
+            token.currency = dbUser.currency || "INR";
             token.name = dbUser.name;
             if (dbUser.image) token.picture = dbUser.image;
           }
@@ -107,6 +113,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.image = (token.picture as string) || null;
         (session.user as any).timezone = token.timezone as string;
         (session.user as any).themeColor = token.themeColor as string | null;
+        (session.user as any).currency = token.currency as string;
       }
       return session;
     },

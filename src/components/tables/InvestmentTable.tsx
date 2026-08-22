@@ -8,8 +8,11 @@ import Link from "next/link";
 import { InvestmentForm } from "../forms/InvestmentForm";
 import { formatDate } from "@/lib/helpers";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function InvestmentTable({ investments, accounts }: { investments: any[], accounts: any[] }) {
+  const { format } = useCurrency();
+
   const columns = [
     {
       title: "#",
@@ -37,7 +40,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
       title: "Invested",
       dataIndex: "investedAmount",
       key: "investedAmount",
-      render: (amount: number, record: any) => `₹${amount.toLocaleString("en-IN")}`,
+      render: (amount: number, record: any) => format(amount),
     },
     {
       title: "Current Value",
@@ -45,7 +48,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
       key: "currentValue",
       render: (amount: number, record: any) => (
         <div>
-          <span className="font-medium">₹{amount.toLocaleString("en-IN")}</span>
+          <span className="font-medium">{format(amount)}</span>
           {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && (
             <div className="text-[10px] text-muted-foreground" title={new Date(record.lastAutoUpdatedAt).toLocaleString()}>
               Auto-synced
@@ -65,11 +68,12 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
       render: (_: any, record: any) => {
         const ret = (record.currentValue || 0) - (record.investedAmount || 0);
         const retPct = record.investedAmount > 0 ? (ret / record.investedAmount) * 100 : 0;
-        const isPos = ret >= 0;
+        const isPos = ret > 0;
+        const isNeg = ret < 0;
         return (
-          <div className={isPos ? "text-emerald-500" : "text-destructive"}>
-            <div className="font-medium">{isPos ? "+" : ""}₹{ret.toLocaleString("en-IN")}</div>
-            <div className="text-xs">({isPos ? "+" : ""}{retPct.toFixed(2)}%)</div>
+          <div className={`flex flex-col gap-0.5 ${isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground"}`}>
+            <div className="font-medium">{isPos ? "+" : ""}{format(ret)}</div>
+            <div className="text-xs">{isPos ? "+" : ""}{retPct.toFixed(2)}%</div>
           </div>
         );
       }

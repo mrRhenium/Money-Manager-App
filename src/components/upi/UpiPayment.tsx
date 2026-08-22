@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface UpiPaymentProps {
   payeeAddress: string; // pa
@@ -21,6 +22,7 @@ export function UpiPayment({
   transactionNote = "Money Manager Expense",
   onSuccess,
 }: UpiPaymentProps) {
+  const { format } = useCurrency();
   const [isIOS, setIsIOS] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -60,7 +62,7 @@ export function UpiPayment({
     <div className="flex flex-col items-center gap-6 p-6 border rounded-xl bg-card">
       <div className="text-center space-y-2">
         <h3 className="text-lg font-semibold">Pay {payeeName}</h3>
-        <p className="text-2xl font-bold">₹{amount.toLocaleString("en-IN")}</p>
+        <p className="text-2xl font-bold">{format(amount)}</p>
       </div>
 
       {isIOS ? (

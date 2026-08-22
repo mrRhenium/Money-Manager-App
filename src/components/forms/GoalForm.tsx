@@ -13,6 +13,8 @@ import { createGoal, updateGoal } from "@/actions/goal";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Select } from "antd";
+import { ColorPicker } from "antd";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -38,9 +40,10 @@ const colorsList = [
   "#ec4899", // pink
 ];
 
-export function GoalForm({ goal }: { goal?: any }) {
+export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { currencyCode } = useCurrency();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,6 +71,7 @@ export function GoalForm({ goal }: { goal?: any }) {
       }
       setOpen(false);
       form.reset();
+      onUpdate();
     } catch (error) {
       console.error("Failed to save goal", error);
     } finally {
@@ -87,8 +91,8 @@ export function GoalForm({ goal }: { goal?: any }) {
             <Plus className="w-4 h-4 mr-2" />
             Add Goal
           </Button>
-        )
-      } />
+        )}
+      />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
@@ -118,7 +122,7 @@ export function GoalForm({ goal }: { goal?: any }) {
               name="targetAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Target Amount (₹)</FormLabel>
+                  <FormLabel>Target Amount ({currencyCode})</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="e.g. 50,000" 

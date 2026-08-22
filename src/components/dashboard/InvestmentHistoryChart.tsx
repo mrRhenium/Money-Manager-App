@@ -1,8 +1,11 @@
 "use client";
 
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function InvestmentHistoryChart({ history }: { history: any[] }) {
+  const { format } = useCurrency();
+
   if (!history || history.length === 0) {
     return (
       <div className="h-[300px] flex items-center justify-center text-muted-foreground border border-dashed rounded-xl">
@@ -33,13 +36,22 @@ export function InvestmentHistoryChart({ history }: { history: any[] }) {
             fontSize={12} 
             tickLine={false} 
             axisLine={false}
-            tickFormatter={(value) => `₹${value}`}
+            tickFormatter={(value) => format(value)}
             domain={['auto', 'auto']}
             width={80}
           />
           <Tooltip 
-            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            formatter={(value: any) => [`₹${Number(value).toLocaleString("en-IN")}`, "Value"]}
+            content={({ active, payload, label }) => {
+              if (active && payload && payload.length) {
+                return (
+                  <div className="bg-card text-card-foreground border rounded-lg shadow-sm p-3">
+                    <p className="font-semibold text-sm mb-1">{label}</p>
+                    <p className="font-bold text-primary">{format(Number(payload[0].value))}</p>
+                  </div>
+                );
+              }
+              return null;
+            }}
           />
           <Line 
             type="monotone" 

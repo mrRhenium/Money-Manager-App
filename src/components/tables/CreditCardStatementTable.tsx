@@ -2,8 +2,11 @@
 
 import { Table, Tag } from "antd";
 import { formatDate } from "@/lib/helpers";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function CreditCardStatementTable({ statements, userTimezone }: { statements: any[], userTimezone: string }) {
+  const { format } = useCurrency();
+
   const columns = [
     {
       title: "Statement",
@@ -24,7 +27,7 @@ export function CreditCardStatementTable({ statements, userTimezone }: { stateme
       key: "totalAmount",
       align: "right" as const,
       render: (_: any, record: any) => (
-        <span className="font-bold text-foreground whitespace-nowrap">₹{record.totalAmount.toLocaleString("en-IN")}</span>
+        <span className="font-bold text-foreground whitespace-nowrap">{format(record.totalAmount)}</span>
       ),
       sorter: (a: any, b: any) => a.totalAmount - b.totalAmount,
     },
@@ -35,8 +38,8 @@ export function CreditCardStatementTable({ statements, userTimezone }: { stateme
       render: (_: any, record: any) => {
         if (record.paymentStatus === "paid") {
           return <Tag color="success">Paid</Tag>;
-        } else if (record.paymentStatus === "partially_paid") {
-          return <Tag color="warning">Partial (₹{record.amountPaid})</Tag>;
+        } else if (record.amountPaid > 0) {
+          return <Tag color="warning">Partial ({format(record.amountPaid)})</Tag>;
         } else if (record.paymentStatus === "overdue") {
           return <Tag color="error">Overdue</Tag>;
         }

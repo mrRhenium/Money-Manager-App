@@ -7,6 +7,8 @@ import { TransactionForm } from "../forms/TransactionForm";
 import { deleteTransaction } from "@/actions/transaction";
 import { Trash } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { formatCurrency } from "@/lib/currencyFormatter";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function TransactionTable({
   transactions,
@@ -20,7 +22,9 @@ export function TransactionTable({
   accounts: any[];
   categories: any[];
   people?: any[];
+  userCurrency?: string;
 }) {
+  const { format } = useCurrency();
   const columns = [
     {
       title: "#",
@@ -122,14 +126,14 @@ export function TransactionTable({
         if (isTransfer) {
           return (
             <span className="font-semibold whitespace-nowrap text-blue-500">
-              ₹{record.amount.toLocaleString("en-IN")}
+              {format(record.amount)}
             </span>
           );
         }
 
         return (
           <span className={`font-medium whitespace-nowrap ${isPositive ? "text-emerald-500" : (isNegative ? "text-red-500" : "")}`}>
-            {isNegative ? "-" : "+"}{" "}₹{record.amount.toLocaleString("en-IN")}
+            {isNegative ? "-" : "+"}{" "}{format(record.amount)}
           </span>
         );
       },

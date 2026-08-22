@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addFundsToGoal } from "@/actions/goal";
+import { createTransaction } from "@/actions/transaction";
+import { useCurrency } from "@/hooks/useCurrency";
 import { PlusCircle, Wallet } from "lucide-react";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 
-export function AddFundsModal({ goalId, goalName }: { goalId: string, goalName: string }) {
+export function AddFundsModal({ goal, onUpdate }: { goal: any, onUpdate: () => void }) {
+  const { currencyCode } = useCurrency();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,7 +29,8 @@ export function AddFundsModal({ goalId, goalName }: { goalId: string, goalName: 
     
     setLoading(true);
     try {
-      await addFundsToGoal(goalId, numAmount);
+      await addFundsToGoal(goal.id, numAmount);
+      onUpdate();
       setOpen(false);
       setAmount("");
     } catch (err: any) {
@@ -47,7 +51,7 @@ export function AddFundsModal({ goalId, goalName }: { goalId: string, goalName: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Wallet className="w-5 h-5" />
-            <span className="text-foreground">Fund {goalName}</span>
+            <span className="text-foreground">Fund {goal.name}</span>
           </DialogTitle>
         </DialogHeader>
         
@@ -55,7 +59,7 @@ export function AddFundsModal({ goalId, goalName }: { goalId: string, goalName: 
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Amount to Add (₹)</Label>
+            <Label>Amount to Add ({currencyCode})</Label>
             <Input 
               value={amount} 
               onChange={e => setAmount(formatIndianNumber(e.target.value))} 

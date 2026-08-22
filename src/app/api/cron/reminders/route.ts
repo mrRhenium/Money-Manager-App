@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
+import webpush from "web-push";
 import CardStatement from "@/models/CardStatement";
 import CreditCard from "@/models/CreditCard";
 import User from "@/models/User";
-import webpush from "web-push";
 import { getRelativeDaysDifference, formatDateString } from "@/lib/dateTimeHelper";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 // Configuration for web-push
 // In a real app, VAPID keys would be loaded from env vars
@@ -38,11 +39,16 @@ export async function GET(request: Request) {
       
       // Calculate diff in days
       const daysUntilDue = getRelativeDaysDifference(dueDate, new Date());
+      const userCurrency = user?.currency || "INR";
 
       let message = "";
       
       if (daysUntilDue <= 5 && daysUntilDue >= 0) {
-        message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ₹${(statement.totalAmount - statement.amountPaid).toLocaleString("en-IN")} is due in ${daysUntilDue} days on ${formatDateString(dueDate, "M/D/YYYY")}.`;
+        if (daysUntilDue === 0) {
+          message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ${formatCurrency(statement.totalAmount - statement.amountPaid, userCurrency)} is due TODAY!`;
+        } else {
+          message = `Reminder: Your ${card.bankName} ${card.cardName} bill of ${formatCurrency(statement.totalAmount - statement.amountPaid, userCurrency)} is due in ${daysUntilDue} days on ${formatDateString(dueDate, "M/D/YYYY")}.`;
+        }
       } else if (daysUntilDue < 0) {
         message = `OVERDUE: Your ${card.bankName} ${card.cardName} bill was due ${Math.abs(daysUntilDue)} days ago. Please pay immediately to avoid penalties.`;
         

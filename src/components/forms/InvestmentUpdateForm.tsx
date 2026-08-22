@@ -7,8 +7,10 @@ import { updateInvestmentValue } from "@/actions/investment";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
+import { useCurrency } from "@/hooks/useCurrency";
 
-export function InvestmentUpdateForm({ investmentId, currentValue }: { investmentId: string, currentValue: number }) {
+export function InvestmentUpdateForm({ investment, onUpdate }: { investment: any, onUpdate?: () => void }) {
+  const { currencyCode } = useCurrency();
   const [val, setVal] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -20,9 +22,10 @@ export function InvestmentUpdateForm({ investmentId, currentValue }: { investmen
 
     setLoading(true);
     try {
-      await updateInvestmentValue(investmentId, num);
+      await updateInvestmentValue(investment.id, num);
       toast.success("Value updated successfully");
       setVal("");
+      if (onUpdate) onUpdate();
     } catch (err: any) {
       toast.error(err.message || "Failed to update value");
     } finally {
@@ -33,7 +36,8 @@ export function InvestmentUpdateForm({ investmentId, currentValue }: { investmen
   return (
     <div className="flex gap-2">
       <Input 
-        placeholder="New Value (₹)" 
+        type="number"
+        placeholder={`New Value (${currencyCode})`} 
         value={val}
         onChange={(e) => setVal(formatIndianNumber(e.target.value))}
         className="flex-1"

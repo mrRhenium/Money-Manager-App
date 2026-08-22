@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatIndianNumber } from "@/lib/numberHelper";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Repeat, Edit2, Trash, Smartphone, Wallet, CheckCircle, Search } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ interface RecurringBillListProps {
 export function RecurringBillList({ bills, accounts, categories }: RecurringBillListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const { format } = useCurrency();
 
   const filteredBills = bills.filter(bill => 
     bill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -69,8 +70,8 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
                     <CategoryIcon name={bill.icon} color={bill.color} className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg line-clamp-1">{bill.name}</h3>
-                    <p className="text-sm font-medium text-foreground">₹{formatIndianNumber(bill.amount)} <span className="text-muted-foreground text-xs font-normal">/ {bill.frequency}</span></p>
+                    <h3 className="font-bold text-base leading-tight mb-0.5">{bill.name}</h3>
+                    <p className="text-sm font-medium text-foreground">{format(bill.amount)} <span className="text-muted-foreground text-xs font-normal">/ {bill.frequency}</span></p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">

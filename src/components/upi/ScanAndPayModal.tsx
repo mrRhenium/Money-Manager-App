@@ -345,25 +345,23 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   return (
     <Dialog 
       open={open} 
-      onOpenChange={
-        step === "confirmation_dialog" 
-          ? undefined 
-          : (val) => {
-              resetModal();
-              onOpenChange(val);
-            }
-      }
+      onOpenChange={(val) => {
+        resetModal();
+        onOpenChange(val);
+      }}
     >
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-6 rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary font-bold text-lg">
-            <Camera className="w-5 h-5" />
-            <span>UPI Scan & Pay</span>
-          </DialogTitle>
-          <DialogDescription>
-            Scan any merchant QR code or enter UPI ID manually to pay.
-          </DialogDescription>
-        </DialogHeader>
+        {step !== "confirmation_dialog" && step !== "ios_relay" && (
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary font-bold text-lg">
+              <Camera className="w-5 h-5" />
+              <span>UPI Scan & Pay</span>
+            </DialogTitle>
+            <DialogDescription>
+              Scan any merchant QR code or enter UPI ID manually to pay.
+            </DialogDescription>
+          </DialogHeader>
+        )}
 
         {/* STEP 1: SCAN VIEW */}
         {step === "scan" && (

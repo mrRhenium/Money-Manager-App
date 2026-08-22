@@ -77,8 +77,7 @@ export default async function InvestmentsPage() {
               <TrendingUp className="w-6 h-6 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold mb-1">No investments yet</h3>
-            <p className="text-muted-foreground mb-4">Start tracking your SIPs, Mutual Funds, and Stocks.</p>
-            <InvestmentForm accounts={accounts} />
+            <p className="text-muted-foreground">Start tracking your SIPs, Mutual Funds, and Stocks using the button above.</p>
           </div>
         )}
       </div>

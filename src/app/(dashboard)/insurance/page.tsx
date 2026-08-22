@@ -73,8 +73,7 @@ export default async function InsurancePage() {
               <Shield className="w-6 h-6 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold mb-1">No insurance policies found</h3>
-            <p className="text-muted-foreground mb-4">Add your term life, health insurance, and motor insurance details.</p>
-            <InsuranceForm accounts={accounts} />
+            <p className="text-muted-foreground">Add your term life, health insurance, and motor insurance details using the button above.</p>
           </div>
         )}
       </div>

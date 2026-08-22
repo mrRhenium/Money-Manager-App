@@ -13,6 +13,7 @@ import { createRecurringBill, updateRecurringBill } from "@/actions/recurringBil
 import { Plus, PenLine, Repeat, Coins, Calendar, Wallet, Smartphone, Folder } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { getCurrentFormatted } from "@/lib/dateTimeHelper";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -37,6 +38,7 @@ interface RecurringBillFormProps {
 export function RecurringBillForm({ accounts, categories, triggerClassName, bill }: RecurringBillFormProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currency, setCurrency] = useState(bill?.currency || "INR");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -99,7 +101,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -120,8 +122,10 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Coins className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
                     <FormControl>
-                      <Input 
+                      <CurrencyInput 
                         placeholder="e.g. 649"
+                        currency={currency}
+                        onCurrencyChange={setCurrency}
                         {...field}
                         onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
                       />
@@ -132,7 +136,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="frequency"
@@ -169,7 +173,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="categoryId"

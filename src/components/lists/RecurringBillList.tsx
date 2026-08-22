@@ -37,18 +37,19 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-card p-4 rounded-xl shadow-sm border border-border/50">
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search subscriptions..." 
-            className="pl-9 h-10 bg-secondary/50 border-secondary"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {bills.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-card p-4 rounded-xl shadow-sm border border-border/50">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search subscriptions..." 
+              className="pl-9 h-10 bg-secondary/50 border-secondary"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-        <RecurringBillForm accounts={accounts} categories={categories} triggerClassName="w-full sm:w-auto h-10 shadow-sm" />
-      </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredBills.map((bill) => {
@@ -120,9 +121,8 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
             <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
               <Repeat className="w-8 h-8" />
             </div>
-            <h3 className="text-lg font-semibold mb-1">No Subscriptions Found</h3>
-            <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-4">You haven&apos;t set up any recurring bills, auto-pays, or allowances yet.</p>
-            <RecurringBillForm accounts={accounts} categories={categories} />
+            <h3 className="text-lg font-semibold mb-1">{bills.length === 0 ? "No Subscriptions Found" : "No Results"}</h3>
+            <p className="text-muted-foreground text-sm max-w-sm mx-auto">{bills.length === 0 ? "You haven\u0027t set up any recurring bills, auto-pays, or allowances yet." : "No subscriptions match your search."}</p>
           </div>
         )}
       </div>

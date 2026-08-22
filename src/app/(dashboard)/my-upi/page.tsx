@@ -62,7 +62,7 @@ function MyUpiContent() {
   const generatedUpiUrl = selectedUpiForQr ? `upi://pay?pa=${selectedUpiForQr}&pn=${encodeURIComponent(name || "User")}` : "";
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-4xl mx-auto w-full">
+    <div className="flex-1 space-y-4 p-2 sm:p-4 md:p-8 pt-4 md:pt-6 md:max-w-4xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -75,7 +75,7 @@ function MyUpiContent() {
         </div>
       </div>
 
-      <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6 space-y-6">
+      <div className="bg-card rounded-xl sm:rounded-2xl border shadow-sm p-3 sm:p-4 md:p-6 space-y-6">
         
         {/* UPI IDs Section */}
         <div className="space-y-4">
@@ -100,7 +100,7 @@ function MyUpiContent() {
                     newIds[idx] = e.target.value;
                     setUpiIds(newIds);
                   }}
-                  className="max-w-md"
+                  className="w-full md:max-w-md"
                 />
                 <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(vpa, "UPI ID")} disabled={!vpa}>
                   <Copy className="w-4 h-4" />
@@ -130,7 +130,7 @@ function MyUpiContent() {
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {upiIds.filter(v => v.trim() !== "").length > 0 ? (
               <>
-                <div className="space-y-2 w-full max-w-xs">
+                <div className="space-y-2 w-full sm:max-w-xs">
                   <Label>Select UPI ID for QR Code</Label>
                   <select 
                     className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"

@@ -19,7 +19,7 @@ export default async function GoalsPage() {
           </h1>
           <p className="text-muted-foreground mt-1">Track your progress towards your financial targets.</p>
         </div>
-        <GoalForm onUpdate={() => {}} />
+        <GoalForm />
       </div>
 
       {goals.length === 0 ? (

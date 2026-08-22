@@ -50,20 +50,25 @@ export default async function DashboardPage() {
   const userTimezone = (session.user as any).timezone || "UTC";
   const userCurrency = (session.user as any).currency || "INR";
 
-  const [accounts, transactions, people, cards, investments, policies] = await Promise.all([
+  const [accounts, transactions, people, cards, investments, policies, loans] = await Promise.all([
     getAccounts(),
     getTransactions(100), // Get recent 100 for dashboard
     getPeople(),
     getCreditCards(),
     import("@/actions/investment").then(m => m.getInvestments()),
-    import("@/actions/insurance").then(m => m.getInsurancePolicies())
+    import("@/actions/insurance").then(m => m.getInsurancePolicies()),
+    import("@/actions/loan").then(m => m.getLoans())
   ]);
 
   const totalOutstanding = cards.reduce((sum: number, c: any) => sum + c.currentOutstanding, 0);
+  
+  const activeLoans = loans.filter((l: any) => l.status === "active");
+  const totalLoansTaken = activeLoans.filter((l: any) => l.type === "taken").reduce((sum: number, l: any) => sum + l.outstandingBalance, 0);
+  const totalLoansGiven = activeLoans.filter((l: any) => l.type === "given").reduce((sum: number, l: any) => sum + l.outstandingBalance, 0);
 
   const totalBalance = accounts.reduce((acc: number, curr: any) => {
     return curr.isLiability ? acc - curr.balance : acc + curr.balance;
-  }, 0);
+  }, 0) - totalLoansTaken + totalLoansGiven;
 
   // Calculate current month's income and expenses
   const currentMonthTxns = transactions.filter((t: any) => {
@@ -135,6 +140,18 @@ export default async function DashboardPage() {
       let rd = new Date(pol.renewalDate);
       if (rd >= now && rd <= next30Days) {
         upcomingDues.push({ title: `${pol.policyName} Premium`, amount: pol.premiumAmount, dueDate: rd, type: 'insurance' });
+      }
+    }
+  });
+
+  // Parse active loans (EMIs)
+  activeLoans.forEach((loan: any) => {
+    if (loan.status === 'active' && loan.emiDate && loan.emiAmount > 0) {
+      let emiDate = new Date(now.getFullYear(), now.getMonth(), loan.emiDate);
+      if (emiDate < now) emiDate.setMonth(now.getMonth() + 1);
+      
+      if (emiDate <= next30Days) {
+        upcomingDues.push({ title: `${loan.name} EMI`, amount: loan.emiAmount, dueDate: emiDate, type: loan.type === 'taken' ? 'loan_emi' : 'loan_emi_receive' });
       }
     }
   });

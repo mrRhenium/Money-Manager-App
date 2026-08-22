@@ -34,6 +34,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/budgets", icon: PieChart, label: "Budgets" },
     { href: "/goals", icon: Target, label: "Goals" },
+    { href: "/loans", icon: Landmark, label: "Loans / EMIs" },
     { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
     { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/insurance", icon: Umbrella, label: "Insurance" },

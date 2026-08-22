@@ -23,6 +23,7 @@ export function BottomNav() {
     { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/categories", icon: Tags, label: "Categories" },
     { href: "/goals", icon: Target, label: "Goals" },
+    { href: "/loans", icon: Landmark, label: "Loans" },
     { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
     { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },

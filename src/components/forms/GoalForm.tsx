@@ -41,7 +41,7 @@ const colorsList = [
   "#ec4899", // pink
 ];
 
-export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate: () => void }) {
+export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currency, setCurrency] = useState(goal?.currency || "INR");
@@ -74,7 +74,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate: () => void 
       }
       setOpen(false);
       form.reset();
-      onUpdate();
+      if (onUpdate) onUpdate();
     } catch (error) {
       console.error("Failed to save goal", error);
     } finally {

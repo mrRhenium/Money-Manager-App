@@ -12,7 +12,7 @@ import { Select } from "antd";
 import { Plus, Landmark, PenLine } from "lucide-react";
 import { upsertLoan } from "@/actions/loan";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
-import { ColorPicker } from "@/components/ui/IconColorPicker";
+import { ColorPicker, IconPicker } from "@/components/ui/IconColorPicker";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { useCurrency } from "@/hooks/useCurrency";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -271,23 +271,7 @@ export function LoanForm({ accounts, loan, onUpdate }: { accounts: any[], loan?:
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
                <ColorPicker value={color} onChange={setColor} id="loanColor" />
-               <div className="flex flex-col gap-2">
-                 <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Icon</FormLabel>
-                 <Select
-                   className="w-full h-10"
-                   value={icon}
-                   onChange={setIcon}
-                   options={iconsList.map(i => ({
-                     label: (
-                       <div className="flex items-center gap-2">
-                         <CategoryIcon name={i} className="w-4 h-4" color={color} />
-                         <span>{i}</span>
-                       </div>
-                     ),
-                     value: i
-                   }))}
-                 />
-               </div>
+               <IconPicker value={icon} onChange={setIcon} color={color} />
             </div>
 
             <Button type="submit" className="w-full mt-4" disabled={loading}>

@@ -13,7 +13,7 @@ import { createGoal, updateGoal } from "@/actions/goal";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Select } from "antd";
-import { ColorPicker } from "antd";
+import { ColorPicker, IconPicker } from "@/components/ui/IconColorPicker";
 import { useCurrency } from "@/hooks/useCurrency";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
@@ -159,26 +159,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void
                 control={form.control}
                 name="icon"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Icon</FormLabel>
-                    <FormControl>
-                      <Select
-                        className="w-full"
-                        value={field.value}
-                        onChange={field.onChange}
-                        options={iconsList.map(icon => ({
-                          label: (
-                            <div className="flex items-center gap-2">
-                              <CategoryIcon name={icon} className="w-4 h-4" color={form.watch("color")} />
-                              <span>{icon}</span>
-                            </div>
-                          ),
-                          value: icon
-                        }))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <IconPicker value={form.watch("icon")} onChange={(val) => form.setValue("icon", val)} color={form.watch("color")} />
                 )}
               />
 

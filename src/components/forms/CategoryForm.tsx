@@ -11,22 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCategory, updateCategory } from "@/actions/category";
 import { Plus, FolderPlus, Type, List, Palette, PenLine, Sparkles } from "lucide-react";
-import * as LucideIcons from "lucide-react";
-
-const AVAILABLE_ICONS = [
-  { name: "ShoppingBag", icon: LucideIcons.ShoppingBag, label: "Shopping" },
-  { name: "Utensils", icon: LucideIcons.Utensils, label: "Food" },
-  { name: "Car", icon: LucideIcons.Car, label: "Transport" },
-  { name: "Home", icon: LucideIcons.Home, label: "Housing" },
-  { name: "Zap", icon: LucideIcons.Zap, label: "Utilities" },
-  { name: "HeartPulse", icon: LucideIcons.HeartPulse, label: "Medical" },
-  { name: "GraduationCap", icon: LucideIcons.GraduationCap, label: "Education" },
-  { name: "Tv", icon: LucideIcons.Tv, label: "Entertainment" },
-  { name: "DollarSign", icon: LucideIcons.DollarSign, label: "Salary" },
-  { name: "TrendingUp", icon: LucideIcons.TrendingUp, label: "Investment" },
-  { name: "Gift", icon: LucideIcons.Gift, label: "Gifts" },
-  { name: "Circle", icon: LucideIcons.Circle, label: "Other" },
-];
+import { IconPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -140,35 +125,7 @@ export function CategoryForm({ category }: { category?: any }) {
               control={form.control}
               name="icon"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-muted-foreground" /> Select Icon
-                  </FormLabel>
-                  <FormControl>
-                    <div className="grid grid-cols-4 gap-2 p-2 border rounded-xl bg-muted/10 max-h-[160px] overflow-y-auto">
-                      {AVAILABLE_ICONS.map((item) => {
-                        const IconComponent = item.icon;
-                        const isSelected = field.value === item.name;
-                        return (
-                          <button
-                            key={item.name}
-                            type="button"
-                            onClick={() => field.onChange(item.name)}
-                            className={`flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all ${
-                              isSelected
-                                ? "bg-primary text-white border-primary shadow-sm"
-                                : "bg-card text-muted-foreground hover:bg-muted border-transparent"
-                            }`}
-                          >
-                            <IconComponent className="w-5 h-5 mb-1" />
-                            <span className="text-[10px] font-medium leading-none">{item.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <IconPicker value={field.value} onChange={field.onChange} color={form.watch("color")} />
               )}
             />
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{category ? "Save Changes" : "Create Category"}</Button>

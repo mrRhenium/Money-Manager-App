@@ -36,38 +36,38 @@ export const DEFAULT_COLORS = [
   "#ec4899", "#6366f1", "#14b8a6", "#f97316", "#64748b",
 ];
 
+import { Select } from "antd";
+
 interface IconPickerProps {
   value: string;
   onChange: (value: string) => void;
+  color?: string;
 }
 
-export function IconPicker({ value, onChange }: IconPickerProps) {
+export function IconPicker({ value, onChange, color }: IconPickerProps) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 flex flex-col justify-end">
       <label className="text-sm font-medium flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-muted-foreground" /> Icon
       </label>
-      <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 border rounded-xl bg-muted/10 max-h-[130px] overflow-y-auto">
-        {ICON_OPTIONS.map((item) => {
+      <Select
+        className="w-full h-[40px]"
+        value={value}
+        onChange={onChange}
+        showSearch
+        options={ICON_OPTIONS.map((item) => {
           const IconComponent = item.icon;
-          const isSelected = value === item.name;
-          return (
-            <button
-              key={item.name}
-              type="button"
-              onClick={() => onChange(item.name)}
-              title={item.label}
-              className={`flex items-center justify-center p-2 rounded-lg border transition-all ${
-                isSelected
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "bg-card text-muted-foreground hover:bg-muted border-transparent"
-              }`}
-            >
-              <IconComponent className="w-4 h-4" />
-            </button>
-          );
+          return {
+            label: (
+              <div className="flex items-center gap-2">
+                <IconComponent className="w-4 h-4" style={{ color: color || "currentColor" }} />
+                <span>{item.label}</span>
+              </div>
+            ),
+            value: item.name
+          };
         })}
-      </div>
+      />
     </div>
   );
 }

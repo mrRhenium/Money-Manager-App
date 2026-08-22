@@ -187,7 +187,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                 )}
               />
 
-              {isAutoPricedAsset ? (
+              {isAutoPricedAsset && (
                 <FormField
                   control={form.control}
                   name={watchType === "MutualFund" ? "schemeCode" : "ticker"}
@@ -227,21 +227,20 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                     </FormItem>
                   )}
                 />
-              ) : (
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Investment Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. HDFC Midcap Opportunities" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               )}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Investment Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. HDFC Midcap Opportunities" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             {isAutoPricedAsset && (

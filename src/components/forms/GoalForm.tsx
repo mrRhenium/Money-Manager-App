@@ -15,6 +15,7 @@ import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Select } from "antd";
 import { ColorPicker } from "antd";
 import { useCurrency } from "@/hooks/useCurrency";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -43,6 +44,7 @@ const colorsList = [
 export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currency, setCurrency] = useState(goal?.currency || "INR");
   const { currencyCode } = useCurrency();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -62,6 +64,7 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate: () => void 
       const payload = {
         ...values,
         targetAmount: parseIndianNumber(values.targetAmount),
+        currency: currency,
       };
 
       if (goal?._id) {
@@ -122,10 +125,12 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate: () => void 
               name="targetAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Target Amount ({currencyCode})</FormLabel>
+                  <FormLabel>Target Amount</FormLabel>
                   <FormControl>
-                    <Input 
+                    <CurrencyInput 
                       placeholder="e.g. 50,000" 
+                      currency={currency}
+                      onCurrencyChange={setCurrency}
                       {...field} 
                       onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
                     />

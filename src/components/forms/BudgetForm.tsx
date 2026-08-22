@@ -14,6 +14,7 @@ import { upsertBudget, updateBudget } from "@/actions/budget";
 import { Plus, Target, Folder, Banknote, CalendarDays, PenLine } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
@@ -34,6 +35,7 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
   const [open, setOpen] = useState(false);
   const [color, setColor] = useState(budget?.color || "#f59e0b");
   const [icon, setIcon] = useState(budget?.icon || "PiggyBank");
+  const [currency, setCurrency] = useState(budget?.currency || "INR");
   
   const currentMonth = getCurrentFormatted("YYYY-MM");
 
@@ -121,9 +123,11 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
                     <FormControl>
-                      <Input 
+                      <CurrencyInput 
                         type="text" 
                         placeholder="e.g. 5,000"
+                        currency={currency}
+                        onCurrencyChange={setCurrency}
                         {...field}
                         onChange={(e) => {
                           field.onChange(formatIndianNumber(e.target.value));

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PieChart, QrCode, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat } from "lucide-react";
+import { Home, PieChart, QrCode, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
@@ -22,6 +22,7 @@ export function BottomNav() {
   const menuItems = [
     { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/categories", icon: Tags, label: "Categories" },
+    { href: "/goals", icon: Target, label: "Goals" },
     { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
     { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },

@@ -10,9 +10,11 @@ import { createTransaction } from "@/actions/transaction";
 import { useCurrency } from "@/hooks/useCurrency";
 import { PlusCircle, Wallet } from "lucide-react";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 
 export function AddFundsModal({ goal, onUpdate }: { goal: any, onUpdate: () => void }) {
   const { currencyCode } = useCurrency();
+  const [currency, setCurrency] = useState(goal?.currency || "INR");
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -59,9 +61,11 @@ export function AddFundsModal({ goal, onUpdate }: { goal: any, onUpdate: () => v
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Amount to Add ({currencyCode})</Label>
-            <Input 
+            <Label>Amount to Add</Label>
+            <CurrencyInput 
               value={amount} 
+              currency={currency}
+              onCurrencyChange={setCurrency}
               onChange={e => setAmount(formatIndianNumber(e.target.value))} 
               placeholder="e.g. 5,000" 
               autoFocus

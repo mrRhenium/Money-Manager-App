@@ -97,14 +97,16 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                   </div>
                 </div>
 
-                <div className="mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50">
-                  <div className="flex justify-between text-xs mb-2">
-                    <span className="text-muted-foreground font-medium">Utilization</span>
-                    <span className={isHighUtilization ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>
+                <div className="mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50 w-full space-y-2">
+                  <div className="flex justify-between items-center text-sm font-semibold">
+                    <span className={isHighUtilization ? "text-red-500" : "text-emerald-600"}>{utilization.toFixed(1)}%</span>
+                    <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
+                      LEFT: {format(card.availableLimit)}
+                    </span>
                   </div>
                   <Progress 
                     value={Math.min(utilization, 100)} 
-                    className="h-2" 
+                    className="h-3" 
                     indicatorColor={isHighUtilization ? "#ef4444" : "#10b981"} 
                   />
                   

@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/helpers";
 import { auth } from "@/lib/auth";
 import { CreditCardTransactionTable } from "@/components/tables/CreditCardTransactionTable";
 import { CreditCardStatementTable } from "@/components/tables/CreditCardStatementTable";
+import { formatIndianNumber } from "@/lib/numberHelper";
 
 export default async function CreditCardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -42,7 +43,7 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Visual Card */}
-        <div 
+        <div
           className="rounded-2xl p-6 text-white shadow-lg overflow-hidden h-56 flex flex-col justify-between col-span-1"
           style={{ background: `linear-gradient(135deg, ${card.color} 0%, #1a1a1a 150%)` }}
         >
@@ -88,23 +89,29 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
           </Card>
           <Card className="shadow-sm border-none bg-card flex items-center justify-center">
             <CardContent className="p-4 w-full">
-               <PayBillModal 
-                 cardId={card._id} 
-                 outstanding={card.currentOutstanding} 
-                 accounts={bankAccounts}
-                 statements={card.statements.filter((s:any) => s.paymentStatus !== "paid")}
-               />
+              <PayBillModal
+                cardId={card._id}
+                outstanding={card.currentOutstanding}
+                accounts={bankAccounts}
+                statements={card.statements.filter((s: any) => s.paymentStatus !== "paid")}
+              />
             </CardContent>
           </Card>
         </div>
       </div>
 
-      <div className="mt-4">
-        <div className="flex justify-between text-sm text-muted-foreground mb-2">
-          <span>Utilization: {utilization.toFixed(1)}%</span>
-          <span>{card.currentOutstanding > 0 ? "Use with caution" : "All clear"}</span>
+      <div className="w-full space-y-2 mt-4">
+        <div className="flex justify-between items-center text-sm font-semibold">
+          <span className={utilization > 70 ? "text-red-500" : "text-emerald-600"}>{utilization.toFixed(1)}%</span>
+          <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
+            LEFT: {formatIndianNumber(card.availableLimit.toString())}
+          </span>
         </div>
-        <Progress value={utilization} className={`h-3 ${utilization > 70 ? "[&>div]:bg-red-500" : "[&>div]:bg-emerald-500"}`} />
+        <Progress
+          value={utilization}
+          className="h-3"
+          indicatorColor={utilization > 70 ? "#ef4444" : "#10b981"}
+        />
       </div>
 
       <Tabs defaultValue="transactions" className="w-full mt-8">
@@ -112,7 +119,7 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="statements">Statements</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="transactions" className="mt-6">
           <Card className="border-none shadow-sm">
             <CardHeader>

@@ -2,6 +2,7 @@
 
 import { List, Popconfirm, Modal } from "antd";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { BudgetForm } from "../forms/BudgetForm";
 import { deleteBudget } from "@/actions/budget";
 import { Trash } from "lucide-react";
@@ -72,25 +73,20 @@ export function BudgetList({ budgets, categories }: { budgets: any[]; categories
                       </Popconfirm>
                     </div>
                   </div>
-                  <div className="flex justify-between text-sm font-semibold mt-4 text-foreground/80">
-                    <span>{format(budget.totalSpent)} / {format(budget.amount)}</span>
-                    <span>{percentage.toFixed(0)}%</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mt-2">
-                  <div className="relative w-full h-3 bg-secondary rounded-full overflow-hidden">
-                    <div 
-                      className={`absolute top-0 left-0 h-full transition-all ${isOverBudget ? "bg-red-500" : "bg-primary"}`}
-                      style={{ width: `${budget.progress}%` }}
+                  <div className="w-full space-y-2 mt-2">
+                    <div className="flex justify-between items-center text-sm font-semibold">
+                      <span className={isOverBudget ? "text-red-500" : "text-primary"}>{percentage.toFixed(0)}%</span>
+                      <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
+                        {isOverBudget 
+                          ? `OVER: ${format(budget.totalSpent - budget.amount)}` 
+                          : `LEFT: ${format(budget.amount - budget.totalSpent)}`}
+                      </span>
+                    </div>
+                    <Progress 
+                      value={percentage} 
+                      className="h-3" 
+                      indicatorColor={isOverBudget ? "#ef4444" : undefined}
                     />
-                  </div>
-                  <div className="mt-3">
-                    {isOverBudget ? (
-                      <p className="text-xs font-medium text-red-500 text-right">Over budget by {format(budget.totalSpent - budget.amount)}</p>
-                    ) : (
-                      <p className="text-xs text-muted-foreground text-right">{format(budget.amount - budget.totalSpent)} remaining</p>
-                    )}
                   </div>
                 </div>
               </div>

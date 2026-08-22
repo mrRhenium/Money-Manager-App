@@ -274,7 +274,7 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-bold text-foreground min-w-24">Type:</span>
-                <span>"Income" (Cr) or "Expense" (Dr). <span className="text-xs text-muted-foreground italic">(Optional - guessed from negative amounts if omitted)</span></span>
+                <span>&quot;Income&quot; (Cr) or &quot;Expense&quot; (Dr). <span className="text-xs text-muted-foreground italic">(Optional - guessed from negative amounts if omitted)</span></span>
               </li>
             </ul>
           </div>

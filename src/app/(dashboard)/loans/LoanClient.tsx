@@ -114,16 +114,14 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
             </div>
           </div>
 
-          <div className="space-y-2 px-1">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-muted-foreground">Progress</span>
-              <span>{progressPercent.toFixed(1)}%</span>
+          <div className="w-full space-y-2 mt-4 px-1">
+            <div className="flex justify-between items-center text-sm font-semibold">
+              <span style={{ color: loan.color }}>{progressPercent.toFixed(1)}%</span>
+              <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
+                LEFT: {format(loan.totalAmount - amountPaid)}
+              </span>
             </div>
-            <Progress value={progressPercent} className="h-2 bg-secondary-foreground/10" indicatorColor={loan.color} />
-            <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-              <span>{format(0)}</span>
-              <span>{format(loan.totalAmount)}</span>
-            </div>
+            <Progress value={progressPercent} className="h-3" indicatorColor={loan.color} />
           </div>
         </CardContent>
       </Card>

@@ -63,17 +63,20 @@ export function GoalList({ goals }: { goals: any[] }) {
                     </div>
                   </div>
 
-                  <div className="relative pt-2">
-                    <div className="flex justify-between text-[10px] font-bold mb-1 px-0.5 text-muted-foreground uppercase tracking-wider">
-                      <span>{progressPercent.toFixed(0)}%</span>
-                      {isCompleted ? <span className="text-emerald-500">Completed!</span> : <span>Left: {format(goal.targetAmount - goal.currentAmount)}</span>}
+                  <div className="w-full space-y-2 pt-2">
+                    <div className="flex justify-between items-center text-sm font-semibold">
+                      <span style={{ color: goal.color }}>{progressPercent.toFixed(0)}%</span>
+                      <span className="text-muted-foreground uppercase text-[10px] sm:text-xs font-bold tracking-wider">
+                        {isCompleted 
+                          ? <span className="text-emerald-500">COMPLETED!</span> 
+                          : `LEFT: ${format(goal.targetAmount - goal.currentAmount)}`}
+                      </span>
                     </div>
-                    <div className="h-3 w-full bg-muted/50 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full transition-all duration-500 ease-in-out" 
-                        style={{ width: `${progressPercent}%`, backgroundColor: goal.color }} 
-                      />
-                    </div>
+                    <Progress 
+                      value={progressPercent} 
+                      className="h-3" 
+                      indicatorColor={goal.color}
+                    />
                   </div>
                 </div>
 

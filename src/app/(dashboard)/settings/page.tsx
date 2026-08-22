@@ -11,8 +11,10 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { subscribeUser, sendTestNotification } from "@/actions/push";
 import { getUserProfile, updateProfile, updateThemeColor } from "@/actions/user";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 import { useToast } from "@/hooks/useToast";
+import { Plus, Trash, UploadCloud, Loader2 } from "lucide-react";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
 
@@ -34,6 +36,9 @@ function SettingsContent() {
   
   const [name, setName] = useState(session?.user?.name || "");
   const [mobile, setMobile] = useState("");
+  const [upiIds, setUpiIds] = useState<string[]>([]);
+  const [qrCode, setQrCode] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
   const [themeColor, setThemeColor] = useState((session?.user as any)?.themeColor || "#0ea5e9");
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isThemeLoading, setIsThemeLoading] = useState(false);
@@ -77,6 +82,8 @@ function SettingsContent() {
       if (user.name) setName(user.name);
       if (user.mobile) setMobile(user.mobile);
       if (user.themeColor) setThemeColor(user.themeColor);
+      if (user.upiIds) setUpiIds(user.upiIds);
+      if (user.qrCode) setQrCode(user.qrCode);
     }).catch(console.error);
   }, [session]);
 
@@ -122,13 +129,30 @@ function SettingsContent() {
   const handleProfileSave = async () => {
     try {
       setIsProfileLoading(true);
-      await updateProfile({ name, mobile });
+      await updateProfile({ name, mobile, qrCode, upiIds: upiIds.filter(v => v.trim() !== "") });
       await updateSession({ name }); // Refresh session data
       toast.success("Profile updated successfully!");
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setIsProfileLoading(false);
+    }
+  };
+
+  const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    try {
+      setIsUploading(true);
+      const url = await uploadImageToCloudinary(file, "money-manager/qrcodes");
+      setQrCode(url);
+      toast.success("QR Code uploaded! Don't forget to save changes.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload QR Code");
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -191,7 +215,65 @@ function SettingsContent() {
           <Input id="email" defaultValue={session?.user?.email || ""} disabled />
           <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
         </div>
-        <Button className="mt-4 w-full md:w-auto" onClick={handleProfileSave} disabled={isProfileLoading}>
+
+        <div className="space-y-3 pt-4 border-t">
+          <div className="flex items-center justify-between">
+            <Label>My UPI IDs</Label>
+            <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ""])} className="h-7 text-xs">
+              <Plus className="w-3 h-3 mr-1" /> Add UPI ID
+            </Button>
+          </div>
+          {upiIds.map((vpa, idx) => (
+            <div key={idx} className="flex gap-2">
+              <Input
+                placeholder="e.g. name@bank"
+                value={vpa}
+                onChange={(e) => {
+                  const newIds = [...upiIds];
+                  newIds[idx] = e.target.value;
+                  setUpiIds(newIds);
+                }}
+              />
+              <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => {
+                setUpiIds(upiIds.filter((_, i) => i !== idx));
+              }}>
+                <Trash className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+          {upiIds.length === 0 && <p className="text-xs text-muted-foreground italic">No UPI IDs added.</p>}
+        </div>
+
+        <div className="space-y-3 pt-4 border-t">
+          <Label>My Receiving QR Code</Label>
+          <div className="flex items-center gap-4">
+            {qrCode ? (
+              <div className="relative group w-24 h-24 border rounded-lg overflow-hidden shrink-0">
+                <img src={qrCode} alt="My QR Code" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-white hover:text-red-400" onClick={() => setQrCode("")}>
+                    <Trash className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/20 text-muted-foreground shrink-0">
+                <span className="text-xs">No QR</span>
+              </div>
+            )}
+            
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="qr-upload" className="cursor-pointer inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 w-full">
+                {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UploadCloud className="w-4 h-4 mr-2" />}
+                {isUploading ? "Uploading..." : qrCode ? "Change QR Code" : "Upload QR Code"}
+              </Label>
+              <input id="qr-upload" type="file" accept="image/*" className="hidden" onChange={handleQrUpload} disabled={isUploading} />
+              <p className="text-xs text-muted-foreground">Upload an image of your QR code to let others easily pay you.</p>
+            </div>
+          </div>
+        </div>
+
+        <Button className="mt-4 w-full md:w-auto" onClick={handleProfileSave} disabled={isProfileLoading || isUploading}>
           {isProfileLoading ? "Saving..." : "Save Changes"}
         </Button>
       </div>

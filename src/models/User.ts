@@ -8,7 +8,8 @@ export interface IUser extends Document {
   image?: string;
   lastActiveDate?: Date;
   currentStreak: number;
-  upiId?: string;
+  upiIds?: string[];
+  qrCode?: string;
   currency: string;
   monthlyIncome?: number;
   pushSubscription?: any;
@@ -33,7 +34,8 @@ const UserSchema: Schema<IUser> = new Schema(
     image: { type: String },
     lastActiveDate: { type: Date },
     currentStreak: { type: Number, default: 0 },
-    upiId: { type: String, default: "" },
+    upiIds: [{ type: String }],
+    qrCode: { type: String },
     currency: { type: String, default: "INR" },
     monthlyIncome: { type: Number, default: 0 },
     pushSubscription: { type: Schema.Types.Mixed },

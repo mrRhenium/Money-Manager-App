@@ -22,6 +22,7 @@ export interface ITransaction extends Document {
   creditCardId?: mongoose.Types.ObjectId;
   categoryId?: mongoose.Types.ObjectId;
   personId?: mongoose.Types.ObjectId; // For lend/borrow
+  billImage?: string;
   note?: string;
   tags?: string[];
   receiptUrl?: string;
@@ -63,6 +64,7 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     creditCardId: { type: Schema.Types.ObjectId, ref: "CreditCard" },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
     personId: { type: Schema.Types.ObjectId, ref: "Person" },
+    billImage: { type: String },
     note: { type: String },
     tags: [{ type: String }],
     receiptUrl: { type: String },

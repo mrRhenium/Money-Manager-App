@@ -14,9 +14,10 @@ import { Select } from "antd";
 import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { useRef } from "react";
 import Tesseract from "tesseract.js";
-import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users, PenLine } from "lucide-react";
+import { Camera, Loader2, Plus, Tags, Banknote, Coins, Landmark, Folder, Calendar, AlignLeft, ReceiptText, QrCode, Users, PenLine, Trash, UploadCloud } from "lucide-react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 const formSchema = z.object({
   type: z.enum(["income", "expense", "lend", "borrow", "settlement"]),
@@ -44,6 +45,8 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
   const [open, setOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanPayOpen, setScanPayOpen] = useState(false);
+  const [billImage, setBillImage] = useState<string>(transaction?.billImage || "");
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -68,19 +71,16 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
     if (!file) return;
 
     setIsScanning(true);
+    setIsUploading(true);
     try {
-      const result = await Tesseract.recognize(file, "eng", {
-        logger: m => console.log(m)
-      });
-      
+      // 1. Scan for amount
+      const result = await Tesseract.recognize(file, "eng");
       const text = result.data.text;
       
-      // Simple Regex to find amounts (e.g. Total: 15.99, $24.00, Rs. 150)
       const amountMatches = text.match(/(?:total|amount|pay|paid|rs\.?|\$|₹)\s*:?\s*(\d+[\.,]\d{2})/i) 
                             || text.match(/(\d+\.\d{2})/g);
       
       if (amountMatches && amountMatches.length > 0) {
-        // Find the largest number assuming it's the total
         const numbers = (text.match(/\d+\.\d{2}/g) || []).map(Number);
         const maxAmount = numbers.length > 0 ? Math.max(...numbers) : 0;
         
@@ -89,10 +89,16 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
           form.setValue("note", "Scanned from receipt");
         }
       }
+
+      // 2. Upload image to Cloudinary
+      const uploadedUrl = await uploadImageToCloudinary(file, "money-manager/receipts");
+      setBillImage(uploadedUrl);
+
     } catch (err) {
-      console.error("Scanning failed", err);
+      console.error("Scanning or uploading failed", err);
     } finally {
       setIsScanning(false);
+      setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
@@ -104,6 +110,7 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
         amount: parseIndianNumber(values.amount),
         categoryId: values.categoryId || undefined,
         personId: values.personId || undefined,
+        billImage,
       };
 
       if (transaction?._id) {
@@ -151,9 +158,9 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button variant="secondary" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3" onClick={() => fileInputRef.current?.click()} disabled={isScanning}>
-              {isScanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
-              {isScanning ? "Scanning..." : "Upload Receipt"}
+            <Button variant="secondary" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3" onClick={() => fileInputRef.current?.click()} disabled={isScanning || isUploading}>
+              {(isScanning || isUploading) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
+              {(isScanning || isUploading) ? "Processing..." : "Scan & Upload Bill"}
             </Button>
             <Button variant="outline" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3 border-primary/20 hover:bg-primary/5 hover:text-primary" onClick={() => setScanPayOpen(true)}>
               <QrCode className="w-4 h-4 mr-2" />
@@ -162,6 +169,18 @@ export function TransactionForm({ accounts, categories, people = [], triggerClas
           </div>
           <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
         </div>
+        
+        {billImage && (
+          <div className="relative w-full h-32 rounded-lg border overflow-hidden mt-4 group">
+            <img src={billImage} alt="Uploaded Bill" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+               <Button variant="destructive" size="sm" onClick={() => setBillImage("")}>
+                 <Trash className="w-4 h-4 mr-2" /> Remove Bill
+               </Button>
+            </div>
+          </div>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* Row 1: Type and Category / People */}

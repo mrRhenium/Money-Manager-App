@@ -27,7 +27,7 @@ export async function updateTimezone(timezone: string) {
   return { success: true };
 }
 
-export async function updateProfile(data: { name: string; mobile: string }) {
+export async function updateProfile(data: { name: string; mobile: string; qrCode?: string; upiIds?: string[] }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -40,6 +40,9 @@ export async function updateProfile(data: { name: string; mobile: string }) {
     } else {
       updateData.$unset = { mobile: 1 };
     }
+    
+    if (data.qrCode !== undefined) updateData.qrCode = data.qrCode;
+    if (data.upiIds !== undefined) updateData.upiIds = data.upiIds;
 
     await User.findByIdAndUpdate(session.user.id, updateData, { new: true, runValidators: true });
     return { success: true };

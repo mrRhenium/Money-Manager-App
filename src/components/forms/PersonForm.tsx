@@ -7,12 +7,14 @@ import * as z from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createPerson, updatePerson } from "@/actions/person";
 import { useFieldArray } from "react-hook-form";
-import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser, PenLine, QrCode, Trash } from "lucide-react";
+import { Plus, UserPlus, User, Users, Phone, Smartphone, BookUser, PenLine, QrCode, Trash, Camera, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 const formSchema = z.object({
   relation: z.enum(["Friend", "Family", "Colleague", "Merchant", "Shopkeeper", "Other"]),
@@ -23,6 +25,8 @@ const formSchema = z.object({
 
 export function PersonForm({ person }: { person?: any }) {
   const [open, setOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>(person?.avatarUrl || "");
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -46,11 +50,12 @@ export function PersonForm({ person }: { person?: any }) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const transformedValues = {
+      const transformedValues: any = {
         name: values.name,
         relation: values.relation,
         phones: values.phones?.map(p => p.value).filter(Boolean) || [],
         vpas: values.vpas?.map(v => v.value).filter(Boolean) || [],
+        avatarUrl
       };
 
       if (person?._id) {
@@ -89,6 +94,22 @@ export function PersonForm({ person }: { person?: any }) {
       }
     } catch (err) {
       console.error("Failed to pick contact", err);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    try {
+      setIsUploading(true);
+      const url = await uploadImageToCloudinary(file, "money-manager/avatars");
+      setAvatarUrl(url);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload photo");
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -131,6 +152,30 @@ export function PersonForm({ person }: { person?: any }) {
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            
+            <div className="flex items-center gap-4 py-2">
+              <div className="relative w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center bg-muted/20 text-muted-foreground overflow-hidden group">
+                {avatarUrl ? (
+                  <>
+                    <img src={avatarUrl} alt="Contact" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-white hover:text-red-400" onClick={() => setAvatarUrl("")}>
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <Camera className="w-6 h-6" />
+                )}
+              </div>
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="photo-upload" className="cursor-pointer inline-flex items-center text-sm font-medium text-primary hover:underline">
+                  {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {isUploading ? "Uploading..." : avatarUrl ? "Change Photo" : "Upload Photo (Optional)"}
+                </Label>
+                <input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={isUploading} />
+              </div>
+            </div>
             <FormField
               control={form.control}
               name="relation"

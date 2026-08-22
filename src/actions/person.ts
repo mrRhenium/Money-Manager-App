@@ -48,7 +48,7 @@ export async function getPeople() {
 
 import { logAuditEvent } from "@/actions/auditLog";
 
-export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[] }) {
+export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -141,7 +141,7 @@ export async function savePersonVpa(name: string, vpa: string, relation: "Friend
   return JSON.parse(JSON.stringify(person));
 }
 
-export async function updatePerson(id: string, data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[] }) {
+export async function updatePerson(id: string, data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -165,7 +165,7 @@ export async function updatePerson(id: string, data: { name: string; relation: "
 
   const person = await Person.findOneAndUpdate(
     { _id: id, userId: session.user.id },
-    { $set: { name: data.name, relation: data.relation, phones: data.phones || [], vpas: data.vpas || [] } },
+    { $set: { name: data.name, relation: data.relation, phones: data.phones || [], vpas: data.vpas || [], ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }) } },
     { new: true }
   );
 

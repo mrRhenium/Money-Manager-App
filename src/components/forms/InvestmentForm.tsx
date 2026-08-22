@@ -66,7 +66,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
     if (inputValue.length < 3) return [];
     const results = await searchMutualFunds(inputValue);
     return results.map((r: any) => ({
-      label: `${r.schemeName} (${r.fundHouse})`,
+      label: r.fundHouse ? `${r.schemeName} (${r.fundHouse})` : r.schemeName,
       value: r.schemeCode,
       nav: r.latestNAV
     }));

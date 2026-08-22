@@ -11,17 +11,25 @@ export async function searchMutualFunds(query: string) {
 
   if (!query || query.length < 3) return [];
 
-  await dbConnect();
-  
-  // Create a regex for case-insensitive partial match
-  const regex = new RegExp(query, 'i');
-  
-  const schemes = await MutualFundScheme.find({ schemeName: regex })
-    .limit(20)
-    .select('schemeCode schemeName fundHouse latestNAV latestNAVDate lastFetchStatus')
-    .lean();
+  try {
+    const res = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(query)}`);
+    if (!res.ok) return [];
     
-  return JSON.parse(JSON.stringify(schemes));
+    const data = await res.json();
+    
+    // Limit to 20 results
+    const limitedData = data.slice(0, 20);
+    
+    return limitedData.map((d: any) => ({
+      schemeCode: d.schemeCode,
+      schemeName: d.schemeName,
+      fundHouse: "",
+      latestNAV: null
+    }));
+  } catch (error) {
+    console.error("MF API search error:", error);
+    return [];
+  }
 }
 
 import yahooFinance from "yahoo-finance2";

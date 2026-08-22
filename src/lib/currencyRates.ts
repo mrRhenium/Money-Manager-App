@@ -30,7 +30,7 @@ export async function fetchExchangeRates(): Promise<Record<string, number>> {
 
   // Fetch fresh rates (from INR to all others)
   try {
-    const res = await fetch("https://api.frankfurter.app/latest?from=INR");
+    const res = await fetch("https://api.frankfurter.dev/v1/latest?base=INR");
     if (!res.ok) throw new Error("Failed to fetch rates");
     
     const data = await res.json();

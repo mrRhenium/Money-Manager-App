@@ -59,7 +59,7 @@ export async function createTransaction(data: {
 
   if (currency !== "INR") {
     try {
-      const res = await fetch(`https://api.frankfurter.app/latest?from=${currency}&to=INR`);
+      const res = await fetch(`https://api.frankfurter.dev/v1/latest?base=${currency}`);
       if (res.ok) {
         const rateData = await res.json();
         exchangeRate = rateData.rates.INR;
@@ -404,7 +404,7 @@ export async function updateTransaction(
 
   if (currency !== "INR") {
     try {
-      const res = await fetch(`https://api.frankfurter.app/latest?from=${currency}&to=INR`);
+      const res = await fetch(`https://api.frankfurter.dev/v1/latest?base=${currency}`);
       if (res.ok) {
         const rateData = await res.json();
         exchangeRate = rateData.rates.INR;

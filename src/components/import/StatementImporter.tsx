@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, ArrowRight, Check, X, AlertCircle } from "lucide-react";
+import { Upload, ArrowRight, Check, X, AlertCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "antd";
@@ -34,6 +34,27 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  const downloadTemplate = () => {
+    const templateData = [
+      {
+        Date: "2023-10-25",
+        Description: "Supermarket Purchase",
+        Amount: 150.50,
+        Type: "Expense"
+      },
+      {
+        Date: "2023-10-26",
+        Description: "Monthly Salary",
+        Amount: 5000,
+        Type: "Income"
+      }
+    ];
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "import_template.xlsx");
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -225,9 +246,37 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
               type="file" 
               accept=".csv, .xlsx, .xls"
               onChange={handleFileUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
             <Button>Select File</Button>
+          </div>
+          
+          <div className="mt-10 text-left max-w-2xl w-full bg-background rounded-lg border p-5 shadow-sm text-sm">
+            <div className="flex justify-between items-center mb-4 border-b pb-3">
+              <h4 className="font-semibold text-base flex items-center gap-2"><AlertCircle className="w-4 h-4 text-primary" /> Supported Columns</h4>
+              <Button variant="outline" size="sm" onClick={downloadTemplate} className="gap-2">
+                <Download className="w-4 h-4" /> Download Template
+              </Button>
+            </div>
+            <p className="text-muted-foreground mb-3">For best results, ensure your Excel or CSV file includes the following columns:</p>
+            <ul className="space-y-3 text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-foreground min-w-24">Date:</span>
+                <span>The transaction date (e.g. 2023-10-25, 25/10/2023). <span className="text-red-500">*Required</span></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-foreground min-w-24">Description:</span>
+                <span>Details, payee name, or particulars of the transaction. <span className="text-red-500">*Required</span></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-foreground min-w-24">Amount:</span>
+                <span>The numeric value of the transaction. <span className="text-red-500">*Required</span></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-foreground min-w-24">Type:</span>
+                <span>"Income" (Cr) or "Expense" (Dr). <span className="text-xs text-muted-foreground italic">(Optional - guessed from negative amounts if omitted)</span></span>
+              </li>
+            </ul>
           </div>
         </div>
       )}

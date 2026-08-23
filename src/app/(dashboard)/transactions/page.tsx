@@ -7,6 +7,9 @@ import { ExportButton } from "@/components/transactions/ExportButton";
 import { TransactionForm } from "@/components/forms/TransactionForm";
 import { TransactionTable } from "@/components/tables/TransactionTable";
 import { auth } from "@/lib/auth";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { UploadCloud } from "lucide-react";
 
 export default async function TransactionsPage() {
   const session = await auth();
@@ -28,6 +31,12 @@ export default async function TransactionsPage() {
           <p className="text-muted-foreground">Track all your incomes and expenses.</p>
         </div>
         <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <Link href="/import">
+            <Button variant="outline" className="gap-2">
+              <UploadCloud className="w-4 h-4" />
+              Import Statements
+            </Button>
+          </Link>
           <ExportButton />
           <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} />
         </div>

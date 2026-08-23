@@ -36,8 +36,8 @@ export function ExportButton() {
   };
 
   return (
-    <Button variant="outline" onClick={handleExport} disabled={loading}>
-      <Download className="w-4 h-4 mr-2" />
+    <Button variant="secondary" onClick={handleExport} disabled={loading} className="gap-2">
+      <Download className="w-4 h-4" />
       {loading ? "Exporting..." : "Export Excel"}
     </Button>
   );

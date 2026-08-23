@@ -38,15 +38,15 @@ import { useCurrency } from "@/hooks/useCurrency";
 export function AccountList({ accounts }: { accounts: any[] }) {
   const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState("All");
+  const [typeFilters, setTypeFilters] = useState<string[]>([]);
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter((acc) => {
       const matchesSearch = acc.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilter === "All" || acc.type === typeFilter;
+      const matchesType = typeFilters.length === 0 || typeFilters.includes(acc.type);
       return matchesSearch && matchesType;
     });
-  }, [accounts, searchQuery, typeFilter]);
+  }, [accounts, searchQuery, typeFilters]);
   if (accounts.length === 0) {
     return (
       <div className="p-8 text-center border rounded-xl border-dashed col-span-full">
@@ -71,11 +71,13 @@ export function AccountList({ accounts }: { accounts: any[] }) {
         <div className="flex items-center gap-2 sm:w-[200px]">
           <Filter className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
           <Select
-            className="w-full h-10"
-            value={typeFilter}
-            onChange={setTypeFilter}
+            mode="multiple"
+            allowClear
+            placeholder="All Types"
+            className="w-full min-h-10"
+            value={typeFilters}
+            onChange={setTypeFilters}
             options={[
-              { label: "All Types", value: "All" },
               { label: "Bank Account", value: "bank" },
               { label: "Cash", value: "cash" },
               { label: "Saving Account", value: "saving" },

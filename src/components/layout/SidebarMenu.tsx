@@ -29,7 +29,6 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/transactions", icon: Wallet, label: "Transactions" },
-    { href: "/import", icon: UploadCloud, label: "Import" },
     { href: "/categories", icon: Tags, label: "Categories" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/budgets", icon: PieChart, label: "Budgets" },

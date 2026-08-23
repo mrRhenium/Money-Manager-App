@@ -60,6 +60,8 @@ export function TransactionTable({
     {
       title: "Category",
       key: "category",
+      filters: categories.map(c => ({ text: c.name, value: c._id })),
+      onFilter: (value: any, record: any) => record.categoryId?._id === value,
       render: (_: any, record: any) => {
         if (record.type === "transfer") {
           return (
@@ -95,6 +97,8 @@ export function TransactionTable({
     {
       title: "Account",
       key: "account",
+      filters: accounts.map(a => ({ text: a.name, value: a._id })),
+      onFilter: (value: any, record: any) => record.accountId?._id === value || record.toAccountId?._id === value,
       render: (_: any, record: any) => {
         if (record.type === "transfer" && record.toAccountId) {
           return (
@@ -168,7 +172,7 @@ export function TransactionTable({
             okText="Yes"
             cancelText="No"
           >
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
               <Trash className="w-4 h-4" />
             </Button>
           </Popconfirm>

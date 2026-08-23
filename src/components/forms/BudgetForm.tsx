@@ -76,7 +76,7 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
     setErrorMsg("");
     try {
       const parsedAmount = parseIndianNumber(values.amount);
-      await upsertBudget({
+      const res = await upsertBudget({
         _id: budget?._id,
         categoryId: values.categoryId,
         type: values.type,
@@ -88,11 +88,17 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
         color,
         icon,
       });
+      
+      if (res && !res.success) {
+        setErrorMsg(res.error || "Failed to save budget");
+        return;
+      }
+
       setOpen(false);
       form.reset();
     } catch (error: any) {
       console.error("Failed to save budget", error);
-      setErrorMsg(error.message || "Failed to save budget");
+      setErrorMsg(error.message || "An unexpected error occurred");
     }
   }
 

@@ -10,23 +10,52 @@ import { revalidatePath } from "next/cache";
 import { getStartOfMonth, getEndOfMonth } from "@/lib/dateTimeHelper";
 import { logAuditEvent } from "@/actions/auditLog";
 
-export async function getBudgetsWithProgress(month: string) {
+export async function getBudgetsWithProgress(options: { month?: string, startDate?: string, endDate?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
   
-  const mStart = getStartOfMonth(month);
-  const mEnd = getEndOfMonth(month);
+  let filterStart: Date, filterEnd: Date;
+  let matchQuery: any;
+  
+  if (options.startDate && options.endDate) {
+    filterStart = new Date(options.startDate);
+    filterEnd = new Date(options.endDate);
+    matchQuery = {
+      userId: session.user.id,
+      $or: [
+        { type: "custom", startDate: { $lte: filterEnd }, endDate: { $gte: filterStart } }
+      ]
+    };
+  } else if (options.month) {
+    filterStart = getStartOfMonth(options.month);
+    filterEnd = getEndOfMonth(options.month);
+    matchQuery = {
+      userId: session.user.id,
+      $or: [
+        { type: { $ne: "custom" }, month: options.month },
+        { type: "monthly", month: options.month },
+        { type: "custom", startDate: { $lte: filterEnd }, endDate: { $gte: filterStart } }
+      ]
+    };
+  } else {
+    // default to current month
+    const today = new Date();
+    const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    filterStart = getStartOfMonth(currentMonth);
+    filterEnd = getEndOfMonth(currentMonth);
+    matchQuery = {
+      userId: session.user.id,
+      $or: [
+        { type: { $ne: "custom" }, month: currentMonth },
+        { type: "monthly", month: currentMonth },
+        { type: "custom", startDate: { $lte: filterEnd }, endDate: { $gte: filterStart } }
+      ]
+    };
+  }
 
-  const budgets = await Budget.find({
-    userId: session.user.id,
-    $or: [
-      { type: { $ne: "custom" }, month: month },
-      { type: "monthly", month: month },
-      { type: "custom", startDate: { $lte: mEnd }, endDate: { $gte: mStart } }
-    ]
-  })
+  const budgets = await Budget.find(matchQuery)
     .populate("categoryId", "name icon color")
     .lean();
 
@@ -87,65 +116,69 @@ export async function upsertBudget(data: {
   color?: string; 
   icon?: string;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-  await dbConnect();
+    await dbConnect();
 
-  let bStart: Date, bEnd: Date;
-  if (data.type === "custom") {
-    if (!data.startDate || !data.endDate) throw new Error("Start and End dates are required for custom budgets");
-    bStart = new Date(data.startDate);
-    bEnd = new Date(data.endDate);
-    if (bEnd <= bStart) throw new Error("End date must be after start date");
-  } else {
-    if (!data.month) throw new Error("Month is required for monthly budgets");
-    bStart = getStartOfMonth(data.month);
-    bEnd = getEndOfMonth(data.month);
-  }
-
-  // Check for overlaps
-  const existingBudgets = await Budget.find({
-    userId: session.user.id,
-    categoryId: data.categoryId,
-    ...(data._id ? { _id: { $ne: data._id } } : {})
-  });
-
-  for (const eb of existingBudgets) {
-    let ebStart: Date, ebEnd: Date;
-    if (eb.type === "custom") {
-      ebStart = eb.startDate as Date;
-      ebEnd = eb.endDate as Date;
+    let bStart: Date, bEnd: Date;
+    if (data.type === "custom") {
+      if (!data.startDate || !data.endDate) return { success: false, error: "Start and End dates are required for custom budgets" };
+      bStart = new Date(data.startDate);
+      bEnd = new Date(data.endDate);
+      if (bEnd <= bStart) return { success: false, error: "End date must be after start date" };
     } else {
-      ebStart = getStartOfMonth(eb.month);
-      ebEnd = getEndOfMonth(eb.month);
+      if (!data.month) return { success: false, error: "Month is required for monthly budgets" };
+      bStart = getStartOfMonth(data.month);
+      bEnd = getEndOfMonth(data.month);
     }
+
+    // Check for overlaps
+    const existingBudgets = await Budget.find({
+      userId: session.user.id,
+      categoryId: data.categoryId,
+      ...(data._id ? { _id: { $ne: data._id } } : {})
+    });
+
+    for (const eb of existingBudgets) {
+      let ebStart: Date, ebEnd: Date;
+      if (eb.type === "custom") {
+        ebStart = eb.startDate as Date;
+        ebEnd = eb.endDate as Date;
+      } else {
+        ebStart = getStartOfMonth(eb.month);
+        ebEnd = getEndOfMonth(eb.month);
+      }
+      
+      // overlap condition
+      if (ebStart <= bEnd && ebEnd >= bStart) {
+        return { success: false, error: "A budget for this category already exists in the selected date range." };
+      }
+    }
+
+    let budget;
+    if (data._id) {
+      const oldBudget = await Budget.findById(data._id);
+      budget = await Budget.findOneAndUpdate(
+        { _id: data._id, userId: session.user.id },
+        { ...data, userId: session.user.id },
+        { new: true }
+      );
+      if (!budget) return { success: false, error: "Budget not found" };
+      await logAuditEvent("Budget", budget._id.toString(), "UPDATE", oldBudget, budget);
+    } else {
+      budget = await Budget.create({ ...data, userId: session.user.id });
+      await logAuditEvent("Budget", budget._id.toString(), "CREATE", undefined, budget);
+    }
+
+    revalidatePath("/budgets");
+    revalidatePath("/");
     
-    // overlap condition
-    if (ebStart <= bEnd && ebEnd >= bStart) {
-      throw new Error("A budget for this category already exists in the selected date range.");
-    }
+    return { success: true, budget: JSON.parse(JSON.stringify(budget)) };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to save budget" };
   }
-
-  let budget;
-  if (data._id) {
-    const oldBudget = await Budget.findById(data._id);
-    budget = await Budget.findOneAndUpdate(
-      { _id: data._id, userId: session.user.id },
-      { ...data, userId: session.user.id },
-      { new: true }
-    );
-    if (!budget) throw new Error("Budget not found");
-    await logAuditEvent("Budget", budget._id.toString(), "UPDATE", oldBudget, budget);
-  } else {
-    budget = await Budget.create({ ...data, userId: session.user.id });
-    await logAuditEvent("Budget", budget._id.toString(), "CREATE", undefined, budget);
-  }
-
-  revalidatePath("/budgets");
-  revalidatePath("/");
-  
-  return JSON.parse(JSON.stringify(budget));
 }
 
 export async function deleteBudget(id: string, reason?: string, notes?: string) {

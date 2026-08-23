@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { List, Popconfirm, Modal } from "antd";
+import { List, Select } from "antd";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BudgetForm } from "../forms/BudgetForm";
@@ -14,7 +14,21 @@ import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
 
-export function BudgetList({ budgets, categories, selectedMonth }: { budgets: any[]; categories: any[]; selectedMonth: string }) {
+export function BudgetList({ 
+  budgets, 
+  categories, 
+  selectedMonth,
+  mode = "monthly",
+  startDate = "",
+  endDate = ""
+}: { 
+  budgets: any[]; 
+  categories: any[]; 
+  selectedMonth: string;
+  mode?: string;
+  startDate?: string;
+  endDate?: string;
+}) {
   const { format: formatCurrency } = useCurrency();
   const [search, setSearch] = useState("");
   const router = useRouter();
@@ -32,10 +46,32 @@ export function BudgetList({ budgets, categories, selectedMonth }: { budgets: an
     router.push(`?${params.toString()}`);
   };
 
+  const handleModeChange = (val: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("mode", val);
+    if (val === "custom") {
+      params.delete("month");
+      if (!params.get("startDate")) params.set("startDate", dayjs().startOf('month').format("YYYY-MM-DD"));
+      if (!params.get("endDate")) params.set("endDate", dayjs().endOf('month').format("YYYY-MM-DD"));
+    } else {
+      params.delete("startDate");
+      params.delete("endDate");
+      if (!params.get("month")) params.set("month", selectedMonth || dayjs().format("YYYY-MM"));
+    }
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleDateChange = (field: "startDate" | "endDate", val: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (val) params.set(field, val);
+    else params.delete(field);
+    router.push(`?${params.toString()}`);
+  };
+
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-card p-3 rounded-xl border shadow-sm items-center">
-        <div className="relative flex-1 w-full">
+      <div className="flex flex-col md:flex-row gap-3 mb-6 bg-card p-3 rounded-xl border shadow-sm items-center">
+        <div className="relative flex-1 w-full min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
             placeholder="Search by category name..." 
@@ -44,13 +80,46 @@ export function BudgetList({ budgets, categories, selectedMonth }: { budgets: an
             className="pl-9 h-10 w-full bg-background"
           />
         </div>
-        <div className="relative flex-1 w-full">
-          <Input 
-            type="month" 
-            value={selectedMonth}
-            onChange={handleMonthChange}
-            className="h-10 w-full bg-background"
+        
+        <div className="flex flex-col sm:flex-row flex-[1.5] w-full gap-2 items-center">
+          <Select 
+            value={mode}
+            onChange={handleModeChange}
+            className="h-10 min-w-[130px] w-full sm:w-auto"
+            options={[
+              { label: "Monthly", value: "monthly" },
+              { label: "Custom Range", value: "custom" }
+            ]}
           />
+          {mode === "monthly" ? (
+            <Input 
+              type="month" 
+              value={selectedMonth}
+              onChange={handleMonthChange}
+              className="h-10 w-full bg-background"
+            />
+          ) : (
+            <div className="flex gap-2 w-full">
+              <div className="flex-1">
+                <span className="text-[10px] text-muted-foreground absolute -top-4 left-0 hidden md:block">Start Date</span>
+                <Input 
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => handleDateChange("startDate", e.target.value)}
+                  className="h-10 w-full bg-background"
+                />
+              </div>
+              <div className="flex-1">
+                <span className="text-[10px] text-muted-foreground absolute -top-4 left-0 hidden md:block">End Date</span>
+                <Input 
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => handleDateChange("endDate", e.target.value)}
+                  className="h-10 w-full bg-background"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

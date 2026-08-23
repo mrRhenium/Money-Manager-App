@@ -1,18 +1,66 @@
 "use client";
 
-import { Table, Popconfirm } from "antd";
+import { useState, useMemo } from "react";
+import { Table, Select as AntSelect } from "antd";
 import { Button } from "@/components/ui/button";
-import { deleteInvestment } from "@/actions/investment";
-import { Eye, Trash, RefreshCw } from "lucide-react";
+import { Eye, Search, Filter } from "lucide-react";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import Link from "next/link";
 import { InvestmentForm } from "../forms/InvestmentForm";
-import { formatDate } from "@/lib/helpers";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useCurrency } from "@/hooks/useCurrency";
+import { Input } from "@/components/ui/input";
+import { InvestmentDeleteModal } from "../forms/InvestmentDeleteModal";
 
 export function InvestmentTable({ investments, accounts }: { investments: any[], accounts: any[] }) {
   const { format } = useCurrency();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [typeFilters, setTypeFilters] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState("newest");
+
+  const filteredAndSortedInvestments = useMemo(() => {
+    let result = [...investments];
+
+    // Filter by status
+    if (statusFilter === "active") {
+      result = result.filter(i => i.status === "active");
+    } else if (statusFilter === "closed") {
+      result = result.filter(i => i.status === "closed" || i.status === "sold" || i.status === "matured");
+    }
+
+    // Filter by type
+    if (typeFilters.length > 0) {
+      result = result.filter(i => typeFilters.includes(i.investmentType));
+    }
+
+    // Filter by search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          (i.ticker && i.ticker.toLowerCase().includes(q)) ||
+          (i.platform && i.platform.toLowerCase().includes(q))
+      );
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === "highest_value") return (b.currentValue || 0) - (a.currentValue || 0);
+      if (sortBy === "lowest_value") return (a.currentValue || 0) - (b.currentValue || 0);
+      if (sortBy === "highest_return") {
+        const retA = (a.currentValue || 0) - (a.investedAmount || 0);
+        const retB = (b.currentValue || 0) - (b.investedAmount || 0);
+        return retB - retA;
+      }
+      return 0;
+    });
+
+    return result;
+  }, [investments, searchQuery, statusFilter, typeFilters, sortBy]);
 
   const columns = [
     {
@@ -27,12 +75,19 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
       key: "name",
       render: (name: string, record: any) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${record.color || '#8b5cf6'}15` }}>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${record.status !== "active" ? "opacity-50 grayscale" : ""}`} style={{ backgroundColor: `${record.color || '#8b5cf6'}15` }}>
             <CategoryIcon name={record.icon} color={record.color} className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-semibold">{name}</div>
-            <div className="text-xs text-muted-foreground">{record.investmentType}</div>
+            <div className="font-semibold flex items-center gap-2">
+              {name}
+              {record.status !== "active" && (
+                <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground uppercase">{record.status}</span>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {record.investmentType} {record.platform ? `• ${record.platform}` : ""}
+            </div>
           </div>
         </div>
       )
@@ -41,21 +96,21 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
       title: "Invested",
       dataIndex: "investedAmount",
       key: "investedAmount",
-      render: (amount: number, record: any) => format(amount),
+      render: (amount: number, record: any) => <span className={record.status !== "active" ? "opacity-60" : ""}>{format(amount)}</span>,
     },
     {
       title: "Current Value",
       dataIndex: "currentValue",
       key: "currentValue",
       render: (amount: number, record: any) => (
-        <div>
+        <div className={record.status !== "active" ? "opacity-60" : ""}>
           <span className="font-medium">{format(amount)}</span>
-          {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && (
+          {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && record.status === "active" && (
             <div className="text-[10px] text-muted-foreground" title={formatDateString(record.lastAutoUpdatedAt, "YYYY-MM-DD HH:mm")}>
               Auto-synced
             </div>
           )}
-          {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && (
+          {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && record.status === "active" && (
              <div className="text-[10px] text-amber-500">
                Pending sync
              </div>
@@ -72,7 +127,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
         const isPos = ret > 0;
         const isNeg = ret < 0;
         return (
-          <div className={`flex flex-col gap-0.5 ${isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground"}`}>
+          <div className={`flex flex-col gap-0.5 ${record.status !== "active" ? "opacity-60" : ""} ${isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground"}`}>
             <div className="font-medium">{isPos ? "+" : ""}{format(ret)}</div>
             <div className="text-xs">{isPos ? "+" : ""}{retPct.toFixed(2)}%</div>
           </div>
@@ -90,43 +145,94 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             </Button>
           </Link>
           <InvestmentForm investment={record} accounts={accounts} />
-          <Popconfirm
-            title="Delete Investment"
-            description="Are you sure? This deletes history too."
-            onConfirm={() => deleteInvestment(record._id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-              <Trash className="w-4 h-4" />
-            </Button>
-          </Popconfirm>
+          <InvestmentDeleteModal investment={record} />
         </div>
       )
     }
   ];
 
+  const typeOptions = Array.from(new Set(investments.map(i => i.investmentType))).map(type => ({ label: type, value: type }));
+
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 md:hidden mt-4">
-        {investments.map(record => {
+      <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm mt-4 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, platform, or ticker..."
+            className="pl-9 bg-background"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <div className="flex items-center gap-2 w-full sm:w-1/2 justify-end">
+          <AntSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            className="min-w-[120px] h-10"
+            options={[
+              { label: "Active", value: "active" },
+              { label: "Closed/Sold", value: "closed" },
+              { label: "All", value: "all" },
+            ]}
+          />
+          
+          <AntSelect
+            mode="multiple"
+            allowClear
+            maxTagCount="responsive"
+            placeholder="All Types"
+            className="w-[180px] min-h-10"
+            value={typeFilters}
+            onChange={setTypeFilters}
+            options={typeOptions}
+            optionRender={(option) => (
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={typeFilters.includes(option.value as string)} readOnly className="cursor-pointer" />
+                <span>{option.label}</span>
+              </div>
+            )}
+          />
+          
+          <AntSelect
+            value={sortBy}
+            onChange={setSortBy}
+            className="min-w-[150px] h-10"
+            options={[
+              { label: "Newest First", value: "newest" },
+              { label: "Oldest First", value: "oldest" },
+              { label: "Highest Value", value: "highest_value" },
+              { label: "Lowest Value", value: "lowest_value" },
+              { label: "Highest Return", value: "highest_return" },
+            ]}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {filteredAndSortedInvestments.map(record => {
           const ret = (record.currentValue || 0) - (record.investedAmount || 0);
           const retPct = record.investedAmount > 0 ? (ret / record.investedAmount) * 100 : 0;
           const isPos = ret > 0;
           const isNeg = ret < 0;
+          const isClosed = record.status !== "active";
 
           return (
-            <div key={record._id} className="bg-card border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col gap-4">
+            <div key={record._id} className={`bg-card border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col gap-4 ${isClosed ? "opacity-75" : ""}`}>
               <div className="flex justify-between items-start gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner" 
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${isClosed ? "grayscale" : ""}`}
                     style={{ backgroundColor: record.color || '#8b5cf6' }}
                   >
                     <CategoryIcon name={record.icon} className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-bold text-base leading-tight truncate">{record.name}</h3>
+                    <h3 className="font-bold text-base leading-tight truncate flex items-center gap-2">
+                      {record.name}
+                      {isClosed && <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground uppercase font-normal">{record.status}</span>}
+                    </h3>
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{record.investmentType}</p>
                   </div>
                 </div>
@@ -137,17 +243,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                     </Button>
                   </Link>
                   <InvestmentForm investment={record} accounts={accounts} triggerClassName="h-8 w-8 rounded-full" />
-                  <Popconfirm
-                    title="Delete Investment"
-                    description="Are you sure? This deletes history too."
-                    onConfirm={() => deleteInvestment(record._id)}
-                    okText="Yes"
-                    cancelText="No"
-                  >
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive rounded-full">
-                      <Trash className="w-4 h-4" />
-                    </Button>
-                  </Popconfirm>
+                  <InvestmentDeleteModal investment={record} />
                 </div>
               </div>
 
@@ -160,10 +256,10 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Current Value</p>
                   <div className="flex flex-col">
                     <span className="font-semibold text-sm">{format(record.currentValue)}</span>
-                    {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && (
+                    {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && !isClosed && (
                       <span className="text-[10px] text-muted-foreground">Auto-synced</span>
                     )}
-                    {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && (
+                    {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && !isClosed && (
                       <span className="text-[10px] text-amber-500">Pending sync</span>
                     )}
                   </div>
@@ -181,18 +277,23 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
 
               {/* Decorative background circle */}
               <div 
-                className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
+                className={`absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${isClosed ? "grayscale" : ""}`}
                 style={{ backgroundColor: record.color || '#8b5cf6' }}
               />
             </div>
           );
         })}
+        {filteredAndSortedInvestments.length === 0 && (
+          <div className="p-8 text-center border rounded-xl border-dashed">
+            <p className="text-muted-foreground">No investments match your filters.</p>
+          </div>
+        )}
       </div>
 
       <div className="hidden md:block overflow-x-auto">
         <Table
           columns={columns}
-          dataSource={investments.map(inv => ({ ...inv, key: inv._id }))}
+          dataSource={filteredAndSortedInvestments.map(inv => ({ ...inv, key: inv._id }))}
           pagination={{ pageSize: 10 }}
           className="custom-table"
         />

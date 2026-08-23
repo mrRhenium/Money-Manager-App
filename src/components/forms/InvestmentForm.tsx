@@ -122,12 +122,37 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
       form.reset();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to save investment");
+      toast.error(error.message || "Failed to save investment.");
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        investmentType: investment?.investmentType || "MutualFund",
+        name: investment?.name || "",
+        folioNumber: investment?.folioNumber || "",
+        platform: investment?.platform || "",
+        investedAmount: investment?.investedAmount ? investment.investedAmount.toString() : "",
+        currentValue: investment?.currentValue ? investment.currentValue.toString() : "",
+        units: investment?.units ? investment.units.toString() : "",
+        schemeCode: investment?.schemeCode || "",
+        ticker: investment?.ticker || "",
+        autoPriceUpdateEnabled: investment?.autoPriceUpdateEnabled ?? true,
+        startDate: investment?.startDate ? formatDateString(investment.startDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
+        frequency: investment?.frequency || "OneTime",
+        linkedAccountId: investment?.linkedAccountId || undefined,
+      });
+      setCurrency(investment?.currency || "INR");
+      setColor(investment?.color || "#8b5cf6");
+      setIcon(investment?.icon || "TrendingUp");
+      setAssetPrice(null);
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         investment ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">

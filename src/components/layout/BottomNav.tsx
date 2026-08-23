@@ -21,14 +21,14 @@ export function BottomNav() {
 
   const menuItems = [
     { href: "/accounts", icon: Landmark, label: "Accounts" },
-    { href: "/categories", icon: Tags, label: "Categories" },
-    { href: "/goals", icon: Target, label: "Goals" },
-    { href: "/loans", icon: Landmark, label: "Loans" },
-    { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
-    { href: "/investments", icon: TrendingUp, label: "Investments" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
-    { href: "/insurance", icon: Shield, label: "Insurance" },
+    { href: "/categories", icon: Tags, label: "Categories" },
     { href: "/people", icon: Users, label: "People" },
+    { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
+    { href: "/loans", icon: Landmark, label: "Loans / EMIs" },
+    { href: "/goals", icon: Target, label: "Goals" },
+    { href: "/investments", icon: TrendingUp, label: "Investments" },
+    { href: "/insurance", icon: Shield, label: "Insurance" },
     { href: "/audit-logs", icon: History, label: "Audit Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];

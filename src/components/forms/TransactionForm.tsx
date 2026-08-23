@@ -59,8 +59,10 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
   const [scanPayOpen, setScanPayOpen] = useState(false);
   const [billImage, setBillImage] = useState<string>(transaction?.billImage || "");
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { currencyCode } = useCurrency();
+  const [currency, setCurrency] = useState(transaction?.originalCurrency || "INR");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -152,15 +154,41 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
       }
       setOpen(false);
       form.reset();
+      setBillImage("");
       setErrorMsg("");
+      setOpen(false);
     } catch (error: any) {
-      console.error("Failed to save transaction", error);
-      setErrorMsg(error.message || "Failed to save transaction");
+      setErrorMsg(error?.message || "Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        type: transaction?.type || "expense",
+        amount: transaction?.amount ? formatIndianNumber(transaction.amount) : "",
+        originalCurrency: transaction?.originalCurrency || "INR",
+        paymentMode: transaction?.paymentMode || "bank",
+        accountId: transaction?.accountId?._id || transaction?.accountId || "",
+        creditCardId: transaction?.creditCardId?._id || transaction?.creditCardId || "",
+        toAccountId: transaction?.toAccountId?._id || transaction?.toAccountId || "",
+        categoryId: transaction?.categoryId?._id || transaction?.categoryId || "",
+        personId: transaction?.personId?._id || transaction?.personId || "",
+        note: transaction?.note || "",
+        date: transaction?.date ? formatDateString(transaction.date, "YYYY-MM-DDTHH:mm") : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
+      });
+      setBillImage(transaction?.billImage || "");
+      setErrorMsg("");
+      setCurrency(transaction?.originalCurrency || "INR");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         transaction ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
@@ -498,5 +526,6 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
       </DialogContent>
       <ScanAndPayModal open={scanPayOpen} onOpenChange={(val) => { setScanPayOpen(val); if (!val) setOpen(false); }} />
     </Dialog>
+    </>
   );
 }

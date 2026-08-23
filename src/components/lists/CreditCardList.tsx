@@ -8,21 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 import { CreditCardForm } from "../forms/CreditCardForm";
-import { CreditCardDeleteModal } from "../forms/CreditCardDeleteModal";
 import { deleteCreditCard } from "@/actions/creditCard";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
 export function CreditCardList({ cards }: { cards: any[] }) {
   const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredCards = useMemo(() => {
-    return cards.filter(card => 
-      card.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      card.cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      card.last4Digits.includes(searchQuery)
-    );
-  }, [cards, searchQuery]);
+    return cards.filter(card => {
+      if (hiddenIds.has(card._id)) return false;
+      return card.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             card.cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             card.last4Digits.includes(searchQuery);
+    });
+  }, [cards, searchQuery, hiddenIds]);
 
   if (cards.length === 0) {
     return null; // The parent page handles empty state beautifully
@@ -89,7 +91,27 @@ export function CreditCardList({ cards }: { cards: any[] }) {
 
                     <div className="flex items-center gap-1 z-10 shrink-0" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <CreditCardForm card={card} />
-                      <CreditCardDeleteModal card={card} transactionsCount={card.transactionsCount} />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          triggerDelete({
+                            id: card._id,
+                            entityName: `${card.bankName} ${card.cardName}`,
+                            onCommit: async () => {
+                              const res = await deleteCreditCard(card._id);
+                              if (res && !res.success) {
+                                throw new Error(res.error);
+                              }
+                            }
+                          });
+                        }}
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>

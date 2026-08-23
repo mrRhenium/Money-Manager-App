@@ -77,14 +77,28 @@ export function GoalForm({ goal, onUpdate }: { goal?: any, onUpdate?: () => void
       form.reset();
       if (onUpdate) onUpdate();
     } catch (error) {
-      console.error("Failed to save goal", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        name: goal?.name || "",
+        targetAmount: goal?.targetAmount ? formatIndianNumber(goal.targetAmount) : "",
+        deadline: goal?.deadline ? formatDateString(goal.deadline, "YYYY-MM-DD") : "",
+        color: goal?.color || "#3b82f6",
+        icon: goal?.icon || "Target",
+      });
+      setCurrency(goal?.currency || "INR");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         goal ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full">

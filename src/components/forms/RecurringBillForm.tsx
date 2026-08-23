@@ -76,16 +76,35 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
         await createRecurringBill(parsedPayload as any);
       }
       setOpen(false);
-      if (!bill) form.reset();
+      form.reset();
     } catch (error) {
-      console.error("Failed to save recurring bill", error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        name: bill?.name || "",
+        amount: bill?.amount ? formatIndianNumber(bill.amount) : "",
+        frequency: bill?.frequency || "monthly",
+        nextDueDate: bill?.nextDueDate ? formatDateString(bill.nextDueDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
+        autoPayPlatform: bill?.autoPayPlatform || "",
+        categoryId: bill?.categoryId?._id || bill?.categoryId || "",
+        accountId: bill?.accountId?._id || bill?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
+        isActive: bill?.isActive !== undefined ? bill?.isActive : true,
+      });
+      setCurrency(bill?.currency || "INR");
+      setColor(bill?.color || "#6366f1");
+      setIcon(bill?.icon || "Repeat");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger>
         {bill ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">

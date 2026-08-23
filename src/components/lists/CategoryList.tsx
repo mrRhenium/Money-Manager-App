@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Popconfirm, Modal, Tabs } from "antd";
+import { List, Tabs } from "antd";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CategoryForm } from "../forms/CategoryForm";
@@ -8,18 +8,26 @@ import { deleteCategory } from "@/actions/category";
 import { Trash, Search } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useState, useMemo } from "react";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
 export function CategoryList({ expenseCategories, incomeCategories }: { expenseCategories: any[], incomeCategories: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("expense");
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredExpenses = useMemo(() => {
-    return expenseCategories.filter(cat => cat.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [expenseCategories, searchQuery]);
+    return expenseCategories.filter(cat => {
+      if (hiddenIds.has(cat._id)) return false;
+      return cat.name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }, [expenseCategories, searchQuery, hiddenIds]);
 
   const filteredIncomes = useMemo(() => {
-    return incomeCategories.filter(cat => cat.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [incomeCategories, searchQuery]);
+    return incomeCategories.filter(cat => {
+      if (hiddenIds.has(cat._id)) return false;
+      return cat.name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }, [incomeCategories, searchQuery, hiddenIds]);
   const renderCategoryItem = (cat: any, index: number) => (
     <List.Item className="!p-0 !border-0 mb-2">
       <div className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm w-full relative overflow-hidden group">
@@ -32,34 +40,25 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
           {!cat.isSystem && (
             <>
               <CategoryForm category={cat} />
-              <Popconfirm
-                title="Delete Category"
-                description="Are you sure you want to delete this category?"
-                onConfirm={async () => {
-                  try {
-                    const res = await deleteCategory(cat._id);
-                    if (res && !res.success) {
-                      Modal.error({
-                        title: "Cannot Delete Category",
-                        content: res.error || "This category is in use elsewhere.",
-                        okText: "Close",
-                      });
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-full transition-colors"
+                onClick={() => {
+                  triggerDelete({
+                    id: cat._id,
+                    entityName: cat.name,
+                    onCommit: async () => {
+                      const res = await deleteCategory(cat._id);
+                      if (res && !res.success) {
+                        throw new Error(res.error);
+                      }
                     }
-                  } catch (err: any) {
-                    Modal.error({
-                      title: "Cannot Delete Category",
-                      content: err.message || "This category is in use elsewhere.",
-                      okText: "Close",
-                    });
-                  }
+                  });
                 }}
-                okText="Yes"
-                cancelText="No"
               >
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-full transition-colors">
-                  <Trash className="w-4 h-4" />
-                </Button>
-              </Popconfirm>
+                <Trash className="w-4 h-4" />
+              </Button>
             </>
           )}
         </div>

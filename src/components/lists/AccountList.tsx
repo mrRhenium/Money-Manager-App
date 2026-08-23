@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "antd";
 import { AccountForm } from "../forms/AccountForm";
-import { AccountDeleteModal } from "../forms/AccountDeleteModal";
 import { deleteAccount } from "@/actions/account";
 import { Trash, Search, Filter, Landmark, Wallet, Banknote, CreditCard } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
 const getAccountIcon = (type: string) => {
   switch (type.toLowerCase()) {
@@ -40,9 +40,11 @@ export function AccountList({ accounts }: { accounts: any[] }) {
   const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter((acc) => {
+      if (hiddenIds.has(acc._id)) return false;
       const matchesSearch = acc.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = typeFilters.length === 0 || typeFilters.includes(acc.type);
       return matchesSearch && matchesType;
@@ -130,7 +132,25 @@ export function AccountList({ accounts }: { accounts: any[] }) {
 
                   <div className="flex items-center gap-1 transition-opacity shrink-0">
                     <AccountForm account={account} />
-                    <AccountDeleteModal account={account} />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                      onClick={() => {
+                        triggerDelete({
+                          id: account._id,
+                          entityName: account.name,
+                          onCommit: async () => {
+                            const res = await deleteAccount(account._id);
+                            if (res && !res.success) {
+                              throw new Error(res.error);
+                            }
+                          }
+                        });
+                      }}
+                    >
+                      <Trash className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
 

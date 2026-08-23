@@ -16,6 +16,7 @@ import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 import { ColorPicker, IconPicker } from "@/components/ui/IconColorPicker";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -58,8 +59,9 @@ function calcCompoundInterest(principal: number, rate: number, tenureMonths: num
 export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accounts: any[], loan?: any, onUpdate?: () => void, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [color, setColor] = useState(loan?.color || "#3b82f6");
-  const [icon, setIcon] = useState(loan?.icon || "Landmark");
+  const { toast } = useToast();
+  const [color, setColor] = useState(loan?.color || "#eab308");
+  const [icon, setIcon] = useState(loan?.icon || "landmark");
   const [currency, setCurrency] = useState(loan?.currency || "INR");
   const [calcMode, setCalcMode] = useState<"manual" | "auto">(loan?.calculationMode || "manual");
   const [autoCalc, setAutoCalc] = useState<{ totalPayable: number; emi: number; totalInterest: number } | null>(null);
@@ -148,18 +150,42 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
         currency
       });
       setOpen(false);
+      form.reset();
       if (onUpdate) onUpdate();
-    } catch (error) {
-      console.error("Failed to save loan", error);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to save loan.");
     } finally {
       setLoading(false);
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        name: loan?.name || "",
+        type: loan?.type || "taken",
+        principalAmount: loan?.principalAmount ? formatIndianNumber(loan.principalAmount) : "",
+        totalAmount: loan?.totalAmount ? formatIndianNumber(loan.totalAmount) : "",
+        emiAmount: loan?.emiAmount ? formatIndianNumber(loan.emiAmount) : "",
+        emiDate: loan?.emiDate ? loan.emiDate.toString() : "1",
+        startDate: loan?.startDate ? formatDateString(loan.startDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
+        tenureMonths: loan?.tenureMonths ? loan.tenureMonths.toString() : "",
+        linkedAccountId: loan?.linkedAccountId?._id || loan?.linkedAccountId || "",
+        interestRate: loan?.interestRate ? loan.interestRate.toString() : "",
+        interestType: loan?.interestType || "simple",
+      });
+      setCurrency(loan?.currency || "INR");
+      setColor(loan?.color || "#eab308");
+      setIcon(loan?.icon || "Landmark");
+    }
+    setOpen(newOpen);
+  };
+
   const { format } = useCurrency();
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         loan ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full">

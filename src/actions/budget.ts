@@ -8,7 +8,7 @@ import Category from "@/models/Category";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { getStartOfMonth, getEndOfMonth } from "@/lib/dateTimeHelper";
-import { logAuditEvent } from "@/actions/auditLog";
+import { logAuditEvent, createAuditLog } from "@/actions/auditLog";
 
 export async function getBudgetsWithProgress(options: { month?: string, startDate?: string, endDate?: string }) {
   const session = await auth();
@@ -219,14 +219,31 @@ export async function deleteBudget(id: string, reason?: string, notes?: string) 
 
     const totalSpent = expenses.length > 0 ? expenses[0].totalSpent : 0;
 
+    const category = await Category.findById(budget.categoryId);
+    const categoryName = category?.name || "Budget";
+    const entityName = `${categoryName} Budget`;
+
     if (totalSpent > 0) {
       if (!reason || !notes) {
         return { success: false, error: "Reason and notes are mandatory for deleting a utilized budget." };
       }
       
-      await logAuditEvent("Budget", id, "DELETE", budget, { reason, notes, totalSpent });
+      await createAuditLog({
+        action: "DELETE",
+        entityType: "Budget",
+        entityId: id,
+        entityName,
+        previousValue: budget,
+        details: { reason, notes, amountInvolved: totalSpent }
+      });
     } else {
-      await logAuditEvent("Budget", id, "DELETE", budget, undefined);
+      await createAuditLog({
+        action: "DELETE",
+        entityType: "Budget",
+        entityId: id,
+        entityName,
+        previousValue: budget
+      });
     }
     
     await Budget.deleteOne({ _id: id });

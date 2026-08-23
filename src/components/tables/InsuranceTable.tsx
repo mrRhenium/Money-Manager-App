@@ -1,7 +1,7 @@
 "use client";
 
-import { InsuranceDeleteModal } from "../forms/InsuranceDeleteModal";
-import { Search, SlidersHorizontal, Eye } from "lucide-react";
+import { deleteInsurancePolicy } from "@/actions/insurance";
+import { Search, SlidersHorizontal, Eye, Trash } from "lucide-react";
 import { Input, Select, Table } from "antd";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,19 +10,21 @@ import { InsuranceForm } from "../forms/InsuranceForm";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useCurrency } from "@/hooks/useCurrency";
 import { formatDateString } from "@/lib/dateTimeHelper";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
 export function InsuranceTable({ policies, accounts }: { policies: any[], accounts: any[] }) {
   const { format } = useCurrency();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredAndSorted = useMemo(() => {
     let result = [...policies];
     
     // Status filter - only active by default unless we add a status dropdown
     // Let's filter out non-active if we don't want to show them, but for now we show all
-    result = result.filter(p => p.status !== "mistake");
+    result = result.filter(p => p.status !== "mistake" && !hiddenIds.has(p._id));
 
     if (search) {
       const q = search.toLowerCase();
@@ -45,7 +47,7 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
     });
 
     return result;
-  }, [policies, search, filterType, sortBy]);
+  }, [policies, search, filterType, sortBy, hiddenIds]);
 
   const columns = [
     {
@@ -104,7 +106,25 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
             </Button>
           </Link>
           <InsuranceForm policy={record} accounts={accounts} />
-          <InsuranceDeleteModal policy={record} />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            onClick={() => {
+              triggerDelete({
+                id: record._id,
+                entityName: record.policyName,
+                onCommit: async () => {
+                  const res = await deleteInsurancePolicy(record._id);
+                  if (res && !res.success) {
+                    throw new Error(res.error);
+                  }
+                }
+              });
+            }}
+          >
+            <Trash className="w-4 h-4" />
+          </Button>
         </div>
       )
     }
@@ -174,7 +194,25 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
                   </Button>
                 </Link>
                 <InsuranceForm policy={record} accounts={accounts} />
-                <InsuranceDeleteModal policy={record} />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  onClick={() => {
+                    triggerDelete({
+                      id: record._id,
+                      entityName: record.policyName,
+                      onCommit: async () => {
+                        const res = await deleteInsurancePolicy(record._id);
+                        if (res && !res.success) {
+                          throw new Error(res.error);
+                        }
+                      }
+                    });
+                  }}
+                >
+                  <Trash className="w-4 h-4" />
+                </Button>
               </div>
             </div>
 

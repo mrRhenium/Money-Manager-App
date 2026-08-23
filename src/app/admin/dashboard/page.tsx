@@ -1,5 +1,5 @@
 import { getAdminStats } from "@/actions/admin";
-import { Users, Grid } from "lucide-react";
+import { Users, Grid, Banknote } from "lucide-react";
 
 export default async function AdminDashboard() {
   const stats = await getAdminStats();
@@ -24,12 +24,12 @@ export default async function AdminDashboard() {
 
         <div className="p-6 rounded-2xl border bg-card text-card-foreground shadow-sm">
           <div className="flex items-center justify-between pb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Master Categories</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">Currencies Supported</h3>
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Grid className="w-4 h-4 text-primary" />
+              <Banknote className="w-4 h-4 text-primary" />
             </div>
           </div>
-          <div className="text-3xl font-bold">{stats.totalCategories}</div>
+          <div className="text-3xl font-bold">{stats.totalCurrencies}</div>
         </div>
       </div>
     </div>

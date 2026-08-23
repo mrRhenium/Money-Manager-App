@@ -5,7 +5,6 @@ import { List, Select } from "antd";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BudgetForm } from "../forms/BudgetForm";
-import { BudgetDeleteModal } from "../forms/BudgetDeleteModal";
 import { deleteBudget } from "@/actions/budget";
 import { Trash, Search, Calendar } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -13,6 +12,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
 export function BudgetList({ 
   budgets, 
@@ -34,9 +34,12 @@ export function BudgetList({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const filteredBudgets = budgets.filter((b) => 
-    b.categoryId?.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
+
+  const filteredBudgets = budgets.filter((b) => {
+    if (hiddenIds.has(b._id)) return false;
+    return b.categoryId?.name?.toLowerCase().includes(search.toLowerCase());
+  });
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -171,7 +174,25 @@ export function BudgetList({
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <BudgetForm categories={categories} budget={budget} />
-                        <BudgetDeleteModal budget={budget} totalSpent={budget.totalSpent} />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                          onClick={() => {
+                            triggerDelete({
+                              id: budget._id,
+                              entityName: budget.categoryId?.name || "Budget",
+                              onCommit: async () => {
+                                const res = await deleteBudget(budget._id);
+                                if (res && !res.success) {
+                                  throw new Error(res.error);
+                                }
+                              }
+                            });
+                          }}
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                     <div className="w-full space-y-3 mt-4">

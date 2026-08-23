@@ -60,8 +60,21 @@ export function AccountForm({ account }: { account?: any }) {
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        name: account?.name || "",
+        type: account?.type || "bank",
+        balance: account?.balance ? account.balance.toString() : "",
+      });
+      setColor(account?.color || "#3b82f6");
+      setIcon(account?.icon || "landmark");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         account ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">

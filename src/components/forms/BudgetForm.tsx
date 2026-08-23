@@ -102,8 +102,27 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        categoryId: budget?.categoryId?._id || budget?.categoryId || "",
+        type: budget?.type || "monthly",
+        month: budget?.month || currentMonth,
+        startDate: budget?.startDate ? new Date(budget.startDate).toISOString().split('T')[0] : "",
+        endDate: budget?.endDate ? new Date(budget.endDate).toISOString().split('T')[0] : "",
+        amount: budget?.amount ? formatIndianNumber(budget.amount) : "",
+        rollover: budget?.rollover || false,
+      });
+      setColor(budget?.color || "#f59e0b");
+      setIcon(budget?.icon || "PiggyBank");
+      setCurrency(budget?.currency || "INR");
+      setErrorMsg("");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         budget ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">

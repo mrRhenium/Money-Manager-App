@@ -10,7 +10,7 @@ import { LogOut, User, Bell, Palette, Globe } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { subscribeUser, sendTestNotification } from "@/actions/push";
-import { getUserProfile, updateProfile, updateThemeColor, updateCurrency } from "@/actions/user";
+import { getUserProfile, updateProfile, updateThemeColor, updateCurrency, deleteProfilePicture } from "@/actions/user";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { Select } from "antd";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
@@ -216,6 +216,21 @@ function SettingsContent() {
     }
   };
 
+  const handleDeleteAvatar = async () => {
+    if (!image) return;
+    try {
+      setIsAvatarUploading(true);
+      await deleteProfilePicture(image);
+      setImage("");
+      await updateSession({ name, image: "" });
+      toast.success("Profile picture removed successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove avatar");
+    } finally {
+      setIsAvatarUploading(false);
+    }
+  };
+
 
   async function handleSubscribe() {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -268,17 +283,34 @@ function SettingsContent() {
               ) : (
                 <User className="w-8 h-8" />
               )}
-              <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer rounded-full">
-                {isAvatarUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <UploadCloud className="w-5 h-5 text-white" />}
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
-              </label>
+              {!image && (
+                <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer rounded-full">
+                  {isAvatarUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <UploadCloud className="w-5 h-5 text-white" />}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
+                </label>
+              )}
             </div>
             
-            {/* Persistent Edit Icon Badge */}
-            <label className="absolute bottom-0 right-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform">
-              <PenLine className="w-3 h-3" />
-              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
-            </label>
+            {/* Action Badge */}
+            {image ? (
+              <button 
+                type="button"
+                onClick={handleDeleteAvatar}
+                disabled={isAvatarUploading}
+                title="Delete profile picture"
+                className="absolute bottom-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform"
+              >
+                {isAvatarUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash className="w-3 h-3" />}
+              </button>
+            ) : (
+              <label 
+                title="Upload profile picture"
+                className="absolute bottom-0 right-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform"
+              >
+                {isAvatarUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
+              </label>
+            )}
           </div>
           <div>
             <p className="font-medium text-lg">{session?.user?.name}</p>

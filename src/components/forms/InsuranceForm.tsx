@@ -80,14 +80,40 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
       }
       setOpen(false);
       form.reset();
+      setErrorMsg("");
     } catch (error: any) {
       console.error(error);
-      setErrorMsg(error.message || "Failed to save policy");
+      setErrorMsg(error.message || "Failed to save insurance policy.");
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        type: policy?.type || "Life",
+        policyName: policy?.policyName || "",
+        provider: policy?.provider || "",
+        policyNumber: policy?.policyNumber || "",
+        coverageAmount: policy?.coverageAmount ? policy.coverageAmount.toString() : "",
+        premiumAmount: policy?.premiumAmount ? policy.premiumAmount.toString() : "",
+        premiumFrequency: policy?.premiumFrequency || "Yearly",
+        startDate: policy?.startDate ? formatDateString(policy.startDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
+        endDate: policy?.endDate ? formatDateString(policy.endDate, "YYYY-MM-DD") : undefined,
+        renewalDate: policy?.renewalDate ? formatDateString(policy.renewalDate, "YYYY-MM-DD") : undefined,
+        linkedAccountId: policy?.linkedAccountId || undefined,
+        nomineeName: policy?.nomineeName || "",
+        documentUrl: policy?.documentUrl || "",
+      });
+      setCurrency(policy?.currency || "INR");
+      setColor(policy?.color || "#10b981");
+      setIcon(policy?.icon || "Shield");
+      setErrorMsg("");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         policy ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">

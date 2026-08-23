@@ -100,6 +100,20 @@ export function PersonForm({ person }: { person?: any }) {
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        relation: person?.relation || "Friend",
+        name: person?.name || "",
+        phones: person?.phones?.length ? person.phones.map((p: string) => ({ value: p })) : [],
+        vpas: person?.vpas?.length ? person.vpas.map((v: string) => ({ value: v })) : [],
+      });
+      setAvatarUrl(person?.avatarUrl || "");
+      setColor(person?.color || "#0ea5e9");
+    }
+    setOpen(newOpen);
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
@@ -117,7 +131,7 @@ export function PersonForm({ person }: { person?: any }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         person ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">

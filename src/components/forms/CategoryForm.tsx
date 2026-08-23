@@ -46,8 +46,20 @@ export function CategoryForm({ category }: { category?: any }) {
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        name: category?.name || "",
+        type: category?.type || "expense",
+        color: category?.color || "#8884d8",
+        icon: category?.icon || "Circle",
+      });
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         category ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">

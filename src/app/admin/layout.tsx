@@ -18,7 +18,6 @@ export default async function AdminLayout({
   const navItems = [
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Manage Users", href: "/admin/users", icon: Users },
-    { name: "Master Categories", href: "/admin/categories", icon: Grid },
     { name: "Currencies", href: "/admin/currencies", icon: Banknote },
   ];
 

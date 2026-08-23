@@ -19,14 +19,17 @@ async function requireAdmin() {
   }
 }
 
+import Currency from "@/models/Currency";
+
 export async function getAdminStats() {
   await requireAdmin();
   await dbConnect();
 
   const totalUsers = await User.countDocuments({ role: "USER" });
   const totalCategories = await Category.countDocuments({ isSystem: true });
+  const totalCurrencies = await Currency.countDocuments({ isActive: true });
 
-  return { totalUsers, totalCategories };
+  return { totalUsers, totalCategories, totalCurrencies };
 }
 
 export async function getAllUsers() {

@@ -85,14 +85,36 @@ export function CreditCardForm({ card }: { card?: any }) {
       setOpen(false);
       form.reset();
     } catch (err: any) {
-      setError(err.message || "Failed to save credit card");
+      console.error(err);
+      setError(err.message || "Failed to save credit card.");
     } finally {
       setLoading(false);
     }
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset({
+        cardName: card?.cardName ? String(card.cardName) : "",
+        bankName: card?.bankName ? String(card.bankName) : "",
+        cardNetwork: card?.cardNetwork || "Visa",
+        last4Digits: card?.last4Digits ? String(card.last4Digits) : "",
+        cardholderName: card?.cardholderName ? String(card.cardholderName) : "",
+        creditLimit: card?.creditLimit ? formatIndianNumber(card.creditLimit) : "",
+        startingDate: card?.startingDate ? formatDateString(card.startingDate, "YYYY-MM-DDTHH:mm") : getCurrentFormatted("YYYY-MM-DDTHH:mm"),
+        expiryDate: card?.expiryDate ? formatDateString(card.expiryDate, "YYYY-MM") : "",
+        billingCycleStartDay: card?.billingCycleStartDay || 1,
+        billingCycleEndDay: card?.billingCycleEndDay || 30,
+        paymentDueDay: card?.paymentDueDay || 15,
+        color: card?.color || "#0ea5e9",
+      });
+      setError("");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         card ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">

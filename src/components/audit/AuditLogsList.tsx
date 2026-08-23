@@ -14,8 +14,9 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
   const [actionFilter, setActionFilter] = useState("All");
 
   const getFriendlyEntityName = (log: any) => {
+    if (log.entityName) return log.entityName;
     const data = log.currentValue || log.previousValue || {};
-    return data.name || data.note || data.bankName || `ID: ${log.entityId}`;
+    return data.name || data.title || data.policyName || data.cardName || data.bankName || data.description || data.note || `ID: ${log.entityId}`;
   };
 
   const getChangedProperties = (prev: any, curr: any) => {

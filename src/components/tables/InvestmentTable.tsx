@@ -3,14 +3,15 @@
 import { useState, useMemo } from "react";
 import { Table, Select as AntSelect } from "antd";
 import { Button } from "@/components/ui/button";
-import { Eye, Search, Filter } from "lucide-react";
+import { Eye, Search, Filter, Trash } from "lucide-react";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import Link from "next/link";
 import { InvestmentForm } from "../forms/InvestmentForm";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Input } from "@/components/ui/input";
-import { InvestmentDeleteModal } from "../forms/InvestmentDeleteModal";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { deleteInvestment } from "@/actions/investment";
 
 export function InvestmentTable({ investments, accounts }: { investments: any[], accounts: any[] }) {
   const { format } = useCurrency();
@@ -18,9 +19,10 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
   const [statusFilter, setStatusFilter] = useState("active");
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("newest");
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredAndSortedInvestments = useMemo(() => {
-    let result = [...investments];
+    let result = [...investments].filter(i => !hiddenIds.has(i._id));
 
     // Filter by status
     if (statusFilter === "active") {
@@ -60,7 +62,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
     });
 
     return result;
-  }, [investments, searchQuery, statusFilter, typeFilters, sortBy]);
+  }, [investments, searchQuery, statusFilter, typeFilters, sortBy, hiddenIds]);
 
   const columns = [
     {
@@ -145,7 +147,25 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             </Button>
           </Link>
           <InvestmentForm investment={record} accounts={accounts} />
-          <InvestmentDeleteModal investment={record} />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            onClick={() => {
+              triggerDelete({
+                id: record._id,
+                entityName: record.name,
+                onCommit: async () => {
+                  const res = await deleteInvestment(record._id);
+                  if (res && !res.success) {
+                    throw new Error(res.error);
+                  }
+                }
+              });
+            }}
+          >
+            <Trash className="w-4 h-4" />
+          </Button>
         </div>
       )
     }
@@ -243,7 +263,25 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                     </Button>
                   </Link>
                   <InvestmentForm investment={record} accounts={accounts} triggerClassName="h-8 w-8 rounded-full" />
-                  <InvestmentDeleteModal investment={record} />
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                    onClick={() => {
+                      triggerDelete({
+                        id: record._id,
+                        entityName: record.name,
+                        onCommit: async () => {
+                          const res = await deleteInvestment(record._id);
+                          if (res && !res.success) {
+                            throw new Error(res.error);
+                          }
+                        }
+                      });
+                    }}
+                  >
+                    <Trash className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
 

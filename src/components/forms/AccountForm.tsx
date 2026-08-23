@@ -26,7 +26,7 @@ const formSchema = z.object({
 
 export function AccountForm({ account }: { account?: any }) {
   const [open, setOpen] = useState(false);
-  const [currency, setCurrency] = useState("INR");
+  const [currency, setCurrency] = useState(account?.currency || "INR");
   const [color, setColor] = useState(account?.color || "#3b82f6");
   const [icon, setIcon] = useState(account?.icon || "landmark");
 
@@ -45,7 +45,8 @@ export function AccountForm({ account }: { account?: any }) {
         ...values,
         balance: parseIndianNumber(values.balance),
         color,
-        icon
+        icon,
+        currency
       };
 
       if (account) {
@@ -67,6 +68,7 @@ export function AccountForm({ account }: { account?: any }) {
         type: account?.type || "bank",
         balance: account?.balance ? account.balance.toString() : "",
       });
+      setCurrency(account?.currency || "INR");
       setColor(account?.color || "#3b82f6");
       setIcon(account?.icon || "landmark");
     }

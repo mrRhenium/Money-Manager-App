@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/helpers";
@@ -68,8 +69,12 @@ export default async function DashboardPage() {
   const totalLoansTaken = activeLoans.filter((l: any) => l.type === "taken").reduce((sum: number, l: any) => sum + l.outstandingBalance, 0);
   const totalLoansGiven = activeLoans.filter((l: any) => l.type === "given").reduce((sum: number, l: any) => sum + l.outstandingBalance, 0);
 
+  const rates = await fetchExchangeRates();
+
   const totalBalance = accounts.reduce((acc: number, curr: any) => {
-    return curr.isLiability ? acc - curr.balance : acc + curr.balance;
+    const rate = getConversionRate(curr.currency || "INR", rates);
+    const baseBalance = curr.balance / rate;
+    return curr.isLiability ? acc - baseBalance : acc + baseBalance;
   }, 0) - totalLoansTaken + totalLoansGiven;
 
   // Calculate current month's income and expenses

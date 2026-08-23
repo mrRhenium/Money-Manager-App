@@ -4,9 +4,11 @@ export interface IRecurringBill extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
   amount: number;
-  frequency: "weekly" | "monthly" | "yearly";
+  frequency: "weekly" | "bi-weekly" | "monthly" | "quarterly" | "yearly";
   nextDueDate: Date;
   autoPayPlatform?: string;
+  isAutoPay: boolean;
+  isFixedAmount: boolean;
   categoryId?: mongoose.Types.ObjectId;
   accountId?: mongoose.Types.ObjectId;
   isActive: boolean;
@@ -21,9 +23,11 @@ const RecurringBillSchema: Schema<IRecurringBill> = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true },
     amount: { type: Number, required: true },
-    frequency: { type: String, enum: ["weekly", "monthly", "yearly"], required: true },
+    frequency: { type: String, enum: ["weekly", "bi-weekly", "monthly", "quarterly", "yearly"], required: true },
     nextDueDate: { type: Date, required: true },
     autoPayPlatform: { type: String },
+    isAutoPay: { type: Boolean, default: false },
+    isFixedAmount: { type: Boolean, default: true },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     isActive: { type: Boolean, default: true },

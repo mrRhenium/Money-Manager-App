@@ -9,6 +9,7 @@ import { deleteAccount } from "@/actions/account";
 import { Trash, Search, Filter, Landmark, Wallet, Banknote, CreditCard } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { formatCurrency } from "@/lib/currencyFormatter";
 
 const getAccountIcon = (type: string) => {
   switch (type.toLowerCase()) {
@@ -155,7 +156,9 @@ export function AccountList({ accounts }: { accounts: any[] }) {
                 </div>
 
                 <div className="z-10 mt-auto pt-4">
-                  <div className="text-3xl font-bold truncate tracking-tight">{format(account.balance)}</div>
+                  <div className="text-3xl font-bold truncate tracking-tight">
+                    {formatCurrency(account.balance, account.currency || "INR")}
+                  </div>
                 </div>
 
                 {/* Decorative background circle */}

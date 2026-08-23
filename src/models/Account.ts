@@ -9,6 +9,7 @@ export interface IAccount extends Document {
   color?: string;
   icon?: string;
   isLiability: boolean;
+  currency: string;
   createdAt: Date;
 }
 
@@ -26,6 +27,7 @@ const AccountSchema: Schema<IAccount> = new Schema(
     color: { type: String },
     icon: { type: String },
     isLiability: { type: Boolean, default: false },
+    currency: { type: String, default: "INR" },
   },
   { timestamps: true }
 );

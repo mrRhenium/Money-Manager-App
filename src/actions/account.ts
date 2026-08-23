@@ -19,7 +19,7 @@ export async function getAccounts() {
   return JSON.parse(JSON.stringify(accounts));
 }
 
-export async function createAccount(data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; creditLimit?: number; color?: string; icon?: string; isLiability?: boolean }) {
+export async function createAccount(data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; creditLimit?: number; color?: string; icon?: string; isLiability?: boolean; currency?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -29,6 +29,7 @@ export async function createAccount(data: { name: string; type: "bank" | "cash" 
     ...data,
     balance: data.balance || 0,
     isLiability: data.isLiability || false,
+    currency: data.currency || "INR",
     userId: session.user.id,
   });
 
@@ -95,7 +96,7 @@ export async function deleteAccount(id: string) {
   }
 }
 
-export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; color?: string; icon?: string; isLiability?: boolean }) {
+export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; color?: string; icon?: string; isLiability?: boolean; currency?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -105,7 +106,7 @@ export async function updateAccount(id: string, data: { name: string; type: "ban
 
   const account = await Account.findOneAndUpdate(
     { _id: id, userId: session.user.id },
-    { $set: { name: data.name, type: data.type, balance: data.balance || 0, color: data.color, icon: data.icon, isLiability: data.isLiability || false } },
+    { $set: { name: data.name, type: data.type, balance: data.balance || 0, color: data.color, icon: data.icon, isLiability: data.isLiability || false, currency: data.currency || "INR" } },
     { returnDocument: 'after' }
   );
 

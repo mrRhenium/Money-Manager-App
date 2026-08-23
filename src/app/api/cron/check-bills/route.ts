@@ -64,7 +64,38 @@ export async function GET(request: Request) {
 
     // 1. Process Bills
     for (const bill of bills) {
-      await sendDueNotification(bill.userId.toString(), bill.name, bill.amount, parseToDate(bill.nextDueDate), "subscription");
+      const dueDate = parseToDate(bill.nextDueDate);
+      const isDueToday = dueDate.getTime() <= today.getTime();
+
+      if (bill.isAutoPay && isDueToday) {
+        // Execute Auto-Pay
+        const { markSubscriptionPaid } = await import("@/actions/recurringBill");
+        const res = await markSubscriptionPaid(bill._id.toString());
+        
+        const user = await User.findById(bill.userId).select("currency");
+        const userCurrency = user?.currency || "INR";
+        const rate = getConversionRate(userCurrency, rates);
+        const formattedAmount = formatCurrency(bill.amount * rate, userCurrency);
+
+        if (res.success) {
+          await sendPushNotification(
+            bill.userId.toString(), 
+            "Auto-Pay Successful", 
+            `Successfully paid ${formattedAmount} for ${bill.name}.`
+          );
+          notificationsSent++;
+        } else {
+          await sendPushNotification(
+            bill.userId.toString(), 
+            "Auto-Pay Failed", 
+            `Failed to auto-pay ${bill.name} (${formattedAmount}). Reason: ${res.error}`
+          );
+          notificationsSent++;
+        }
+      } else {
+        // Send normal upcoming reminder
+        await sendDueNotification(bill.userId.toString(), bill.name, bill.amount, dueDate, "subscription");
+      }
     }
 
     // 2. Process Insurance Policies

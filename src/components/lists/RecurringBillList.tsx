@@ -13,6 +13,10 @@ import { markSubscriptionPaid } from "@/actions/recurringBill";
 import { useToast } from "@/hooks/useToast";
 import { Tabs, Select as AntSelect } from "antd";
 import { formatDateString, parseToDate, getStartOfDay } from "@/lib/dateTimeHelper";
+import { SubscriptionHistoryModal } from "@/components/forms/SubscriptionHistoryModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 
 interface RecurringBillListProps {
   bills: any[];
@@ -53,10 +57,19 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
     });
   }, [activeBills, pausedBills, activeTab, searchTerm, sortBy]);
 
-  const handleMarkPaid = async (id: string) => {
-    setPayingId(id);
+  const [variablePayBill, setVariablePayBill] = useState<any>(null);
+  const [variableAmount, setVariableAmount] = useState("");
+
+  const handleMarkPaid = async (bill: any) => {
+    if (bill.isFixedAmount === false) {
+      setVariablePayBill(bill);
+      setVariableAmount(formatIndianNumber(bill.amount));
+      return;
+    }
+
+    setPayingId(bill._id);
     try {
-      const res = await markSubscriptionPaid(id);
+      const res = await markSubscriptionPaid(bill._id);
       if (res && !res.success) {
         toast.error(res.error || "Failed to mark paid");
       } else {
@@ -69,8 +82,56 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
     }
   };
 
+  const confirmVariablePay = async () => {
+    if (!variablePayBill) return;
+    const amount = parseIndianNumber(variableAmount);
+    if (isNaN(amount) || amount <= 0) return toast.error("Invalid amount");
+    
+    setPayingId(variablePayBill._id);
+    try {
+      const res = await markSubscriptionPaid(variablePayBill._id, amount);
+      if (res && !res.success) {
+        toast.error(res.error || "Failed to mark paid");
+      } else {
+        toast.success("Payment recorded and due date advanced!");
+        setVariablePayBill(null);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to mark paid");
+    } finally {
+      setPayingId(null);
+    }
+  };
+
   return (
     <div className="w-full space-y-4">
+      {/* Variable Pay Dialog */}
+      <Dialog open={!!variablePayBill} onOpenChange={(open) => !open && setVariablePayBill(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enter Actual Paid Amount</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              {variablePayBill?.name} is a variable bill. What was the exact amount you paid for this cycle?
+            </p>
+            <CurrencyInput
+              currency="INR"
+              placeholder="0"
+              value={variableAmount}
+              onChange={(e) => setVariableAmount(formatIndianNumber(e.target.value))}
+              onCurrencyChange={() => {}}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVariablePayBill(null)}>Cancel</Button>
+            <Button onClick={confirmVariablePay} disabled={payingId === variablePayBill?._id}>
+              {payingId === variablePayBill?._id ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
+              Confirm Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-card p-3 rounded-xl border shadow-sm items-center">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -153,6 +214,7 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
                     </div>
                   </div>
                   <div className="flex items-center gap-1 transition-opacity shrink-0">
+                    <SubscriptionHistoryModal bill={bill} />
                     <RecurringBillForm accounts={accounts} categories={categories} bill={bill} />
                     <RecurringBillDeleteModal bill={bill} />
                   </div>
@@ -190,7 +252,7 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
                         className="h-8 text-xs font-semibold rounded-full hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-colors disabled:opacity-50" 
                         disabled={payingId === bill._id || (!isOverdue && !isToday)}
                         title={(!isOverdue && !isToday) ? "Cannot mark paid before due date" : "Mark as paid"}
-                        onClick={() => handleMarkPaid(bill._id)}
+                        onClick={() => handleMarkPaid(bill)}
                       >
                         {payingId === bill._id ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />} 
                         Mark Paid

@@ -36,6 +36,19 @@ export async function getTransactions(limit = 50) {
   return JSON.parse(JSON.stringify(transactions));
 }
 
+export async function getTransactionsForSubscription(recurringBillId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+  
+  const transactions = await Transaction.find({ userId: session.user.id, recurringBillId })
+    .sort({ date: -1, createdAt: -1 })
+    .lean();
+    
+  return JSON.parse(JSON.stringify(transactions));
+}
+
 export async function createTransaction(data: { 
   type: TransactionType; 
   amount: number; 
@@ -60,7 +73,15 @@ export async function createTransaction(data: {
   await dbConnect();
   
   const originalAmount = Number(data.amount);
-  const currency = data.originalCurrency || "INR";
+  let currency = data.originalCurrency;
+  let account;
+  if (data.accountId) {
+    account = await Account.findById(data.accountId);
+    if (account && account.currency && !currency) {
+      currency = account.currency;
+    }
+  }
+  currency = currency || "INR";
   
   let finalAmount = originalAmount;
   let exchangeRate = 1;
@@ -122,6 +143,7 @@ export async function createTransaction(data: {
   // Update Account Balance ONLY if status is completed
   if (status === "completed") {
     if (data.paymentMode === "credit_card" && data.creditCardId) {
+      // Credit card balances are kept in Base Currency for simplicity currently.
       const card = await CreditCard.findOne({ _id: data.creditCardId, userId: session.user.id });
       if (card) {
         card.currentOutstanding += finalAmount;
@@ -154,27 +176,37 @@ export async function createTransaction(data: {
         await statement.save();
       }
     } else if (data.type === "transfer" && data.toAccountId && data.accountId) {
-      await Account.findOneAndUpdate(
-        { _id: data.accountId, userId: session.user.id },
-        { $inc: { balance: -finalAmount } }
-      );
-      await Account.findOneAndUpdate(
-        { _id: data.toAccountId, userId: session.user.id },
-        { $inc: { balance: finalAmount } }
-      );
-    } else if (data.accountId) {
-      let balanceChange = 0;
-      if (data.type === "expense" || data.type === "lend") {
-        balanceChange = -finalAmount;
-      } else if (data.type === "income" || data.type === "borrow" || data.type === "settlement") {
-        balanceChange = finalAmount;
+      // Source account
+      const sourceAcc = await Account.findOne({ _id: data.accountId, userId: session.user.id });
+      if (sourceAcc) {
+        // source deducts originalAmount if its currency matches transaction's originalCurrency, else convert from base
+        const deductAmt = sourceAcc.currency === currency ? originalAmount : getConversionRate(sourceAcc.currency, await fetchExchangeRates()) * finalAmount;
+        sourceAcc.balance -= deductAmt;
+        await sourceAcc.save();
       }
 
-      if (balanceChange !== 0) {
-        await Account.findOneAndUpdate(
-          { _id: data.accountId, userId: session.user.id },
-          { $inc: { balance: balanceChange } }
-        );
+      // Dest account
+      const destAcc = await Account.findOne({ _id: data.toAccountId, userId: session.user.id });
+      if (destAcc) {
+        const addAmt = destAcc.currency === "INR" ? finalAmount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * finalAmount;
+        destAcc.balance += addAmt;
+        await destAcc.save();
+      }
+    } else if (data.accountId) {
+      const acc = await Account.findOne({ _id: data.accountId, userId: session.user.id });
+      if (acc) {
+        const accAmt = acc.currency === currency ? originalAmount : getConversionRate(acc.currency, await fetchExchangeRates()) * finalAmount;
+        let balanceChange = 0;
+        if (data.type === "expense" || data.type === "lend") {
+          balanceChange = -accAmt;
+        } else if (data.type === "income" || data.type === "borrow" || data.type === "settlement") {
+          balanceChange = accAmt;
+        }
+
+        if (balanceChange !== 0) {
+          acc.balance += balanceChange;
+          await acc.save();
+        }
       }
     }
   }
@@ -238,27 +270,33 @@ export async function deleteTransaction(id: string) {
         }
       }
     } else if (transaction.type === "transfer" && transaction.toAccountId && transaction.accountId) {
-      await Account.findOneAndUpdate(
-        { _id: transaction.accountId, userId: session.user.id },
-        { $inc: { balance: transaction.amount } } // revert source
-      );
-      await Account.findOneAndUpdate(
-        { _id: transaction.toAccountId, userId: session.user.id },
-        { $inc: { balance: -transaction.amount } } // revert destination
-      );
-    } else if (transaction.accountId) {
-      let balanceChange = 0;
-      if (transaction.type === "expense" || transaction.type === "lend") {
-        balanceChange = transaction.amount; // Add back
-      } else if (transaction.type === "income" || transaction.type === "borrow" || transaction.type === "settlement") {
-        balanceChange = -transaction.amount; // Remove
+      const sourceAcc = await Account.findOne({ _id: transaction.accountId, userId: session.user.id });
+      if (sourceAcc) {
+        const amt = sourceAcc.currency === transaction.originalCurrency ? (transaction.originalAmount || transaction.amount) : getConversionRate(sourceAcc.currency, await fetchExchangeRates()) * transaction.amount;
+        sourceAcc.balance += amt; // revert source
+        await sourceAcc.save();
       }
+      const destAcc = await Account.findOne({ _id: transaction.toAccountId, userId: session.user.id });
+      if (destAcc) {
+        const amt = destAcc.currency === "INR" ? transaction.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * transaction.amount;
+        destAcc.balance -= amt; // revert destination
+        await destAcc.save();
+      }
+    } else if (transaction.accountId) {
+      const acc = await Account.findOne({ _id: transaction.accountId, userId: session.user.id });
+      if (acc) {
+        const accAmt = acc.currency === transaction.originalCurrency ? (transaction.originalAmount || transaction.amount) : getConversionRate(acc.currency, await fetchExchangeRates()) * transaction.amount;
+        let balanceChange = 0;
+        if (transaction.type === "expense" || transaction.type === "lend") {
+          balanceChange = accAmt; // Add back
+        } else if (transaction.type === "income" || transaction.type === "borrow" || transaction.type === "settlement") {
+          balanceChange = -accAmt; // Remove
+        }
 
-      if (balanceChange !== 0) {
-        await Account.findOneAndUpdate(
-          { _id: transaction.accountId, userId: session.user.id },
-          { $inc: { balance: balanceChange } }
-        );
+        if (balanceChange !== 0) {
+          acc.balance += balanceChange;
+          await acc.save();
+        }
       }
     }
   }
@@ -322,27 +360,33 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
         await statement.save();
       }
     } else if (transaction.type === "transfer" && transaction.toAccountId && transaction.accountId) {
-      await Account.findOneAndUpdate(
-        { _id: transaction.accountId, userId: session.user.id },
-        { $inc: { balance: -transaction.amount } }
-      );
-      await Account.findOneAndUpdate(
-        { _id: transaction.toAccountId, userId: session.user.id },
-        { $inc: { balance: transaction.amount } }
-      );
-    } else if (transaction.accountId) {
-      let balanceChange = 0;
-      if (transaction.type === "expense" || transaction.type === "lend") {
-        balanceChange = -transaction.amount;
-      } else if (transaction.type === "income" || transaction.type === "borrow" || transaction.type === "settlement") {
-        balanceChange = transaction.amount;
+      const sourceAcc = await Account.findOne({ _id: transaction.accountId, userId: session.user.id });
+      if (sourceAcc) {
+        const amt = sourceAcc.currency === transaction.originalCurrency ? (transaction.originalAmount || transaction.amount) : getConversionRate(sourceAcc.currency, await fetchExchangeRates()) * transaction.amount;
+        sourceAcc.balance -= amt;
+        await sourceAcc.save();
       }
+      const destAcc = await Account.findOne({ _id: transaction.toAccountId, userId: session.user.id });
+      if (destAcc) {
+        const amt = destAcc.currency === "INR" ? transaction.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * transaction.amount;
+        destAcc.balance += amt;
+        await destAcc.save();
+      }
+    } else if (transaction.accountId) {
+      const acc = await Account.findOne({ _id: transaction.accountId, userId: session.user.id });
+      if (acc) {
+        const accAmt = acc.currency === transaction.originalCurrency ? (transaction.originalAmount || transaction.amount) : getConversionRate(acc.currency, await fetchExchangeRates()) * transaction.amount;
+        let balanceChange = 0;
+        if (transaction.type === "expense" || transaction.type === "lend") {
+          balanceChange = -accAmt;
+        } else if (transaction.type === "income" || transaction.type === "borrow" || transaction.type === "settlement") {
+          balanceChange = accAmt;
+        }
 
-      if (balanceChange !== 0) {
-        await Account.findOneAndUpdate(
-          { _id: transaction.accountId, userId: session.user.id },
-          { $inc: { balance: balanceChange } }
-        );
+        if (balanceChange !== 0) {
+          acc.balance += balanceChange;
+          await acc.save();
+        }
       }
     }
   }
@@ -405,27 +449,33 @@ export async function updateTransaction(
       }
     } else if (oldTxn.type === "transfer" && oldTxn.toAccountId && oldTxn.accountId) {
       // Revert source and destination
-      await Account.findOneAndUpdate(
-        { _id: oldTxn.accountId, userId: session.user.id },
-        { $inc: { balance: oldTxn.amount } }
-      );
-      await Account.findOneAndUpdate(
-        { _id: oldTxn.toAccountId, userId: session.user.id },
-        { $inc: { balance: -oldTxn.amount } }
-      );
-    } else if (oldTxn.accountId) {
-      let balanceChange = 0;
-      if (oldTxn.type === "expense" || oldTxn.type === "lend") {
-        balanceChange = oldTxn.amount; // Revert: add back
-      } else if (oldTxn.type === "income" || oldTxn.type === "borrow" || oldTxn.type === "settlement") {
-        balanceChange = -oldTxn.amount; // Revert: subtract
+      const sourceAcc = await Account.findOne({ _id: oldTxn.accountId, userId: session.user.id });
+      if (sourceAcc) {
+        const amt = sourceAcc.currency === oldTxn.originalCurrency ? (oldTxn.originalAmount || oldTxn.amount) : getConversionRate(sourceAcc.currency, await fetchExchangeRates()) * oldTxn.amount;
+        sourceAcc.balance += amt;
+        await sourceAcc.save();
       }
+      const destAcc = await Account.findOne({ _id: oldTxn.toAccountId, userId: session.user.id });
+      if (destAcc) {
+        const amt = destAcc.currency === "INR" ? oldTxn.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * oldTxn.amount;
+        destAcc.balance -= amt;
+        await destAcc.save();
+      }
+    } else if (oldTxn.accountId) {
+      const acc = await Account.findOne({ _id: oldTxn.accountId, userId: session.user.id });
+      if (acc) {
+        const accAmt = acc.currency === oldTxn.originalCurrency ? (oldTxn.originalAmount || oldTxn.amount) : getConversionRate(acc.currency, await fetchExchangeRates()) * oldTxn.amount;
+        let balanceChange = 0;
+        if (oldTxn.type === "expense" || oldTxn.type === "lend") {
+          balanceChange = accAmt; // Revert: add back
+        } else if (oldTxn.type === "income" || oldTxn.type === "borrow" || oldTxn.type === "settlement") {
+          balanceChange = -accAmt; // Revert: subtract
+        }
 
-      if (balanceChange !== 0) {
-        await Account.findOneAndUpdate(
-          { _id: oldTxn.accountId, userId: session.user.id },
-          { $inc: { balance: balanceChange } }
-        );
+        if (balanceChange !== 0) {
+          acc.balance += balanceChange;
+          await acc.save();
+        }
       }
     }
   }
@@ -508,27 +558,33 @@ export async function updateTransaction(
         await statement.save();
       }
     } else if (oldTxn.type === "transfer" && oldTxn.toAccountId && oldTxn.accountId) {
-      await Account.findOneAndUpdate(
-        { _id: oldTxn.accountId, userId: session.user.id },
-        { $inc: { balance: -oldTxn.amount } }
-      );
-      await Account.findOneAndUpdate(
-        { _id: oldTxn.toAccountId, userId: session.user.id },
-        { $inc: { balance: oldTxn.amount } }
-      );
-    } else if (oldTxn.accountId) {
-      let balanceChange = 0;
-      if (oldTxn.type === "expense" || oldTxn.type === "lend") {
-        balanceChange = -oldTxn.amount;
-      } else if (oldTxn.type === "income" || oldTxn.type === "borrow" || oldTxn.type === "settlement") {
-        balanceChange = oldTxn.amount;
+      const sourceAcc = await Account.findOne({ _id: oldTxn.accountId, userId: session.user.id });
+      if (sourceAcc) {
+        const amt = sourceAcc.currency === oldTxn.originalCurrency ? (oldTxn.originalAmount || oldTxn.amount) : getConversionRate(sourceAcc.currency, await fetchExchangeRates()) * oldTxn.amount;
+        sourceAcc.balance -= amt;
+        await sourceAcc.save();
       }
+      const destAcc = await Account.findOne({ _id: oldTxn.toAccountId, userId: session.user.id });
+      if (destAcc) {
+        const amt = destAcc.currency === "INR" ? oldTxn.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * oldTxn.amount;
+        destAcc.balance += amt;
+        await destAcc.save();
+      }
+    } else if (oldTxn.accountId) {
+      const acc = await Account.findOne({ _id: oldTxn.accountId, userId: session.user.id });
+      if (acc) {
+        const accAmt = acc.currency === oldTxn.originalCurrency ? (oldTxn.originalAmount || oldTxn.amount) : getConversionRate(acc.currency, await fetchExchangeRates()) * oldTxn.amount;
+        let balanceChange = 0;
+        if (oldTxn.type === "expense" || oldTxn.type === "lend") {
+          balanceChange = -accAmt;
+        } else if (oldTxn.type === "income" || oldTxn.type === "borrow" || oldTxn.type === "settlement") {
+          balanceChange = accAmt;
+        }
 
-      if (balanceChange !== 0) {
-        await Account.findOneAndUpdate(
-          { _id: oldTxn.accountId, userId: session.user.id },
-          { $inc: { balance: balanceChange } }
-        );
+        if (balanceChange !== 0) {
+          acc.balance += balanceChange;
+          await acc.save();
+        }
       }
     }
   }

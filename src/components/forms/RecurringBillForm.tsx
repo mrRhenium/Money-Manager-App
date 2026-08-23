@@ -22,12 +22,14 @@ const formSchema = z.object({
     const num = parseIndianNumber(val);
     return !isNaN(num) && num > 0;
   }, "Amount must be a positive number"),
-  frequency: z.enum(["weekly", "monthly", "yearly"]),
+  frequency: z.enum(["weekly", "bi-weekly", "monthly", "quarterly", "yearly"]),
   nextDueDate: z.string().min(1, "Due date is required"),
   autoPayPlatform: z.string().optional(),
   categoryId: z.string().optional(),
   accountId: z.string().optional(),
   isActive: z.boolean().default(true),
+  isAutoPay: z.boolean().default(false),
+  isFixedAmount: z.boolean().default(true),
 });
 
 interface RecurringBillFormProps {
@@ -55,6 +57,8 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
       categoryId: bill?.categoryId?._id || bill?.categoryId || "",
       accountId: bill?.accountId?._id || bill?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
       isActive: bill?.isActive !== undefined ? bill?.isActive : true,
+      isAutoPay: bill?.isAutoPay !== undefined ? bill?.isAutoPay : false,
+      isFixedAmount: bill?.isFixedAmount !== undefined ? bill?.isFixedAmount : true,
     },
   });
 
@@ -247,6 +251,57 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
+                name="isFixedAmount"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm h-[72px]">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base font-semibold flex items-center gap-2">Fixed Amount</FormLabel>
+                      <p className="text-[10px] text-muted-foreground leading-tight">
+                        Turn off if this is a variable bill (like electricity)
+                      </p>
+                    </div>
+                    <FormControl>
+                      <input 
+                        type="checkbox" 
+                        className="w-5 h-5 accent-primary cursor-pointer"
+                        checked={field.value}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (!e.target.checked) form.setValue("isAutoPay", false);
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isAutoPay"
+                render={({ field }) => (
+                  <FormItem className={`flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm h-[72px] ${!form.watch("isFixedAmount") ? "opacity-50 pointer-events-none bg-muted/50" : ""}`}>
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base font-semibold flex items-center gap-2">Auto-Pay</FormLabel>
+                      <p className="text-[10px] text-muted-foreground leading-tight">
+                        Automatically deduct on due date
+                      </p>
+                    </div>
+                    <FormControl>
+                      <input 
+                        type="checkbox" 
+                        className="w-5 h-5 accent-primary cursor-pointer"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        disabled={!form.watch("isFixedAmount")}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
                 name="autoPayPlatform"
                 render={({ field }) => (
                   <FormItem>
@@ -266,7 +321,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                     <div className="space-y-0.5">
                       <FormLabel className="text-base font-semibold">Active Subscription</FormLabel>
                       <p className="text-xs text-muted-foreground">
-                        Turn off to pause or stop tracking this subscription
+                        Turn off to pause or stop tracking
                       </p>
                     </div>
                     <FormControl>

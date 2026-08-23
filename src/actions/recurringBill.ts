@@ -38,6 +38,8 @@ export async function createRecurringBill(data: {
   categoryId?: string;
   accountId?: string;
   isActive?: boolean;
+  isAutoPay?: boolean;
+  isFixedAmount?: boolean;
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -49,6 +51,8 @@ export async function createRecurringBill(data: {
     userId: session.user.id,
     nextDueDate: parseToDate(data.nextDueDate),
     isActive: data.isActive !== undefined ? data.isActive : true,
+    isAutoPay: data.isAutoPay !== undefined ? data.isAutoPay : false,
+    isFixedAmount: data.isFixedAmount !== undefined ? data.isFixedAmount : true,
   });
 
   await logAuditEvent("RecurringBill", bill._id.toString(), "CREATE", undefined, bill);
@@ -112,7 +116,7 @@ export async function deleteRecurringBill(id: string, reason?: string, notes?: s
   }
 }
 
-export async function markSubscriptionPaid(id: string) {
+export async function markSubscriptionPaid(id: string, amountOverride?: number) {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
@@ -132,7 +136,9 @@ export async function markSubscriptionPaid(id: string) {
   const account = await Account.findOne({ _id: bill.accountId, userId: session.user.id });
   if (!account) return { success: false, error: "Linked bank account not found." };
 
-  if (account.balance < bill.amount) {
+  const finalAmount = amountOverride !== undefined ? amountOverride : bill.amount;
+
+  if (account.balance < finalAmount) {
     return { success: false, error: "Insufficient balance in the linked account." };
   }
 
@@ -140,7 +146,7 @@ export async function markSubscriptionPaid(id: string) {
   const tx = await Transaction.create({
     userId: session.user.id,
     type: "expense",
-    amount: bill.amount,
+    amount: finalAmount,
     date: getCurrentDate(),
     accountId: bill.accountId,
     categoryId: bill.categoryId,
@@ -151,7 +157,7 @@ export async function markSubscriptionPaid(id: string) {
   });
 
   // Deduct from account
-  account.balance -= bill.amount;
+  account.balance -= finalAmount;
   await account.save();
 
   // Advance due date
@@ -160,6 +166,10 @@ export async function markSubscriptionPaid(id: string) {
     nextDate.setMonth(nextDate.getMonth() + 1);
   } else if (bill.frequency === "weekly") {
     nextDate.setDate(nextDate.getDate() + 7);
+  } else if (bill.frequency === "bi-weekly") {
+    nextDate.setDate(nextDate.getDate() + 14);
+  } else if (bill.frequency === "quarterly") {
+    nextDate.setMonth(nextDate.getMonth() + 3);
   } else if (bill.frequency === "yearly") {
     nextDate.setFullYear(nextDate.getFullYear() + 1);
   }
@@ -167,7 +177,7 @@ export async function markSubscriptionPaid(id: string) {
   bill.nextDueDate = nextDate;
   await bill.save();
 
-  await logAuditEvent("RecurringBill", id, "PAYMENT", null, { transactionId: tx._id, amount: bill.amount });
+  await logAuditEvent("RecurringBill", id, "PAYMENT", null, { transactionId: tx._id, amount: finalAmount });
 
   revalidatePath("/subscriptions");
   return { success: true };

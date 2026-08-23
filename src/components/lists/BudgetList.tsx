@@ -34,7 +34,7 @@ export function BudgetList({ budgets, categories, selectedMonth }: { budgets: an
   return (
     <div className="w-full space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center">
-        <div className="relative flex-1 w-full max-w-sm">
+        <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
             placeholder="Search by category name..." 
@@ -43,7 +43,7 @@ export function BudgetList({ budgets, categories, selectedMonth }: { budgets: an
             className="pl-9 h-10 w-full bg-background"
           />
         </div>
-        <div className="relative flex-1 w-full max-w-xs sm:ml-auto">
+        <div className="relative flex-1 w-full">
           <Input 
             type="month" 
             value={selectedMonth}

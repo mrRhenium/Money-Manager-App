@@ -56,7 +56,7 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
                 okText="Yes"
                 cancelText="No"
               >
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-full transition-colors">
                   <Trash className="w-4 h-4" />
                 </Button>
               </Popconfirm>

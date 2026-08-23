@@ -3,24 +3,55 @@
 import { List, Popconfirm, Modal } from "antd";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, Trash } from "lucide-react";
+import { AlertCircle, Trash, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState, useMemo } from "react";
 import { CreditCardForm } from "../forms/CreditCardForm";
 import { deleteCreditCard } from "@/actions/creditCard";
 import { useCurrency } from "@/hooks/useCurrency";
 
 export function CreditCardList({ cards }: { cards: any[] }) {
   const { format } = useCurrency();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCards = useMemo(() => {
+    return cards.filter(card => 
+      card.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      card.last4Digits.includes(searchQuery)
+    );
+  }, [cards, searchQuery]);
+
   if (cards.length === 0) {
     return null; // The parent page handles empty state beautifully
   }
 
   return (
-    <div className="w-full">
-      <List
-        grid={{ gutter: 24, xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 3 }}
-        dataSource={cards}
-        pagination={{ pageSize: 9, position: "bottom", align: "end" }}
+    <div className="w-full space-y-4">
+      <div className="flex bg-card p-3 rounded-xl border shadow-sm">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search credit cards by bank, name, or last 4 digits..."
+            className="pl-9 bg-background"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {filteredCards.length === 0 && (
+        <div className="p-8 text-center border rounded-xl border-dashed">
+          <p className="text-muted-foreground">No credit cards match your search.</p>
+        </div>
+      )}
+
+      {filteredCards.length > 0 && (
+        <List
+          grid={{ gutter: 24, xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 3 }}
+          dataSource={filteredCards}
+          pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(card: any, index: number) => {
           const utilization = (card.currentOutstanding / card.creditLimit) * 100;
           const isHighUtilization = utilization > 70;
@@ -81,7 +112,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                         okText="Yes"
                         cancelText="No"
                       >
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-500/20 rounded-full transition-colors">
                           <Trash className="w-4 h-4" />
                         </Button>
                       </Popconfirm>
@@ -119,6 +150,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
           );
         }}
       />
+      )}
     </div>
   );
 }

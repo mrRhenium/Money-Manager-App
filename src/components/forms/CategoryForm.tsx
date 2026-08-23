@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCategory, updateCategory } from "@/actions/category";
 import { Plus, FolderPlus, Type, List, Palette, PenLine, Sparkles } from "lucide-react";
-import { IconPicker } from "@/components/ui/IconColorPicker";
+import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -109,16 +109,7 @@ export function CategoryForm({ category }: { category?: any }) {
               control={form.control}
               name="color"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Palette className="w-4 h-4 text-muted-foreground" /> Color (Hex)</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-2">
-                      <Input type="color" id={`categoryColorInput-${category?._id || 'new'}`} className="w-12 h-10 p-1" {...field} />
-                      <Input placeholder="#RRGGBB" {...field} onClick={() => document.getElementById(`categoryColorInput-${category?._id || 'new'}`)?.click()} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <ColorPicker value={field.value} onChange={field.onChange} id={`categoryColorInput-${category?._id || 'new'}`} />
               )}
             />
             <FormField

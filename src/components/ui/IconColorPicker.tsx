@@ -86,7 +86,18 @@ export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
         <Palette className="w-4 h-4 text-muted-foreground" /> Color
       </label>
       <div className="flex gap-2 items-center">
-        <Input type="color" id={inputId} className="w-10 h-10 p-1 shrink-0 cursor-pointer" value={value} onChange={(e) => onChange(e.target.value)} />
+        <Input 
+          type="color" 
+          id={inputId} 
+          className="w-10 h-10 p-1 shrink-0 cursor-pointer" 
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          onClick={(e) => {
+            try {
+              (e.target as HTMLInputElement).showPicker?.();
+            } catch (err) {}
+          }}
+        />
         <div className="flex gap-1.5 flex-wrap">
           {DEFAULT_COLORS.map((c) => (
             <button

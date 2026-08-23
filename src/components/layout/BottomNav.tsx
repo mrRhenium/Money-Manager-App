@@ -12,7 +12,7 @@ export function BottomNav() {
   const [scanOpen, setScanOpen] = useState(false);
 
   const navItems = [
-    { label: "Home", href: "/", icon: Home },
+    { label: "Dashboard", href: "/", icon: Home },
     { label: "Transactions", href: "/transactions", icon: Wallet },
     { label: "Add", href: "#", icon: QrCode, isMain: true },
     { label: "Budgets", href: "/budgets", icon: PieChart },
@@ -38,15 +38,14 @@ export function BottomNav() {
       <ul className="h-full flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
-          
+
           const NavItemContent = (
             <div className={`flex flex-col items-center justify-center w-full h-full space-y-1 group ${item.isMain ? "-mt-6" : ""}`}>
               <div
-                className={`flex items-center justify-center transition-all ${
-                  item.isMain
-                    ? "w-14 h-14 bg-gradient-to-tr from-primary to-primary/80 text-primary-foreground rounded-full shadow-lg shadow-primary/30 group-hover:scale-105"
-                    : isActive ? "text-primary scale-110" : "text-muted-foreground group-hover:text-primary"
-                }`}
+                className={`flex items-center justify-center transition-all ${item.isMain
+                  ? "w-14 h-14 bg-gradient-to-tr from-primary to-primary/80 text-primary-foreground rounded-full shadow-lg shadow-primary/30 group-hover:scale-105"
+                  : isActive ? "text-primary scale-110" : "text-muted-foreground group-hover:text-primary"
+                  }`}
               >
                 <item.icon className={`${item.isMain ? "w-6 h-6" : "w-5 h-5 group-hover:-translate-y-0.5 transition-transform"}`} />
               </div>

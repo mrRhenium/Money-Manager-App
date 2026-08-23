@@ -7,6 +7,7 @@ import { Select } from "antd";
 import { AccountForm } from "../forms/AccountForm";
 import { deleteAccount } from "@/actions/account";
 import { Trash, Search, Filter, Landmark, Wallet, Banknote, CreditCard } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 const getAccountIcon = (type: string) => {
   switch (type.toLowerCase()) {
@@ -14,6 +15,8 @@ const getAccountIcon = (type: string) => {
     case 'cash': return <Banknote className="w-5 h-5" />;
     case 'card': return <CreditCard className="w-5 h-5" />;
     case 'wallet': return <Wallet className="w-5 h-5" />;
+    case 'investment': return <Landmark className="w-5 h-5" />;
+    case 'saving': return <Landmark className="w-5 h-5" />;
     default: return <Wallet className="w-5 h-5" />;
   }
 };
@@ -24,6 +27,8 @@ const getAccountColor = (type: string) => {
     case 'cash': return '#10b981'; // emerald
     case 'card': return '#f59e0b'; // amber
     case 'wallet': return '#8b5cf6'; // violet
+    case 'investment': return '#0ea5e9'; // sky
+    case 'saving': return '#14b8a6'; // teal
     default: return '#6b7280'; // gray
   }
 };
@@ -71,13 +76,13 @@ export function AccountList({ accounts }: { accounts: any[] }) {
             onChange={setTypeFilter}
             options={[
               { label: "All Types", value: "All" },
-              { label: "Bank Account", value: "Bank" },
-              { label: "Cash", value: "Cash" },
-              { label: "Saving Account", value: "Saving Account" },
-              { label: "Credit Card", value: "Credit Card" },
-              { label: "Wallet", value: "Wallet" },
-              { label: "Investment", value: "Investment" },
-              { label: "Other", value: "Other" },
+              { label: "Bank Account", value: "bank" },
+              { label: "Cash", value: "cash" },
+              { label: "Saving Account", value: "saving" },
+              { label: "Credit Card", value: "card" },
+              { label: "Wallet", value: "wallet" },
+              { label: "Investment", value: "investment" },
+              { label: "Other", value: "other" },
             ]}
           />
         </div>
@@ -101,9 +106,9 @@ export function AccountList({ accounts }: { accounts: any[] }) {
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
-                      style={{ backgroundColor: getAccountColor(account.type) }}
+                      style={{ backgroundColor: account.color || getAccountColor(account.type) }}
                     >
-                      {getAccountIcon(account.type)}
+                      {account.icon ? <CategoryIcon name={account.icon} className="w-5 h-5 text-white" /> : getAccountIcon(account.type)}
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-bold text-lg leading-tight line-clamp-1 capitalize" title={account.name}>{account.name}</h3>

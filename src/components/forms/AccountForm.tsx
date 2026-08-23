@@ -13,10 +13,11 @@ import { createAccount, updateAccount } from "@/actions/account";
 import { Plus, Landmark, PenLine, List, Banknote } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  type: z.enum(["bank", "cash", "card", "wallet"]),
+  type: z.enum(["bank", "cash", "card", "wallet", "investment", "saving", "other"]),
   balance: z.string().refine(val => {
     const num = parseIndianNumber(val);
     return !isNaN(num);
@@ -26,6 +27,8 @@ const formSchema = z.object({
 export function AccountForm({ account }: { account?: any }) {
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState("INR");
+  const [color, setColor] = useState(account?.color || "#3b82f6");
+  const [icon, setIcon] = useState(account?.icon || "landmark");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,6 +44,8 @@ export function AccountForm({ account }: { account?: any }) {
       const payload = {
         ...values,
         balance: parseIndianNumber(values.balance),
+        color,
+        icon
       };
 
       if (account) {
@@ -105,6 +110,9 @@ export function AccountForm({ account }: { account?: any }) {
                         { label: 'Cash', value: 'cash' },
                         { label: 'Credit Card', value: 'card' },
                         { label: 'Wallet', value: 'wallet' },
+                        { label: 'Investment', value: 'investment' },
+                        { label: 'Saving', value: 'saving' },
+                        { label: 'Other', value: 'other' },
                       ]}
                       {...field}
                     />
@@ -134,6 +142,12 @@ export function AccountForm({ account }: { account?: any }) {
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+              <ColorPicker value={color} onChange={setColor} id={`accountColor-${account?._id || 'new'}`} />
+              <IconPicker value={icon} onChange={setIcon} />
+            </div>
+
             <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{account ? "Save Changes" : "Create Account"}</Button>
           </form>
         </Form>

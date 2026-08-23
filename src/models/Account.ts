@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 export interface IAccount extends Document {
   userId: mongoose.Types.ObjectId;
   name: string;
-  type: "bank" | "cash" | "card" | "wallet";
+  type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other";
   balance: number;
   creditLimit?: number; // Only applicable for cards
   color?: string;
@@ -18,7 +18,7 @@ const AccountSchema: Schema<IAccount> = new Schema(
     name: { type: String, required: true },
     type: {
       type: String,
-      enum: ["bank", "cash", "card", "wallet"],
+      enum: ["bank", "cash", "card", "wallet", "investment", "saving", "other"],
       required: true,
     },
     balance: { type: Number, default: 0 },

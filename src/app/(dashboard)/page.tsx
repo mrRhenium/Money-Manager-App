@@ -3,6 +3,7 @@ import { getAccounts } from "@/actions/account";
 import { getTransactions } from "@/actions/transaction";
 import { getPeople } from "@/actions/person";
 import { getCreditCards } from "@/actions/creditCard";
+import { getMissingBudgets } from "@/actions/budget";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
 import { 
   ArrowUpRight, 
@@ -50,14 +51,15 @@ export default async function DashboardPage() {
   const userTimezone = (session.user as any).timezone || "UTC";
   const userCurrency = (session.user as any).currency || "INR";
 
-  const [accounts, transactions, people, cards, investments, policies, loans] = await Promise.all([
+  const [accounts, transactions, people, cards, investments, policies, loans, missingBudgets] = await Promise.all([
     getAccounts(),
     getTransactions(100), // Get recent 100 for dashboard
     getPeople(),
     getCreditCards(),
     import("@/actions/investment").then(m => m.getInvestments()),
     import("@/actions/insurance").then(m => m.getInsurancePolicies()),
-    import("@/actions/loan").then(m => m.getLoans())
+    import("@/actions/loan").then(m => m.getLoans()),
+    getMissingBudgets()
   ]);
 
   const totalOutstanding = cards.reduce((sum: number, c: any) => sum + c.currentOutstanding, 0);
@@ -190,6 +192,23 @@ export default async function DashboardPage() {
 
       <PendingConfirmationsWidget />
       <UpcomingDuesWidget dues={upcomingDues} />
+
+      {missingBudgets.length > 0 && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-destructive/20 p-2 rounded-lg text-destructive">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-destructive">Budgets Expired</p>
+              <p className="text-sm text-muted-foreground">You have {missingBudgets.length} categories without an active budget for this month. You cannot add expenses to these categories until a budget is set.</p>
+            </div>
+          </div>
+          <Link href="/budgets" className="bg-destructive text-destructive-foreground hover:bg-destructive/90 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap shadow-sm">
+            Set Budgets
+          </Link>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">

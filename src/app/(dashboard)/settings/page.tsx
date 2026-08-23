@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/useToast";
 import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { getAllCurrencies } from "@/actions/currency";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
 
@@ -46,6 +47,27 @@ function SettingsContent() {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isThemeLoading, setIsThemeLoading] = useState(false);
   const [isCurrencyLoading, setIsCurrencyLoading] = useState(false);
+  const [currencyOptions, setCurrencyOptions] = useState<{label: string, value: string}[]>([
+    { label: 'Indian Rupee (INR)', value: 'INR' },
+    { label: 'US Dollar (USD)', value: 'USD' },
+  ]);
+
+  useEffect(() => {
+    async function loadCurrencies() {
+      try {
+        const data = await getAllCurrencies(true);
+        if (data.length > 0) {
+          setCurrencyOptions(data.map((c: any) => ({
+            label: `${c.symbol} (${c.code}) - ${c.name}`,
+            value: c.code
+          })));
+        }
+      } catch (err) {
+        // fallback to default
+      }
+    }
+    loadCurrencies();
+  }, []);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -294,12 +316,7 @@ function SettingsContent() {
             onChange={handleCurrencyChange} 
             disabled={isCurrencyLoading}
             className="w-full h-10"
-            options={[
-              { label: 'Indian Rupee (INR)', value: 'INR' },
-              { label: 'US Dollar (USD)', value: 'USD' },
-              { label: 'Euro (EUR)', value: 'EUR' },
-              { label: 'British Pound (GBP)', value: 'GBP' },
-            ]}
+            options={currencyOptions}
           />
           <p className="text-xs text-muted-foreground">This sets the default symbol and formatting everywhere in the app.</p>
         </div>

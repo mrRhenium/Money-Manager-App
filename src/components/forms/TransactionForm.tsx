@@ -54,6 +54,7 @@ interface TransactionFormProps {
 
 export function TransactionForm({ accounts, categories, people = [], creditCards = [], triggerClassName, transaction }: TransactionFormProps) {
   const [open, setOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [scanPayOpen, setScanPayOpen] = useState(false);
   const [billImage, setBillImage] = useState<string>(transaction?.billImage || "");
@@ -151,8 +152,10 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
       }
       setOpen(false);
       form.reset();
-    } catch (error) {
+      setErrorMsg("");
+    } catch (error: any) {
       console.error("Failed to save transaction", error);
+      setErrorMsg(error.message || "Failed to save transaction");
     }
   }
 
@@ -177,6 +180,12 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
             <span className="text-foreground">{transaction ? "Edit Transaction" : "Log Transaction"}</span>
           </DialogTitle>
         </DialogHeader>
+        
+        {errorMsg && (
+          <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+            {errorMsg}
+          </div>
+        )}
         
         <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
           <div className="flex items-center gap-3">

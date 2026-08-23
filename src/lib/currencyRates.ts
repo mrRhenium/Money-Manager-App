@@ -1,6 +1,6 @@
+import { getAllCurrencies } from "@/actions/currency";
 
-
-// Simple client-side cache for currency rates relative to INR
+// Simple client-side cache for currency rates relative to base (INR)
 let ratesCache: Record<string, number> | null = null;
 let lastFetchTime = 0;
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
@@ -15,29 +15,40 @@ export async function fetchExchangeRates(): Promise<Record<string, number>> {
 
   if (!isServer) {
     try {
-    const cachedStr = localStorage.getItem("money_manager_exchange_rates");
-    if (cachedStr) {
-      const parsed = JSON.parse(cachedStr);
-      if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-        ratesCache = parsed.rates;
-        lastFetchTime = parsed.timestamp;
-        return ratesCache!;
+      const cachedStr = localStorage.getItem("money_manager_exchange_rates");
+      if (cachedStr) {
+        const parsed = JSON.parse(cachedStr);
+        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+          ratesCache = parsed.rates;
+          lastFetchTime = parsed.timestamp;
+          return ratesCache!;
+        }
       }
-    }
     } catch (e) {
       console.error("Failed to read rates from local storage", e);
     }
   }
 
-  // Fetch fresh rates (from INR to all others)
+  // Fetch fresh rates from Database via Server Action
   try {
-    const res = await fetch("https://open.er-api.com/v6/latest/INR", { 
-      next: { revalidate: 3600 } 
-    });
-    if (!res.ok) throw new Error("Failed to fetch rates");
+    const dbCurrencies = await getAllCurrencies(true);
+    const newRates: Record<string, number> = {};
     
-    const data = await res.json();
-    ratesCache = data.rates;
+    // Find the base currency to determine if we need to adjust
+    // Assuming base is INR with rate 1, and others have exchangeRate relative to base.
+    dbCurrencies.forEach((c: any) => {
+      // In the old system ER-API returned rates like 1 INR = 0.012 USD. 
+      // If our DB stores exchangeRate = 83.5 (1 USD = 83.5 INR), 
+      // then 1 INR = (1 / 83.5) USD.
+      // So the rate mapping should be: newRates[c.code] = 1 / c.exchangeRate
+      if (c.isBase || c.exchangeRate === 1) {
+        newRates[c.code] = 1;
+      } else {
+        newRates[c.code] = 1 / c.exchangeRate;
+      }
+    });
+
+    ratesCache = newRates;
     lastFetchTime = Date.now();
 
     if (!isServer) {
@@ -60,6 +71,7 @@ export async function fetchExchangeRates(): Promise<Record<string, number>> {
 }
 
 export function getConversionRate(targetCurrency: string, rates: Record<string, number>): number {
-  if (targetCurrency === "INR" || !targetCurrency) return 1;
+  if (!targetCurrency) return 1;
+  // If we don't have it, assume 1 to prevent multiplying by 0 or undefined
   return rates[targetCurrency] || 1;
 }

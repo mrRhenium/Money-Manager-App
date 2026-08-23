@@ -7,6 +7,7 @@ import CreditCard from "@/models/CreditCard";
 import CardStatement from "@/models/CardStatement";
 import Category from "@/models/Category";
 import User from "@/models/User";
+import Budget from "@/models/Budget";
 
 // Force models to register for populate
 import "@/models/Category";
@@ -15,7 +16,7 @@ import "@/models/Account";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
-import { parseToDate, getStatementMonth, calculateCreditCardDueDate, getCurrentDate, getStartOfDay, getDaysDifference } from "@/lib/dateTimeHelper";
+import { parseToDate, getStatementMonth, calculateCreditCardDueDate, getCurrentDate, getStartOfDay, getDaysDifference, getStartOfMonth, getEndOfMonth } from "@/lib/dateTimeHelper";
 import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getTransactions(limit = 50) {
@@ -74,6 +75,32 @@ export async function createTransaction(data: {
       }
     } catch (e) {
       console.error("Failed to fetch exchange rate", e);
+    }
+  }
+
+  // Check budget constraints
+  if (data.type === "expense" && data.categoryId) {
+    const transactionDate = parseToDate(data.date);
+    const anyBudget = await Budget.findOne({ userId: session.user.id, categoryId: data.categoryId });
+    
+    if (anyBudget) {
+      const monthStr = `${transactionDate.getFullYear()}-${String(transactionDate.getMonth() + 1).padStart(2, '0')}`;
+      const mStart = getStartOfMonth(monthStr);
+      const mEnd = getEndOfMonth(monthStr);
+      
+      const activeBudget = await Budget.findOne({
+        userId: session.user.id,
+        categoryId: data.categoryId,
+        $or: [
+          { type: { $ne: "custom" }, month: monthStr },
+          { type: "monthly", month: monthStr },
+          { type: "custom", startDate: { $lte: transactionDate }, endDate: { $gte: transactionDate } }
+        ]
+      });
+
+      if (!activeBudget) {
+        throw new Error("No active budget found for this period. Please make a new budget before adding a transaction.");
+      }
     }
   }
 

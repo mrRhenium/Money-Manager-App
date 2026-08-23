@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { getAllCurrencies } from "@/actions/currency";
 
-export const CURRENCIES = [
-  { value: "INR", label: "₹ (INR)", symbol: "₹" },
-  { value: "USD", label: "$ (USD)", symbol: "$" },
-  { value: "EUR", label: "€ (EUR)", symbol: "€" },
-  { value: "GBP", label: "£ (GBP)", symbol: "£" },
-  { value: "AED", label: "د.إ (AED)", symbol: "د.إ" },
+export const FALLBACK_CURRENCIES = [
+  { code: "INR", symbol: "₹", name: "Indian Rupee" },
+  { code: "USD", symbol: "$", name: "US Dollar" },
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "GBP", symbol: "£", name: "British Pound" },
+  { code: "AED", symbol: "د.إ", name: "UAE Dirham" },
 ];
 
 interface CurrencyInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -19,16 +20,32 @@ interface CurrencyInputProps extends React.InputHTMLAttributes<HTMLInputElement>
 
 export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
   ({ className, currency, onCurrencyChange, wrapperClassName, ...props }, ref) => {
+    const [currencies, setCurrencies] = useState<any[]>([]);
+
+    useEffect(() => {
+      async function fetchCurrencies() {
+        try {
+          const data = await getAllCurrencies(true);
+          setCurrencies(data);
+        } catch (error) {
+          setCurrencies(FALLBACK_CURRENCIES);
+        }
+      }
+      fetchCurrencies();
+    }, []);
+
+    const displayCurrencies = currencies.length > 0 ? currencies : FALLBACK_CURRENCIES;
+
     return (
       <div className={cn("flex items-center gap-2 w-full", wrapperClassName)}>
         <Select value={currency} onValueChange={(val) => { if (val) onCurrencyChange(val); }}>
-          <SelectTrigger className="w-[100px] shrink-0 font-medium">
+          <SelectTrigger className="w-[110px] shrink-0 font-medium bg-background">
             <SelectValue placeholder="Cur" />
           </SelectTrigger>
           <SelectContent>
-            {CURRENCIES.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
-                {c.label}
+            {displayCurrencies.map((c) => (
+              <SelectItem key={c.code} value={c.code}>
+                {c.symbol} ({c.code}) - {c.name}
               </SelectItem>
             ))}
           </SelectContent>

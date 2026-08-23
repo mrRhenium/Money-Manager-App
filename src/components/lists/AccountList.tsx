@@ -73,6 +73,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
           <Select
             mode="multiple"
             allowClear
+            maxTagCount="responsive"
             placeholder="All Types"
             className="w-full min-h-10"
             value={typeFilters}
@@ -86,6 +87,12 @@ export function AccountList({ accounts }: { accounts: any[] }) {
               { label: "Investment", value: "investment" },
               { label: "Other", value: "other" },
             ]}
+            optionRender={(option) => (
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={typeFilters.includes(option.value as string)} readOnly className="cursor-pointer" />
+                <span>{option.label}</span>
+              </div>
+            )}
           />
         </div>
       </div>

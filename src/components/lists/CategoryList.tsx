@@ -88,14 +88,14 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
         </div>
       )}
 
-      <div className="bg-card rounded-xl border shadow-sm p-4">
+      <div className="w-full">
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
           items={[
             {
               key: "expense",
-              label: "Expense Categories",
+              label: `Expense Categories (${expenseCategories.length})`,
               children: (
                 <div className="pt-2">
                   {filteredExpenses.length === 0 ? (
@@ -115,7 +115,7 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
             },
             {
               key: "income",
-              label: "Income Categories",
+              label: `Income Categories (${incomeCategories.length})`,
               children: (
                 <div className="pt-2">
                   {filteredIncomes.length === 0 ? (

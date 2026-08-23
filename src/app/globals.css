@@ -309,11 +309,14 @@ a:hover {
   color: var(--foreground) !important;
 }
 
-.dark .ant-pagination-item-active,
-.dark .ant-pagination-item-active a {
+.dark .ant-pagination-item-active {
   background-color: var(--primary) !important;
-  color: var(--primary-foreground) !important;
   border-color: var(--primary) !important;
+}
+
+.dark .ant-pagination-item-active a {
+  background-color: transparent !important;
+  color: var(--primary-foreground) !important;
 }
 
 .dark .ant-select-dropdown,

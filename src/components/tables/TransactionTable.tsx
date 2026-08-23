@@ -5,8 +5,9 @@ import { formatDate } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 import { TransactionForm } from "../forms/TransactionForm";
 import { deleteTransaction } from "@/actions/transaction";
-import { Trash } from "lucide-react";
+import { Trash, Search } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import { Input } from "@/components/ui/input";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -28,6 +29,38 @@ export function TransactionTable({
   userCurrency?: string;
 }) {
   const { format } = useCurrency();
+
+  const getColumnSearchProps = (dataIndex: string | string[], title: string, renderText?: (record: any) => string) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+      <div className="p-3 w-64 bg-card border border-border shadow-md rounded-xl flex flex-col gap-3" onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          placeholder={`Search ${title}...`}
+          value={selectedKeys[0] || ""}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') confirm();
+          }}
+          className="h-9"
+        />
+        <div className="flex gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={() => clearFilters && clearFilters()} className="h-8 px-3 text-xs">
+            Reset
+          </Button>
+          <Button variant="default" size="sm" onClick={() => confirm()} className="h-8 px-3 text-xs">
+            Search
+          </Button>
+        </div>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <Search className={`w-4 h-4 ${filtered ? 'text-primary' : 'text-muted-foreground'}`} />
+    ),
+    onFilter: (value: any, record: any) => {
+      const text = renderText ? renderText(record) : (Array.isArray(dataIndex) ? record[dataIndex[0]]?.[dataIndex[1]] : record[dataIndex]);
+      return text ? text.toString().toLowerCase().includes((value as string).toLowerCase()) : false;
+    },
+  });
+
   const columns = [
     {
       title: "#",
@@ -42,6 +75,7 @@ export function TransactionTable({
       render: (date: string) => <span className="whitespace-nowrap">{formatDate(date, "standard", userTimezone)}</span>,
       sorter: (a: any, b: any) => parseToDate(a.date).getTime() - parseToDate(b.date).getTime(),
       defaultSortOrder: 'descend' as const,
+      ...getColumnSearchProps("date", "Date", (record) => formatDate(record.date, "standard", userTimezone)),
     },
     {
       title: "Type",
@@ -55,12 +89,14 @@ export function TransactionTable({
         { text: "Lend", value: "lend" },
         { text: "Borrow", value: "borrow" },
       ],
+      filterSearch: true,
       onFilter: (value: any, record: any) => record.type === value,
     },
     {
       title: "Category",
       key: "category",
       filters: categories.map(c => ({ text: c.name, value: c._id })),
+      filterSearch: true,
       onFilter: (value: any, record: any) => record.categoryId?._id === value,
       render: (_: any, record: any) => {
         if (record.type === "transfer") {
@@ -98,6 +134,7 @@ export function TransactionTable({
       title: "Account",
       key: "account",
       filters: accounts.map(a => ({ text: a.name, value: a._id })),
+      filterSearch: true,
       onFilter: (value: any, record: any) => record.accountId?._id === value || record.toAccountId?._id === value,
       render: (_: any, record: any) => {
         if (record.type === "transfer" && record.toAccountId) {
@@ -115,6 +152,11 @@ export function TransactionTable({
     {
       title: "Note/Payee",
       key: "note",
+      ...getColumnSearchProps("note", "Note/Payee", (record) => {
+        const isQr = record.paymentSource === "upi_scan" || (record.upiPayeeName && record.upiPayeeVpa);
+        if (isQr) return `${record.note || ''} ${record.upiPayeeName || ''} ${record.upiPayeeVpa || ''}`;
+        return record.note || '';
+      }),
       render: (_: any, record: any) => {
         const isQr = record.paymentSource === "upi_scan" || (record.upiPayeeName && record.upiPayeeVpa);
         if (isQr) {
@@ -137,6 +179,7 @@ export function TransactionTable({
       title: "Amount",
       key: "amount",
       align: "right" as const,
+      ...getColumnSearchProps("amount", "Amount", (record) => format(record.amount)),
       render: (_: any, record: any) => {
         const isTransfer = record.type === "transfer";
         const isNegative = record.type === "expense" || record.type === "lend";

@@ -33,6 +33,36 @@ export async function createAuditLog(params: CreateAuditLogParams) {
 
     await dbConnect();
 
+    // Auto-fetch entityName if missing
+    if (!params.entityName) {
+      try {
+        const mongoose = (await import("mongoose")).default;
+        const typeMap: Record<string, string> = {
+          "transaction": "Transaction",
+          "category": "Category",
+          "account": "Account",
+          "budget": "Budget",
+          "recurringbill": "RecurringBill",
+          "loan": "Loan",
+          "investment": "Investment",
+          "insurance": "InsurancePolicy",
+          "goal": "Goal",
+          "person": "Person",
+          "creditcard": "CreditCard"
+        };
+        const modelName = typeMap[params.entityType.toLowerCase()] || params.entityType;
+        const Model = mongoose.models[modelName];
+        if (Model && mongoose.Types.ObjectId.isValid(params.entityId)) {
+          const doc = await Model.findById(params.entityId).lean();
+          if (doc) {
+            params.entityName = doc.name || doc.title || doc.policyName || doc.cardName || doc.bankName || doc.note || doc.description;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch entityName for audit log", e);
+      }
+    }
+
     const auditLog = await AuditLog.create({
       userId: session.user.id,
       ...params,

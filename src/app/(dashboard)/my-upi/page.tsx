@@ -127,7 +127,7 @@ function MyUpiContent() {
             <p className="text-sm text-muted-foreground">Share this with friends or customers to receive payments.</p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="flex flex-col md:flex-row md:justify-between gap-8 items-start w-full">
             {upiIds.filter(v => v.trim() !== "").length > 0 ? (
               <>
                 <div className="space-y-2 w-full sm:max-w-xs">
@@ -144,7 +144,7 @@ function MyUpiContent() {
                 </div>
 
                 {generatedUpiUrl && (
-                  <div className="flex flex-col gap-2 w-full items-center md:items-start mt-4 md:mt-0">
+                  <div className="flex flex-col gap-2 items-center md:items-end mt-4 md:mt-0 shrink-0">
                     <button 
                       type="button" 
                       onClick={() => setQrModalOpen(true)}

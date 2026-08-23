@@ -144,7 +144,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
                         <Trash className="w-4 h-4" />
                       </Button>
                     </Popconfirm>
@@ -158,7 +158,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
                 {/* Decorative background circle */}
                 <div
                   className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
-                  style={{ backgroundColor: getAccountColor(account.type) }}
+                  style={{ backgroundColor: account.color || getAccountColor(account.type) }}
                 />
               </div>
             </List.Item>

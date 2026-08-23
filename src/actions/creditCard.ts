@@ -20,7 +20,12 @@ export async function getCreditCards() {
     .sort({ createdAt: -1 })
     .lean();
     
-  return JSON.parse(JSON.stringify(cards));
+  const cardsWithTxCount = await Promise.all(cards.map(async (card) => {
+    const transactionsCount = await Transaction.countDocuments({ creditCardId: card._id });
+    return { ...card, transactionsCount };
+  }));
+
+  return JSON.parse(JSON.stringify(cardsWithTxCount));
 }
 
 export async function getCreditCardById(id: string) {
@@ -80,7 +85,7 @@ export async function createCreditCard(data: any) {
   return JSON.parse(JSON.stringify(card));
 }
 
-export async function deleteCreditCard(id: string) {
+export async function deleteCreditCard(id: string, reason?: string, notes?: string) {
   try {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
@@ -98,12 +103,22 @@ export async function deleteCreditCard(id: string) {
 
     const txCount = await Transaction.countDocuments({ creditCardId: id });
     if (txCount > 0) {
-      return { success: false, error: `This Credit Card cannot be deleted because it is used in ${txCount} transaction(s).` };
+      if (!reason || !notes) {
+        return { success: false, error: "Reason and notes are mandatory for deleting a utilized credit card." };
+      }
+      
+      // Note: We don't delete the transactions here, they remain as historical data since the balance is 0.
+      await logAuditEvent("CreditCard", id, "DELETE", cardSnapshot, {
+        reason,
+        notes,
+        transactionsRetained: txCount
+      });
+    } else {
+      await logAuditEvent("CreditCard", id, "DELETE", cardSnapshot, undefined);
     }
 
     await CreditCard.deleteOne({ _id: id });
     await CardStatement.deleteMany({ cardId: id });
-    await logAuditEvent("CreditCard", id, "DELETE", cardSnapshot, undefined);
 
     revalidatePath("/credit-cards");
     return { success: true };

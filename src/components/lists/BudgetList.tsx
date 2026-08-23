@@ -5,6 +5,7 @@ import { List, Popconfirm, Modal } from "antd";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BudgetForm } from "../forms/BudgetForm";
+import { BudgetDeleteModal } from "../forms/BudgetDeleteModal";
 import { deleteBudget } from "@/actions/budget";
 import { Trash, Search, Calendar } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -101,34 +102,7 @@ export function BudgetList({ budgets, categories, selectedMonth }: { budgets: an
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <BudgetForm categories={categories} budget={budget} />
-                        <Popconfirm
-                          title="Delete Budget"
-                          description="Are you sure you want to delete this budget?"
-                          onConfirm={async () => {
-                            try {
-                              const res = await deleteBudget(budget._id);
-                              if (res && !res.success) {
-                                Modal.error({
-                                  title: "Cannot Delete Budget",
-                                  content: res.error || "An error occurred while deleting the budget.",
-                                  okText: "Close",
-                                });
-                              }
-                            } catch (err: any) {
-                              Modal.error({
-                                title: "Cannot Delete Budget",
-                                content: err.message || "An error occurred while deleting the budget.",
-                                okText: "Close",
-                              });
-                            }
-                          }}
-                          okText="Yes"
-                          cancelText="No"
-                        >
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                            <Trash className="w-4 h-4" />
-                          </Button>
-                        </Popconfirm>
+                        <BudgetDeleteModal budget={budget} totalSpent={budget.totalSpent} />
                       </div>
                     </div>
                     <div className="w-full space-y-3 mt-4">

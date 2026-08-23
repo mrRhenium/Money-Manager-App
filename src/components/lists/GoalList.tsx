@@ -181,22 +181,23 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-card p-3 rounded-xl border shadow-sm">
-        <div className="relative w-full sm:max-w-sm">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-card p-3 rounded-xl border shadow-sm items-center">
+        <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search goals..." 
-            className="pl-9 bg-background"
+            className="pl-9 bg-background h-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <AntSelect
-          value={sortBy}
-          onChange={setSortBy}
-          className="w-full sm:w-56 h-10"
-          suffixIcon={<ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />}
-          options={[
+        <div className="relative flex-1 w-full">
+          <AntSelect
+            value={sortBy}
+            onChange={setSortBy}
+            className="w-full h-10"
+            suffixIcon={<ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />}
+            options={[
             { label: "🔥 Deadline: Nearest First", value: "deadline-nearest" },
             { label: "🕐 Deadline: Farthest First", value: "deadline-farthest" },
             { label: "📈 Progress: High to Low", value: "progress-high" },
@@ -205,6 +206,7 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
             { label: "💵 Target: Low to High", value: "amount-low" },
           ]}
         />
+        </div>
       </div>
       <Tabs
         activeKey={activeTab}

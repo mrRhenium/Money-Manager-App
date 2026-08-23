@@ -148,7 +148,7 @@ export async function upsertBudget(data: {
   return JSON.parse(JSON.stringify(budget));
 }
 
-export async function deleteBudget(id: string) {
+export async function deleteBudget(id: string, reason?: string, notes?: string) {
   try {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
@@ -156,10 +156,47 @@ export async function deleteBudget(id: string) {
     await dbConnect();
 
     const budget = await Budget.findOne({ _id: id, userId: session.user.id });
-    if (budget) {
-      await logAuditEvent("Budget", id, "DELETE", budget, undefined);
-      await Budget.deleteOne({ _id: id });
+    if (!budget) return { success: false, error: "Budget not found" };
+
+    let bStart: Date, bEnd: Date;
+    if (budget.type === "custom") {
+      bStart = budget.startDate as Date;
+      bEnd = budget.endDate as Date;
+    } else {
+      bStart = getStartOfMonth(budget.month);
+      bEnd = getEndOfMonth(budget.month);
     }
+
+    const expenses = await Transaction.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(session.user.id),
+          categoryId: budget.categoryId,
+          type: "expense",
+          date: { $gte: bStart, $lte: bEnd },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSpent: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const totalSpent = expenses.length > 0 ? expenses[0].totalSpent : 0;
+
+    if (totalSpent > 0) {
+      if (!reason || !notes) {
+        return { success: false, error: "Reason and notes are mandatory for deleting a utilized budget." };
+      }
+      
+      await logAuditEvent("Budget", id, "DELETE", budget, { reason, notes, totalSpent });
+    } else {
+      await logAuditEvent("Budget", id, "DELETE", budget, undefined);
+    }
+    
+    await Budget.deleteOne({ _id: id });
 
     revalidatePath("/budgets");
     revalidatePath("/");

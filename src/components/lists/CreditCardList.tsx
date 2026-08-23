@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 import { CreditCardForm } from "../forms/CreditCardForm";
+import { CreditCardDeleteModal } from "../forms/CreditCardDeleteModal";
 import { deleteCreditCard } from "@/actions/creditCard";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -88,34 +89,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
 
                     <div className="flex items-center gap-1 z-10 shrink-0" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <CreditCardForm card={card} />
-                      <Popconfirm
-                        title="Delete Credit Card"
-                        description="Are you sure you want to delete this credit card?"
-                        onConfirm={async () => {
-                          try {
-                            const res = await deleteCreditCard(card._id);
-                            if (res && !res.success) {
-                              Modal.error({
-                                title: "Cannot Delete Credit Card",
-                                content: res.error || "This credit card has outstanding balance or other issues.",
-                                okText: "Close",
-                              });
-                            }
-                          } catch (err: any) {
-                            Modal.error({
-                              title: "Cannot Delete Credit Card",
-                              content: err.message || "This credit card has outstanding balance or other issues.",
-                              okText: "Close",
-                            });
-                          }
-                        }}
-                        okText="Yes"
-                        cancelText="No"
-                      >
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-500/20 rounded-full transition-colors">
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </Popconfirm>
+                      <CreditCardDeleteModal card={card} transactionsCount={card.transactionsCount} />
                     </div>
                   </div>
                 </div>

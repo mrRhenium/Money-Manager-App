@@ -49,7 +49,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
       const matchesType = typeFilters.length === 0 || typeFilters.includes(acc.type);
       return matchesSearch && matchesType;
     });
-  }, [accounts, searchQuery, typeFilters]);
+  }, [accounts, searchQuery, typeFilters, hiddenIds]);
   if (accounts.length === 0) {
     return (
       <div className="p-8 text-center border rounded-xl border-dashed col-span-full">

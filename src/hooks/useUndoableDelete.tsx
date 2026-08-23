@@ -5,7 +5,7 @@ import { App, Button } from "antd";
 import React from "react";
 
 /**
- * A hook to perform optimistic UI deletion with a 10-second undo toaster.
+ * A hook to perform optimistic UI deletion with a 10-second undo notification.
  * 
  * Usage:
  * const { hiddenIds, triggerDelete } = useUndoableDelete();
@@ -22,7 +22,7 @@ import React from "react";
  */
 export function useUndoableDelete() {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
-  const { message } = App.useApp();
+  const { notification } = App.useApp();
   const timersRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   const triggerDelete = useCallback(({ 
@@ -54,23 +54,20 @@ export function useUndoableDelete() {
         next.delete(id);
         return next;
       });
-      message.destroy(id);
+      notification.destroy(id);
     };
 
-    // 3. Show toaster
-    (message as any).open({
+    // 3. Show notification with Undo button
+    notification.success({
       key: id,
-      type: "success",
-      content: `${entityName} deleted.`,
+      message: `${entityName} deleted`,
+      description: "Click Undo to restore this item.",
       duration,
-      onClick: handleUndo,
-      className: "cursor-pointer",
-      icon: <span />, // Hide default icon
-      action: (
+      placement: "bottomRight",
+      btn: (
         <Button 
           size="small" 
-          type="primary" 
-          ghost 
+          type="primary"
           onClick={(e) => {
             e.stopPropagation();
             handleUndo();
@@ -89,7 +86,12 @@ export function useUndoableDelete() {
         // We don't really need to unhide it, as the next revalidation will omit it anyway.
       } catch (err: any) {
         console.error("Failed to commit deletion:", err);
-        message.error(`Failed to delete ${entityName}: ${err.message || "Unknown error"}`);
+        notification.error({
+          message: `Failed to delete ${entityName}`,
+          description: err.message || "Unknown error",
+          duration: 6,
+          placement: "bottomRight",
+        });
         // If it fails, un-hide it so user can try again
         setHiddenIds(prev => {
           const next = new Set(prev);
@@ -101,7 +103,7 @@ export function useUndoableDelete() {
       }
     }, duration * 1000);
     
-  }, [message]);
+  }, [notification]);
 
   // Cleanup timeouts if the entire app unmounts (rare, but good practice)
   useEffect(() => {

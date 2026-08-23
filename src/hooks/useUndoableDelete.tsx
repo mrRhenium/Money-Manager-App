@@ -77,8 +77,35 @@ export function useUndoableDelete() {
     const duration = 10; // 10 seconds
     const durationMs = duration * 1000;
 
+    // Track why the notification closed so we don't double-commit
+    let reason: 'timeout' | 'undo' | 'manual' = 'manual';
+
+    const commitDeletion = async () => {
+      try {
+        await onCommit();
+        // The item is permanently deleted in DB. 
+      } catch (err: any) {
+        console.error("Failed to commit deletion:", err);
+        notification.error({
+          message: `Failed to delete ${entityName}`,
+          description: err.message || "Unknown error",
+          duration: 6,
+          placement: "bottomRight",
+        });
+        // If it fails, un-hide it so user can try again
+        setHiddenIds(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      } finally {
+        delete timersRef.current[id];
+      }
+    };
+
     // 2. Setup undo logic
     const handleUndo = () => {
+      reason = 'undo';
       if (timersRef.current[id]) {
         clearTimeout(timersRef.current[id]);
         delete timersRef.current[id];
@@ -103,6 +130,16 @@ export function useUndoableDelete() {
       ),
       duration,
       placement: "bottomRight",
+      onClose: () => {
+        // If closed manually by the user clicking 'x' or swiping
+        if (reason === 'manual') {
+          if (timersRef.current[id]) {
+            clearTimeout(timersRef.current[id]);
+            delete timersRef.current[id];
+          }
+          commitDeletion();
+        }
+      },
       btn: (
         <Button 
           size="small" 
@@ -118,31 +155,12 @@ export function useUndoableDelete() {
     });
 
     // 4. Setup commit timer
-    timersRef.current[id] = setTimeout(async () => {
+    timersRef.current[id] = setTimeout(() => {
+      reason = 'timeout';
       // Forcefully close the notification when the countdown ends
       notification.destroy(id);
       
-      try {
-        await onCommit();
-        // The item is permanently deleted in DB. 
-        // We don't really need to unhide it, as the next revalidation will omit it anyway.
-      } catch (err: any) {
-        console.error("Failed to commit deletion:", err);
-        notification.error({
-          message: `Failed to delete ${entityName}`,
-          description: err.message || "Unknown error",
-          duration: 6,
-          placement: "bottomRight",
-        });
-        // If it fails, un-hide it so user can try again
-        setHiddenIds(prev => {
-          const next = new Set(prev);
-          next.delete(id);
-          return next;
-        });
-      } finally {
-        delete timersRef.current[id];
-      }
+      commitDeletion();
     }, durationMs);
     
   }, [notification]);

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, Input } from "antd";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash, AlertTriangle } from "lucide-react";
 import { deleteGoal } from "@/actions/goal";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/useToast";
@@ -73,7 +73,7 @@ export function GoalDeleteModal({ goal, accounts }: { goal: any, accounts: any[]
         title="Completed goals are kept for your financial history and cannot be deleted."
         onClick={(e) => e.preventDefault()}
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash className="w-4 h-4" />
       </Button>
     );
   }
@@ -84,7 +84,7 @@ export function GoalDeleteModal({ goal, accounts }: { goal: any, accounts: any[]
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-            <Trash2 className="w-4 h-4" />
+            <Trash className="w-4 h-4" />
           </Button>
         </DialogTrigger>
         <DialogContent>
@@ -108,7 +108,7 @@ export function GoalDeleteModal({ goal, accounts }: { goal: any, accounts: any[]
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-          <Trash2 className="w-4 h-4" />
+          <Trash className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">

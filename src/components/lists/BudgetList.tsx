@@ -33,7 +33,7 @@ export function BudgetList({ budgets, categories, selectedMonth }: { budgets: an
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-card p-3 rounded-xl border shadow-sm items-center">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 

@@ -200,11 +200,11 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             onChange={setSortBy}
             className="min-w-[150px] h-10"
             options={[
-              { label: "Newest First", value: "newest" },
-              { label: "Oldest First", value: "oldest" },
-              { label: "Highest Value", value: "highest_value" },
-              { label: "Lowest Value", value: "lowest_value" },
-              { label: "Highest Return", value: "highest_return" },
+              { label: "✨ Newest First", value: "newest" },
+              { label: "🕒 Oldest First", value: "oldest" },
+              { label: "📈 Highest Value", value: "highest_value" },
+              { label: "📉 Lowest Value", value: "lowest_value" },
+              { label: "🚀 Highest Return", value: "highest_return" },
             ]}
           />
         </div>

@@ -41,7 +41,7 @@ export function InvestmentDeleteModal({ investment }: { investment: any }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
           <Trash className="w-4 h-4" />
         </Button>
       </DialogTrigger>

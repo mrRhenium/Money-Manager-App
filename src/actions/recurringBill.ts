@@ -73,7 +73,7 @@ export async function updateRecurringBill(id: string, data: Partial<any>) {
   const bill = await RecurringBill.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     data,
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   await logAuditEvent("RecurringBill", id, "UPDATE", oldBill, bill);

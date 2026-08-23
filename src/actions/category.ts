@@ -132,7 +132,7 @@ export async function updateCategory(id: string, data: { name: string; type: "ex
   const category = await Category.findOneAndUpdate(
     { _id: id, userId: session.user.id, isSystem: false },
     { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon } },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   if (category) {

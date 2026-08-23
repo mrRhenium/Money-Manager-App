@@ -87,8 +87,25 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                 <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground uppercase">{record.status}</span>
               )}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {record.investmentType} {record.platform ? `• ${record.platform}` : ""}
+            <div className="text-xs text-muted-foreground flex flex-col">
+              <span>{record.investmentType} {record.platform ? `• ${record.platform}` : ""}</span>
+              {(record.units || record.currentPrice || record.interestRate || record.maturityDate) && (
+                <span className="text-[10.5px] mt-0.5 font-medium opacity-85">
+                  {record.investmentType === "FD" || record.investmentType === "RD" || record.investmentType === "Bonds" ? (
+                    <>
+                      {record.interestRate ? `${record.interestRate}% interest` : ""}
+                      {record.interestRate && record.maturityDate ? " • " : ""}
+                      {record.maturityDate ? `Matures: ${formatDateString(record.maturityDate, "MMM DD, YYYY")}` : ""}
+                    </>
+                  ) : (
+                    <>
+                      {record.units ? `${record.units} units` : ""}
+                      {record.units && record.currentPrice ? " @ " : ""}
+                      {record.currentPrice ? format(record.currentPrice) : ""}
+                    </>
+                  )}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -191,6 +208,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             value={statusFilter}
             onChange={setStatusFilter}
             className="w-full sm:min-w-[120px] h-10"
+            popupMatchSelectWidth={false}
             options={[
               { label: "Active", value: "active" },
               { label: "Closed/Sold", value: "closed" },
@@ -203,7 +221,8 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             allowClear
             maxTagCount="responsive"
             placeholder="All Types"
-            className="w-full sm:w-[180px] min-h-10"
+            className="w-full sm:min-w-[180px] min-h-10"
+            popupMatchSelectWidth={false}
             value={typeFilters}
             onChange={setTypeFilters}
             options={typeOptions}
@@ -218,7 +237,8 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
           <AntSelect
             value={sortBy}
             onChange={setSortBy}
-            className="col-span-2 sm:col-span-1 w-full sm:min-w-[150px] h-10"
+            className="col-span-2 sm:col-span-1 w-full sm:min-w-[170px] h-10"
+            popupMatchSelectWidth={false}
             options={[
               { label: "✨ Newest First", value: "newest" },
               { label: "🕒 Oldest First", value: "oldest" },
@@ -253,7 +273,27 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                       {record.name}
                       {isClosed && <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground uppercase font-normal">{record.status}</span>}
                     </h3>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{record.investmentType}</p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {record.investmentType}
+                      {record.platform ? ` • ${record.platform}` : ""}
+                    </p>
+                    {(record.units || record.currentPrice || record.interestRate || record.maturityDate) && (
+                      <p className="text-[10px] mt-0.5 font-medium opacity-85 text-muted-foreground truncate">
+                        {record.investmentType === "FD" || record.investmentType === "RD" || record.investmentType === "Bonds" ? (
+                          <>
+                            {record.interestRate ? `${record.interestRate}% interest` : ""}
+                            {record.interestRate && record.maturityDate ? " • " : ""}
+                            {record.maturityDate ? `Matures: ${formatDateString(record.maturityDate, "MMM DD, YYYY")}` : ""}
+                          </>
+                        ) : (
+                          <>
+                            {record.units ? `${record.units} units` : ""}
+                            {record.units && record.currentPrice ? " @ " : ""}
+                            {record.currentPrice ? format(record.currentPrice) : ""}
+                          </>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0 -mt-1 -mr-1">

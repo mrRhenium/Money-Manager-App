@@ -80,7 +80,7 @@ export async function updateInvestment(id: string, data: any) {
   const investment = await Investment.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: data },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   await logAuditEvent("Investment", id, "UPDATE", oldInvestment, investment);
@@ -105,7 +105,7 @@ export async function updateInvestmentValue(id: string, newValue: number, note?:
   const investment = await Investment.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: { currentValue: newValue } },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   if (investment) {

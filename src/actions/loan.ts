@@ -30,12 +30,16 @@ export async function upsertLoan(data: any) {
 
   await dbConnect();
 
+  if (data.linkedAccountId === "") {
+    data.linkedAccountId = null;
+  }
+
   let loan;
   if (data._id) {
     loan = await Loan.findOneAndUpdate(
       { _id: data._id, userId: session.user.id },
       { ...data },
-      { new: true }
+      { returnDocument: 'after' }
     );
   } else {
     loan = await Loan.create({

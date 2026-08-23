@@ -96,7 +96,7 @@ export async function updateInsurancePolicy(id: string, data: any) {
   const policy = await InsurancePolicy.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: data },
-    { new: true }
+    { returnDocument: 'after' }
   );
   
   if (policy) {

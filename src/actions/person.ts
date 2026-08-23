@@ -172,7 +172,7 @@ export async function updatePerson(id: string, data: { name: string; relation: "
   const person = await Person.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: { name: data.name, relation: data.relation, phones: data.phones || [], vpas: data.vpas || [], ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }) } },
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   if (person) {

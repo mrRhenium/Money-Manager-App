@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import MutualFundScheme from "@/models/MutualFundScheme";
 import StockSymbol from "@/models/StockSymbol";
 import { auth } from "@/lib/auth";
+import yahooFinance from "yahoo-finance2";
 
 export async function searchMutualFunds(query: string) {
   const session = await auth();
@@ -14,12 +15,12 @@ export async function searchMutualFunds(query: string) {
   try {
     const res = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(query)}`);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
-    
+
     // Limit to 20 results
     const limitedData = data.slice(0, 20);
-    
+
     return limitedData.map((d: any) => ({
       schemeCode: d.schemeCode,
       schemeName: d.schemeName,
@@ -32,14 +33,12 @@ export async function searchMutualFunds(query: string) {
   }
 }
 
-import yahooFinance from "yahoo-finance2";
-
 export async function searchStocks(query: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   if (!query || query.length < 2) return [];
-  
+
   try {
     const results = await yahooFinance.search(query, {
       newsCount: 0,

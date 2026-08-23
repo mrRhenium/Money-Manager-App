@@ -60,7 +60,7 @@ export async function updateGoal(
   const goal = await Goal.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     data,
-    { new: true }
+    { returnDocument: 'after' }
   );
 
   if (!goal) throw new Error("Goal not found");

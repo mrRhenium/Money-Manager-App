@@ -163,7 +163,7 @@ export async function upsertBudget(data: {
       budget = await Budget.findOneAndUpdate(
         { _id: data._id, userId: session.user.id },
         { ...data, userId: session.user.id },
-        { new: true }
+        { returnDocument: 'after' }
       );
       if (!budget) return { success: false, error: "Budget not found" };
       await logAuditEvent("Budget", budget._id.toString(), "UPDATE", oldBudget, budget);

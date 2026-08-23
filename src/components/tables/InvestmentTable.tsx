@@ -186,11 +186,11 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
           />
         </div>
         
-        <div className="flex items-center gap-2 w-full sm:w-1/2 justify-end">
+        <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center gap-2 w-full sm:w-auto sm:justify-end">
           <AntSelect
             value={statusFilter}
             onChange={setStatusFilter}
-            className="min-w-[120px] h-10"
+            className="w-full sm:min-w-[120px] h-10"
             options={[
               { label: "Active", value: "active" },
               { label: "Closed/Sold", value: "closed" },
@@ -203,7 +203,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             allowClear
             maxTagCount="responsive"
             placeholder="All Types"
-            className="w-[180px] min-h-10"
+            className="w-full sm:w-[180px] min-h-10"
             value={typeFilters}
             onChange={setTypeFilters}
             options={typeOptions}
@@ -218,7 +218,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
           <AntSelect
             value={sortBy}
             onChange={setSortBy}
-            className="min-w-[150px] h-10"
+            className="col-span-2 sm:col-span-1 w-full sm:min-w-[150px] h-10"
             options={[
               { label: "✨ Newest First", value: "newest" },
               { label: "🕒 Oldest First", value: "oldest" },

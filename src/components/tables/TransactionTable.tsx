@@ -322,7 +322,7 @@ export function TransactionTable({
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button variant="ghost" size="sm" className="h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg">
+                      <Button variant="ghost" size="sm" className="h-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash className="w-4 h-4 mr-1.5" />
                         Delete
                       </Button>

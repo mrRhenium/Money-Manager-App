@@ -207,26 +207,28 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
         </DialogHeader>
 
         {/* Calculation Mode Toggle */}
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/30 border">
-          <span className="text-sm font-medium text-muted-foreground mr-auto">Calculation Mode:</span>
-          <Button
-            type="button"
-            variant={calcMode === "manual" ? "default" : "outline"}
-            size="sm"
-            className="h-8 gap-1.5"
-            onClick={() => setCalcMode("manual")}
-          >
-            <PenTool className="w-3.5 h-3.5" /> Manual
-          </Button>
-          <Button
-            type="button"
-            variant={calcMode === "auto" ? "default" : "outline"}
-            size="sm"
-            className="h-8 gap-1.5"
-            onClick={() => setCalcMode("auto")}
-          >
-            <Calculator className="w-3.5 h-3.5" /> Auto-Calculate
-          </Button>
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-secondary/30 border">
+          <span className="text-sm font-medium text-muted-foreground w-full sm:w-auto sm:mr-auto">Calculation Mode:</span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant={calcMode === "manual" ? "default" : "outline"}
+              size="sm"
+              className="h-8 gap-1.5"
+              onClick={() => setCalcMode("manual")}
+            >
+              <PenTool className="w-3.5 h-3.5" /> Manual
+            </Button>
+            <Button
+              type="button"
+              variant={calcMode === "auto" ? "default" : "outline"}
+              size="sm"
+              className="h-8 gap-1.5"
+              onClick={() => setCalcMode("auto")}
+            >
+              <Calculator className="w-3.5 h-3.5" /> Auto-Calculate
+            </Button>
+          </div>
         </div>
 
         <Form {...form}>
@@ -346,8 +348,8 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
                         value={field.value || "compound"}
                         onChange={field.onChange}
                         options={[
-                          { label: "📊 Simple Interest — Flat Rate (Personal/Gold Loans)", value: "simple" },
-                          { label: "🏦 Compound Interest — Reducing Balance EMI (Home/Car/Education Loans)", value: "compound" },
+                          { label: "📊 Simple Interest (Flat Rate)", value: "simple" },
+                          { label: "🏦 Compound Interest (Reducing Balance)", value: "compound" },
                         ]}
                       />
                     </FormControl>

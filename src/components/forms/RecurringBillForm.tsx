@@ -27,6 +27,7 @@ const formSchema = z.object({
   autoPayPlatform: z.string().optional(),
   categoryId: z.string().optional(),
   accountId: z.string().optional(),
+  isActive: z.boolean().default(true),
 });
 
 interface RecurringBillFormProps {
@@ -53,6 +54,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
       autoPayPlatform: bill?.autoPayPlatform || "",
       categoryId: bill?.categoryId?._id || bill?.categoryId || "",
       accountId: bill?.accountId?._id || bill?.accountId || (accounts.length > 0 ? accounts[0]._id : ""),
+      isActive: bill?.isActive !== undefined ? bill?.isActive : true,
     },
   });
 
@@ -223,19 +225,43 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="autoPayPlatform"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Smartphone className="w-4 h-4 text-muted-foreground" /> Auto-Pay Platform (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. GPay, Amazon Pay, Credit Card" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="autoPayPlatform"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Smartphone className="w-4 h-4 text-muted-foreground" /> Auto-Pay Platform (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. GPay, Amazon Pay, Credit Card" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm h-[72px]">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base font-semibold">Active Subscription</FormLabel>
+                      <p className="text-xs text-muted-foreground">
+                        Turn off to pause or stop tracking this subscription
+                      </p>
+                    </div>
+                    <FormControl>
+                      <input 
+                        type="checkbox" 
+                        className="w-5 h-5 accent-primary cursor-pointer"
+                        checked={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
               <ColorPicker value={color} onChange={setColor} id={`billColor-${bill?._id || 'new'}`} />

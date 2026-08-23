@@ -89,12 +89,16 @@ export function GoalDeleteModal({ goal, accounts }: { goal: any, accounts: any[]
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Goal</DialogTitle>
+            <DialogTitle>Delete {goal.name}</DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground">Are you sure you want to delete this goal? It hasn't been started yet.</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+          <DialogFooter className="sm:justify-center gap-2 pt-4">
+            <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button 
+              className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+              onClick={handleDelete} 
+              disabled={loading}
+            >
               {loading ? "Deleting..." : "Delete Goal"}
             </Button>
           </DialogFooter>
@@ -115,7 +119,7 @@ export function GoalDeleteModal({ goal, accounts }: { goal: any, accounts: any[]
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="w-5 h-5" />
-            Delete Goal & Return Funds
+            Delete {goal.name}
           </DialogTitle>
         </DialogHeader>
         
@@ -180,10 +184,14 @@ export function GoalDeleteModal({ goal, accounts }: { goal: any, accounts: any[]
           </div>
         </div>
 
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={loading || !reason || !returnAccountId || !notes.trim() || !confirmed}>
-            {loading ? "Reversing..." : "Delete & Return Funds"}
+        <DialogFooter className="mt-4 sm:justify-center gap-2">
+          <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button 
+            className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+            onClick={handleDelete} 
+            disabled={loading || !reason || !returnAccountId || !notes.trim() || !confirmed}
+          >
+            {loading ? "Processing..." : "Reverse & Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

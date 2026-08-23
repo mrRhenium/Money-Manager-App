@@ -85,12 +85,16 @@ export function LoanDeleteModal({ loan }: { loan: any }) {
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Loan</DialogTitle>
+            <DialogTitle>Delete {loan.name}</DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground">Are you sure you want to delete this loan? It hasn't been used yet.</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+          <DialogFooter className="sm:justify-center gap-2 pt-4">
+            <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button 
+              className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+              onClick={handleDelete} 
+              disabled={loading}
+            >
               {loading ? "Deleting..." : "Delete Loan"}
             </Button>
           </DialogFooter>
@@ -111,7 +115,7 @@ export function LoanDeleteModal({ loan }: { loan: any }) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="w-5 h-5" />
-            Delete Loan & Reverse Payments
+            Delete {loan.name}
           </DialogTitle>
         </DialogHeader>
         
@@ -165,10 +169,14 @@ export function LoanDeleteModal({ loan }: { loan: any }) {
           </div>
         </div>
 
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={loading || !reason || !notes.trim() || !confirmed}>
-            {loading ? "Reversing..." : "Delete & Reverse"}
+        <DialogFooter className="mt-4 sm:justify-center gap-2">
+          <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button 
+            className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+            onClick={handleDelete} 
+            disabled={loading || !reason || !notes.trim() || !confirmed}
+          >
+            {loading ? "Processing..." : "Reverse & Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

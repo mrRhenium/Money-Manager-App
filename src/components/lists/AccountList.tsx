@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "antd";
 import { AccountForm } from "../forms/AccountForm";
+import { AccountDeleteModal } from "../forms/AccountDeleteModal";
 import { deleteAccount } from "@/actions/account";
 import { Trash, Search, Filter, Landmark, Wallet, Banknote, CreditCard } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -129,34 +130,7 @@ export function AccountList({ accounts }: { accounts: any[] }) {
 
                   <div className="flex items-center gap-1 transition-opacity shrink-0">
                     <AccountForm account={account} />
-                    <Popconfirm
-                      title="Delete Account"
-                      description="Are you sure you want to delete this account?"
-                      onConfirm={async () => {
-                        try {
-                          const res = await deleteAccount(account._id);
-                          if (res && !res.success) {
-                            Modal.error({
-                              title: "Cannot Delete Account",
-                              content: res.error || "This account is in use elsewhere.",
-                              okText: "Close",
-                            });
-                          }
-                        } catch (err: any) {
-                          Modal.error({
-                            title: "Cannot Delete Account",
-                            content: err.message || "This account is in use elsewhere.",
-                            okText: "Close",
-                          });
-                        }
-                      }}
-                      okText="Yes"
-                      cancelText="No"
-                    >
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-                        <Trash className="w-4 h-4" />
-                      </Button>
-                    </Popconfirm>
+                    <AccountDeleteModal account={account} />
                   </div>
                 </div>
 

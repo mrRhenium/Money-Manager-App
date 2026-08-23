@@ -56,7 +56,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
         <CardContent className="p-5">
           <div className="flex justify-between items-start mb-4 gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <div 
+              <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
                 style={{ backgroundColor: `${loan.color}20`, color: loan.color }}
               >
@@ -81,8 +81,8 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
             </div>
             <div className="flex items-center gap-1 -mt-2 -mr-2">
               {loan.status === "active" && (
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={() => handlePayEMI(loan._id)}
                   disabled={isPaying === loan._id}
                   className="flex shadow-sm h-8 mr-1"

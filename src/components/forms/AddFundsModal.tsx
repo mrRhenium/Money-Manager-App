@@ -31,6 +31,20 @@ export function AddFundsModal({ goal, accounts = [], onUpdate }: { goal: any, ac
       setError("Please enter a valid amount");
       return;
     }
+
+    const remaining = goal.targetAmount - goal.currentAmount;
+    if (numAmount > remaining) {
+      setError(`You can only add up to ${formatIndianNumber(remaining)} to reach your goal target.`);
+      return;
+    }
+
+    if (sourceAccountId) {
+      const sourceAcc = accounts.find(a => a._id === sourceAccountId);
+      if (sourceAcc && numAmount > sourceAcc.balance) {
+        setError(`Insufficient balance in source account (${formatIndianNumber(sourceAcc.balance)})`);
+        return;
+      }
+    }
     
     setLoading(true);
     try {

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { List, Popconfirm, Modal, Tabs } from "antd";
+import { useMemo, useState } from "react";
+import { List, Popconfirm, Modal, Tabs, Select as AntSelect } from "antd";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import { Progress } from "@/components/ui/progress";
-import { Trash, Target, CalendarDays, PlusCircle } from "lucide-react";
+import { Trash, Target, CalendarDays, PlusCircle, Search, ArrowUpDown, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import dayjs from "dayjs";
 import { GoalForm } from "../forms/GoalForm";
 import { deleteGoal } from "@/actions/goal";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
@@ -16,6 +18,61 @@ import { useCurrency } from "@/hooks/useCurrency";
 export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activeGoals: any[], completedGoals: any[], accounts?: any[] }) {
   const { format } = useCurrency();
   const [activeTab, setActiveTab] = useState("in-progress");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("deadline-nearest");
+
+  const getDaysLeft = (deadline: string | undefined) => {
+    if (!deadline) return Infinity;
+    return dayjs(deadline).diff(dayjs(), "day");
+  };
+
+  const getUrgencyInfo = (deadline: string | undefined) => {
+    if (!deadline) return null;
+    const days = getDaysLeft(deadline);
+    if (days < 0) return { label: "Overdue", color: "bg-red-500", textColor: "text-red-600", days: Math.abs(days) };
+    if (days <= 7) return { label: `${days}d left`, color: "bg-red-500", textColor: "text-red-600", days };
+    if (days <= 30) return { label: `${days}d left`, color: "bg-amber-500", textColor: "text-amber-600", days };
+    if (days <= 90) return { label: `${Math.floor(days / 30)}mo left`, color: "bg-blue-500", textColor: "text-blue-600", days };
+    return { label: `${Math.floor(days / 30)}mo left`, color: "bg-emerald-500", textColor: "text-emerald-600", days };
+  };
+
+  const sortGoals = (goals: any[]) => {
+    const sorted = [...goals];
+    switch (sortBy) {
+      case "deadline-nearest":
+        return sorted.sort((a, b) => getDaysLeft(a.deadline) - getDaysLeft(b.deadline));
+      case "deadline-farthest":
+        return sorted.sort((a, b) => {
+          const da = a.deadline ? getDaysLeft(a.deadline) : -Infinity;
+          const db = b.deadline ? getDaysLeft(b.deadline) : -Infinity;
+          return db - da;
+        });
+      case "progress-high":
+        return sorted.sort((a, b) => (b.currentAmount / b.targetAmount) - (a.currentAmount / a.targetAmount));
+      case "progress-low":
+        return sorted.sort((a, b) => (a.currentAmount / a.targetAmount) - (b.currentAmount / b.targetAmount));
+      case "amount-high":
+        return sorted.sort((a, b) => b.targetAmount - a.targetAmount);
+      case "amount-low":
+        return sorted.sort((a, b) => a.targetAmount - b.targetAmount);
+      default:
+        return sorted;
+    }
+  };
+
+  const filteredActive = useMemo(() => {
+    const filtered = activeGoals.filter(goal =>
+      goal.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return sortGoals(filtered);
+  }, [activeGoals, searchTerm, sortBy]);
+
+  const filteredCompleted = useMemo(() => {
+    const filtered = completedGoals.filter(goal =>
+      goal.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return sortGoals(filtered);
+  }, [completedGoals, searchTerm, sortBy]);
 
   const renderGoalsList = (goals: any[]) => {
     if (goals.length === 0) {
@@ -48,30 +105,54 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
                     </div>
                     <div>
                       <h3 className="font-bold text-lg leading-tight line-clamp-1" title={goal.name}>{goal.name}</h3>
-                      {goal.deadline && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                          <CalendarDays className="w-3 h-3" /> 
-                          {formatDateString(goal.deadline, "DD-MM-YYYY")}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {goal.deadline && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <CalendarDays className="w-3 h-3" /> 
+                            {formatDateString(goal.deadline, "DD-MM-YYYY")}
+                          </p>
+                        )}
+                        {(() => {
+                          const urgency = getUrgencyInfo(goal.deadline);
+                          if (!urgency || isCompleted) return null;
+                          return (
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-white ${urgency.color}`}>
+                              {urgency.days <= 7 && <AlertTriangle className="w-2.5 h-2.5" />}
+                              {urgency.label}
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1 transition-opacity shrink-0">
                     <GoalForm goal={goal} onUpdate={() => {}} />
-                    <Popconfirm
-                      title="Delete Goal"
-                      description="Are you sure you want to delete this savings goal?"
-                      onConfirm={async () => {
-                        await deleteGoal(goal._id);
-                      }}
-                      okText="Yes"
-                      cancelText="No"
-                    >
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                    {goal.currentAmount > 0 ? (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground opacity-50 cursor-not-allowed rounded-full"
+                        title="Cannot delete goal with saved funds. Please withdraw funds first."
+                        onClick={() => {}}
+                      >
                         <Trash className="w-4 h-4" />
                       </Button>
-                    </Popconfirm>
+                    ) : (
+                      <Popconfirm
+                        title="Delete Goal"
+                        description="Are you sure you want to delete this savings goal?"
+                        onConfirm={async () => {
+                          await deleteGoal(goal._id);
+                        }}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      </Popconfirm>
+                    )}
                   </div>
                 </div>
 
@@ -122,20 +203,45 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3 mb-2">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search goals..." 
+            className="pl-9"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <AntSelect
+          value={sortBy}
+          onChange={setSortBy}
+          className="w-full sm:w-56 h-10"
+          suffixIcon={<ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />}
+          options={[
+            { label: "🔥 Deadline: Nearest First", value: "deadline-nearest" },
+            { label: "🕐 Deadline: Farthest First", value: "deadline-farthest" },
+            { label: "📈 Progress: High to Low", value: "progress-high" },
+            { label: "📉 Progress: Low to High", value: "progress-low" },
+            { label: "💰 Target: High to Low", value: "amount-high" },
+            { label: "💵 Target: Low to High", value: "amount-low" },
+          ]}
+        />
+      </div>
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}
         items={[
           {
             key: "in-progress",
-            label: `In Progress (${activeGoals.length})`,
-            children: renderGoalsList(activeGoals),
+            label: `In Progress (${filteredActive.length})`,
+            children: renderGoalsList(filteredActive),
           },
           {
             key: "completed",
-            label: `Completed (${completedGoals.length})`,
-            children: renderGoalsList(completedGoals),
+            label: `Completed (${filteredCompleted.length})`,
+            children: renderGoalsList(filteredCompleted),
           },
         ]}
       />

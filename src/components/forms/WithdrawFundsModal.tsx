@@ -43,6 +43,12 @@ export function WithdrawFundsModal({ goal, accounts = [], onUpdate }: { goal: an
       return;
     }
 
+    const sourceAcc = accounts.find(a => a._id === sourceAccountId);
+    if (sourceAcc && numAmount > sourceAcc.balance) {
+      setError(`Insufficient balance in source account (${formatIndianNumber(sourceAcc.balance)})`);
+      return;
+    }
+
     if (numAmount > goal.currentAmount) {
       setError(`You cannot withdraw more than the goal balance (${formatIndianNumber(goal.currentAmount.toString())})`);
       return;

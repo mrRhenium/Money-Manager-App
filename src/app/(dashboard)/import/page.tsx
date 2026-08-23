@@ -7,7 +7,7 @@ export default async function ImportPage() {
   const categories = await getCategories();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto w-full">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Import Statements</h1>
         <p className="text-muted-foreground mt-1">Upload CSV or Excel bank statements to quickly log multiple transactions.</p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { List, Popconfirm, Modal } from "antd";
+import { List, Popconfirm, Modal, Tabs } from "antd";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import { Progress } from "@/components/ui/progress";
 import { Trash, Target, CalendarDays, PlusCircle } from "lucide-react";
@@ -10,17 +10,22 @@ import { GoalForm } from "../forms/GoalForm";
 import { deleteGoal } from "@/actions/goal";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { AddFundsModal } from "../forms/AddFundsModal";
+import { WithdrawFundsModal } from "../forms/WithdrawFundsModal";
 import { useCurrency } from "@/hooks/useCurrency";
 
-export function GoalList({ goals }: { goals: any[] }) {
+export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activeGoals: any[], completedGoals: any[], accounts?: any[] }) {
   const { format } = useCurrency();
+  const [activeTab, setActiveTab] = useState("in-progress");
 
-  if (goals.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="w-full">
+  const renderGoalsList = (goals: any[]) => {
+    if (goals.length === 0) {
+      return (
+        <div className="text-center py-10 text-muted-foreground border border-dashed rounded-xl mt-4">
+          No goals in this section.
+        </div>
+      );
+    }
+    return (
       <List
         grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
         dataSource={goals}
@@ -94,11 +99,14 @@ export function GoalList({ goals }: { goals: any[] }) {
                   </div>
                 </div>
 
-                {!isCompleted && (
-                  <div className="flex gap-2 shrink-0 z-10 pt-2">
-                    <AddFundsModal goal={goal} onUpdate={() => {}} />
-                  </div>
-                )}
+                <div className="flex gap-2 shrink-0 z-10 pt-2">
+                  {!isCompleted && (
+                    <AddFundsModal goal={goal} accounts={accounts} onUpdate={() => {}} />
+                  )}
+                  {actualPercentage > 0 && (
+                    <WithdrawFundsModal goal={goal} accounts={accounts} onUpdate={() => {}} />
+                  )}
+                </div>
                 
                 {/* Decorative background circle */}
                 <div 
@@ -109,6 +117,27 @@ export function GoalList({ goals }: { goals: any[] }) {
             </List.Item>
           );
         }}
+      />
+    );
+  };
+
+  return (
+    <div className="w-full">
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: "in-progress",
+            label: `In Progress (${activeGoals.length})`,
+            children: renderGoalsList(activeGoals),
+          },
+          {
+            key: "completed",
+            label: `Completed (${completedGoals.length})`,
+            children: renderGoalsList(completedGoals),
+          },
+        ]}
       />
     </div>
   );

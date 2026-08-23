@@ -61,7 +61,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
                 "flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300 relative group overflow-hidden",
                 isActive 
                   ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold"
-                  : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground hover:scale-[1.02]"
+                  : "text-muted-foreground dark:text-slate-300 hover:bg-secondary/80 hover:text-foreground dark:hover:text-white hover:scale-[1.02]"
               )}
             >
               {isActive && (
@@ -86,7 +86,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
                     "flex items-center justify-center w-10 h-10 mx-auto rounded-xl transition-all duration-300 relative group overflow-hidden",
                     isActive 
                       ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold"
-                      : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground hover:scale-[1.02]"
+                      : "text-muted-foreground dark:text-slate-300 hover:bg-secondary/80 hover:text-foreground dark:hover:text-white hover:scale-[1.02]"
                   )}
                 />
               }>

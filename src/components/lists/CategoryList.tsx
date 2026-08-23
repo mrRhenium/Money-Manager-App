@@ -22,13 +22,13 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
   }, [incomeCategories, searchQuery]);
   const renderCategoryItem = (cat: any, index: number) => (
     <List.Item className="!p-0 !border-0 mb-2">
-      <div className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm w-full">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm w-full relative overflow-hidden group">
+        <div className="flex items-center gap-3 z-10">
           <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
           <CategoryIcon name={cat.icon} color={cat.color} className="w-5 h-5" />
           <span className="font-medium">{cat.name}</span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 z-10">
           {!cat.isSystem && (
             <>
               <CategoryForm category={cat} />
@@ -63,6 +63,11 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
             </>
           )}
         </div>
+        {/* Decorative background circle */}
+        <div 
+          className="absolute -right-4 -bottom-4 w-16 h-16 rounded-full opacity-5 pointer-events-none"
+          style={{ backgroundColor: cat.color || "var(--primary)" }}
+        />
       </div>
     </List.Item>
   );

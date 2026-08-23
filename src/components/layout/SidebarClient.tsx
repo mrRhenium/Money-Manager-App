@@ -19,6 +19,8 @@ export function SidebarClient({ user }: { user: any }) {
       }} 
       className={cn(
         "hidden md:flex flex-col relative group shrink-0 z-40",
+        // Force text color in dark mode
+        "dark:text-white",
         // Modern glassmorphism
         "bg-background/95 dark:bg-card/95 backdrop-blur-2xl border-r border-border/50",
         "shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)]"

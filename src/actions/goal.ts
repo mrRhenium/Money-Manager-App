@@ -2,6 +2,8 @@
 
 import dbConnect from "@/lib/db";
 import Goal from "@/models/Goal";
+import Account from "@/models/Account";
+import Transaction from "@/models/Transaction";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -67,7 +69,12 @@ export async function updateGoal(
   return JSON.parse(JSON.stringify(goal));
 }
 
-export async function addFundsToGoal(id: string, amountToAdd: number) {
+export async function addFundsToGoal(
+  id: string, 
+  amountToAdd: number,
+  sourceAccountId?: string,
+  destinationAccountId?: string
+) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -75,6 +82,31 @@ export async function addFundsToGoal(id: string, amountToAdd: number) {
 
   const goal = await Goal.findOne({ _id: id, userId: session.user.id });
   if (!goal) throw new Error("Goal not found");
+
+  // Handle transfer if both accounts are provided
+  if (sourceAccountId && destinationAccountId && sourceAccountId !== destinationAccountId) {
+    const sourceAcc = await Account.findOne({ _id: sourceAccountId, userId: session.user.id });
+    const destAcc = await Account.findOne({ _id: destinationAccountId, userId: session.user.id });
+    
+    if (!sourceAcc || !destAcc) throw new Error("Account not found");
+    if (sourceAcc.balance < amountToAdd) throw new Error("Insufficient balance in source account");
+
+    sourceAcc.balance -= amountToAdd;
+    destAcc.balance += amountToAdd;
+
+    await sourceAcc.save();
+    await destAcc.save();
+
+    await Transaction.create({
+      userId: session.user.id,
+      type: "transfer",
+      amount: amountToAdd,
+      accountId: sourceAcc._id,
+      toAccountId: destAcc._id,
+      goalId: goal._id,
+      note: `Added funds to Goal: ${goal.name}`,
+    });
+  }
 
   goal.currentAmount += amountToAdd;
   
@@ -98,4 +130,60 @@ export async function deleteGoal(id: string) {
 
   revalidatePath("/goals");
   revalidatePath("/");
+}
+
+export async function withdrawFundsFromGoal(
+  id: string,
+  amountToWithdraw: number,
+  sourceAccountId: string,
+  destinationAccountId: string,
+  note: string
+) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dbConnect();
+
+  const goal = await Goal.findOne({ _id: id, userId: session.user.id });
+  if (!goal) throw new Error("Goal not found");
+
+  if (goal.currentAmount < amountToWithdraw) {
+    throw new Error("Insufficient funds in goal");
+  }
+
+  if (sourceAccountId !== destinationAccountId) {
+    const sourceAcc = await Account.findOne({ _id: sourceAccountId, userId: session.user.id });
+    const destAcc = await Account.findOne({ _id: destinationAccountId, userId: session.user.id });
+    
+    if (!sourceAcc || !destAcc) throw new Error("Account not found");
+    if (sourceAcc.balance < amountToWithdraw) throw new Error("Insufficient balance in source account");
+
+    sourceAcc.balance -= amountToWithdraw;
+    destAcc.balance += amountToWithdraw;
+
+    await sourceAcc.save();
+    await destAcc.save();
+
+    await Transaction.create({
+      userId: session.user.id,
+      type: "transfer",
+      amount: amountToWithdraw,
+      accountId: sourceAcc._id,
+      toAccountId: destAcc._id,
+      goalId: goal._id,
+      note: `Withdrawn from Goal (${goal.name}): ${note}`,
+    });
+  }
+
+  goal.currentAmount -= amountToWithdraw;
+  
+  if (goal.currentAmount < goal.targetAmount) {
+    goal.status = "active";
+  }
+
+  await goal.save();
+
+  revalidatePath("/goals");
+  revalidatePath("/");
+  return JSON.parse(JSON.stringify(goal));
 }

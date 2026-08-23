@@ -22,6 +22,7 @@ export interface ITransaction extends Document {
   paymentMode?: "cash" | "bank" | "credit_card" | "wallet";
   creditCardId?: mongoose.Types.ObjectId;
   categoryId?: mongoose.Types.ObjectId;
+  goalId?: mongoose.Types.ObjectId; // For goal transfers
   personId?: mongoose.Types.ObjectId; // For lend/borrow
   billImage?: string;
   note?: string;
@@ -65,6 +66,7 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     },
     creditCardId: { type: Schema.Types.ObjectId, ref: "CreditCard" },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
+    goalId: { type: Schema.Types.ObjectId, ref: "Goal" },
     personId: { type: Schema.Types.ObjectId, ref: "Person" },
     billImage: { type: String },
     note: { type: String },

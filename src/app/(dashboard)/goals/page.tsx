@@ -1,10 +1,12 @@
 import { getGoals } from "@/actions/goal";
+import { getAccounts } from "@/actions/account";
 import { GoalForm } from "@/components/forms/GoalForm";
 import { Target } from "lucide-react";
 import { GoalList } from "@/components/lists/GoalList";
 
 export default async function GoalsPage() {
   const goals = await getGoals();
+  const accounts = await getAccounts();
 
   const activeGoals = goals.filter((g: any) => g.status === "active");
   const completedGoals = goals.filter((g: any) => g.status === "completed");
@@ -29,21 +31,7 @@ export default async function GoalsPage() {
           <p className="text-muted-foreground max-w-sm mx-auto mt-2">Create savings buckets like "Vacation", "Emergency Fund", or "New Car" to start tracking your progress.</p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {activeGoals.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold border-b pb-2">In Progress</h2>
-              <GoalList goals={activeGoals} />
-            </div>
-          )}
-
-          {completedGoals.length > 0 && (
-            <div className="space-y-4 mt-8 opacity-80">
-              <h2 className="text-xl font-bold border-b pb-2">Completed</h2>
-              <GoalList goals={completedGoals} />
-            </div>
-          )}
-        </div>
+        <GoalList activeGoals={activeGoals} completedGoals={completedGoals} accounts={accounts} />
       )}
     </div>
   );

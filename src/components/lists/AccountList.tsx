@@ -73,8 +73,9 @@ export function AccountList({ accounts }: { accounts: any[] }) {
               { label: "All Types", value: "All" },
               { label: "Bank Account", value: "Bank" },
               { label: "Cash", value: "Cash" },
+              { label: "Saving Account", value: "Saving Account" },
               { label: "Credit Card", value: "Credit Card" },
-              { label: "E-Wallet", value: "Wallet" },
+              { label: "Wallet", value: "Wallet" },
               { label: "Investment", value: "Investment" },
               { label: "Other", value: "Other" },
             ]}
@@ -93,65 +94,71 @@ export function AccountList({ accounts }: { accounts: any[] }) {
           grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
           dataSource={filteredAccounts}
           pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-        renderItem={(account: any) => (
-          <List.Item>
-            <div className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
-              <div className="flex justify-between items-start gap-4 z-10">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div 
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
-                    style={{ backgroundColor: getAccountColor(account.type) }}
-                  >
-                    {getAccountIcon(account.type)}
+          renderItem={(account: any) => (
+            <List.Item>
+              <div className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
+                <div className="flex justify-between items-start gap-4 z-10">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
+                      style={{ backgroundColor: getAccountColor(account.type) }}
+                    >
+                      {getAccountIcon(account.type)}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg leading-tight line-clamp-1 capitalize" title={account.name}>{account.name}</h3>
+                      <p className="text-[10px] text-muted-foreground uppercase font-semibold mt-1 tracking-wider">
+                        {account.type}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-lg leading-tight line-clamp-1 capitalize" title={account.name}>{account.name}</h3>
-                    <p className="text-[10px] text-muted-foreground uppercase font-semibold mt-1 tracking-wider">
-                      {account.type}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-1 transition-opacity shrink-0">
-                  <AccountForm account={account} />
-                  <Popconfirm
-                    title="Delete Account"
-                    description="Are you sure you want to delete this account?"
-                    onConfirm={async () => {
-                      try {
-                        const res = await deleteAccount(account._id);
-                        if (res && !res.success) {
+                  <div className="flex items-center gap-1 transition-opacity shrink-0">
+                    <AccountForm account={account} />
+                    <Popconfirm
+                      title="Delete Account"
+                      description="Are you sure you want to delete this account?"
+                      onConfirm={async () => {
+                        try {
+                          const res = await deleteAccount(account._id);
+                          if (res && !res.success) {
+                            Modal.error({
+                              title: "Cannot Delete Account",
+                              content: res.error || "This account is in use elsewhere.",
+                              okText: "Close",
+                            });
+                          }
+                        } catch (err: any) {
                           Modal.error({
                             title: "Cannot Delete Account",
-                            content: res.error || "This account is in use elsewhere.",
+                            content: err.message || "This account is in use elsewhere.",
                             okText: "Close",
                           });
                         }
-                      } catch (err: any) {
-                        Modal.error({
-                          title: "Cannot Delete Account",
-                          content: err.message || "This account is in use elsewhere.",
-                          okText: "Close",
-                        });
-                      }
-                    }}
-                    okText="Yes"
-                    cancelText="No"
-                  >
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                      <Trash className="w-4 h-4" />
-                    </Button>
-                  </Popconfirm>
+                      }}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </Popconfirm>
+                  </div>
                 </div>
-              </div>
 
-              <div className="z-10 mt-auto pt-4">
-                <div className="text-3xl font-bold truncate tracking-tight">{format(account.balance)}</div>
+                <div className="z-10 mt-auto pt-4">
+                  <div className="text-3xl font-bold truncate tracking-tight">{format(account.balance)}</div>
+                </div>
+
+                {/* Decorative background circle */}
+                <div
+                  className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
+                  style={{ backgroundColor: getAccountColor(account.type) }}
+                />
               </div>
-            </div>
-          </List.Item>
-        )}
-      />
+            </List.Item>
+          )}
+        />
       )}
     </div>
   );

@@ -24,7 +24,10 @@ const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
   folioNumber: z.string().optional(),
   platform: z.string().optional(),
-  investedAmount: z.string().refine(val => !isNaN(parseIndianNumber(val)), "Valid amount required"),
+  investedAmount: z.string().refine(val => {
+    const num = parseIndianNumber(val);
+    return !isNaN(num) && num > 0;
+  }, "Invested amount must be greater than 0"),
   currentValue: z.string().refine(val => !isNaN(parseIndianNumber(val)), "Valid amount required"),
   units: z.string().optional(),
   schemeCode: z.string().optional(),

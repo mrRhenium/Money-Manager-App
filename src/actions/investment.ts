@@ -59,6 +59,29 @@ export async function createInvestment(data: any) {
     note: "Initial Investment"
   });
 
+  if (data.linkedAccountId && data.investedAmount > 0) {
+    const Transaction = (await import("@/models/Transaction")).default;
+    const Account = (await import("@/models/Account")).default;
+    
+    // Create expense transaction
+    const txn = await Transaction.create({
+      userId: session.user.id,
+      type: "expense",
+      amount: data.investedAmount,
+      originalAmount: data.investedAmount,
+      date: investment.startDate || getCurrentDate(),
+      accountId: data.linkedAccountId,
+      paymentMode: "bank",
+      note: `Investment Funding: ${data.name}`,
+      status: "completed"
+    });
+
+    await Account.findOneAndUpdate(
+      { _id: data.linkedAccountId },
+      { $inc: { balance: -data.investedAmount } }
+    );
+  }
+
   await logAuditEvent("Investment", investment._id.toString(), "CREATE", undefined, investment);
 
   revalidatePath("/dashboard/investments");
@@ -146,6 +169,30 @@ export async function deleteInvestment(id: string, reason?: string, notes?: stri
       // Soft delete: change status instead of actual delete to preserve history
       const newStatus = reason === "Sold" ? "sold" : "closed";
       await Investment.updateOne({ _id: id }, { $set: { status: newStatus } });
+      
+      if (inv.linkedAccountId && reason === "Sold") {
+        const Transaction = (await import("@/models/Transaction")).default;
+        const Account = (await import("@/models/Account")).default;
+        
+        // Log income transaction for the realized value
+        await Transaction.create({
+          userId: session.user.id,
+          type: "income",
+          amount: inv.currentValue || inv.investedAmount,
+          originalAmount: inv.currentValue || inv.investedAmount,
+          date: getCurrentDate(),
+          accountId: inv.linkedAccountId,
+          paymentMode: "bank",
+          note: `Investment Sold: ${inv.name}`,
+          status: "completed"
+        });
+
+        await Account.findOneAndUpdate(
+          { _id: inv.linkedAccountId },
+          { $inc: { balance: inv.currentValue || inv.investedAmount } }
+        );
+      }
+      
       await logAuditEvent("Investment", id, "UPDATE", inv, { status: newStatus, reason, notes });
       
     } else {

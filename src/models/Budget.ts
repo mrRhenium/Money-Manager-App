@@ -11,7 +11,9 @@ export interface IBudget extends Document {
   rollover: boolean; // Unused budget carries over to next month
   color?: string;
   icon?: string;
+  status: "active" | "archived";
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const BudgetSchema: Schema<IBudget> = new Schema(
@@ -25,7 +27,8 @@ const BudgetSchema: Schema<IBudget> = new Schema(
     amount: { type: Number, required: true },
     rollover: { type: Boolean, default: false },
     color: { type: String, default: "#f59e0b" },
-    icon: { type: String, default: "PiggyBank" },
+    icon: { type: String, default: "PieChart" },
+    status: { type: String, enum: ["active", "archived"], default: "active" },
   },
   { timestamps: true }
 );

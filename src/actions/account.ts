@@ -55,7 +55,7 @@ export async function deleteAccount(id: string) {
     await dbConnect();
     
     // Check if account is used in any transactions
-    const txCount = await Transaction.countDocuments({ accountId: id });
+    const txCount = await Transaction.countDocuments({ $or: [{ accountId: id }, { toAccountId: id }] });
     if (txCount > 0) {
       return { success: false, error: `This Account cannot be deleted because it is used in ${txCount} transaction(s).` };
     }

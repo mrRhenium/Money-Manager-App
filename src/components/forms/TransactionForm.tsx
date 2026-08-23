@@ -41,7 +41,11 @@ const formSchema = z.object({
   if (data.type === "transfer") return !!data.accountId;
   if (data.paymentMode === "credit_card") return !!data.creditCardId;
   return !!data.accountId;
-}, { message: "Payment source is required", path: ["accountId"] });
+}, { message: "Payment source is required", path: ["accountId"] })
+.refine(data => {
+  if (data.type === "transfer") return !!data.toAccountId;
+  return true;
+}, { message: "Destination account is required", path: ["toAccountId"] });
 
 interface TransactionFormProps {
   accounts: any[];

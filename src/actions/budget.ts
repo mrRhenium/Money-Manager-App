@@ -55,7 +55,7 @@ export async function getBudgetsWithProgress(options: { month?: string, startDat
     };
   }
 
-  const budgets = await Budget.find(matchQuery)
+  const budgets = await Budget.find({ ...matchQuery, status: { $ne: "archived" } })
     .populate("categoryId", "name icon color")
     .lean();
 
@@ -138,6 +138,7 @@ export async function upsertBudget(data: {
     const existingBudgets = await Budget.find({
       userId: session.user.id,
       categoryId: data.categoryId,
+      status: { $ne: "archived" },
       ...(data._id ? { _id: { $ne: data._id } } : {})
     });
 
@@ -236,6 +237,7 @@ export async function deleteBudget(id: string, reason?: string, notes?: string) 
         previousValue: budget,
         details: { reason, notes, amountInvolved: totalSpent }
       });
+      await Budget.updateOne({ _id: id }, { $set: { status: "archived" } });
     } else {
       await createAuditLog({
         action: "DELETE",
@@ -244,9 +246,8 @@ export async function deleteBudget(id: string, reason?: string, notes?: string) 
         entityName,
         previousValue: budget
       });
+      await Budget.deleteOne({ _id: id });
     }
-    
-    await Budget.deleteOne({ _id: id });
 
     revalidatePath("/budgets");
     revalidatePath("/");
@@ -268,6 +269,7 @@ export async function getMissingBudgets() {
 
   const activeBudgets = await Budget.find({
     userId: session.user.id,
+    status: { $ne: "archived" },
     $or: [
       { type: { $ne: "custom" }, month: monthStr },
       { type: "monthly", month: monthStr },

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import dayjs from "dayjs";
 import { GoalForm } from "../forms/GoalForm";
+import { GoalDeleteModal } from "../forms/GoalDeleteModal";
 import { deleteGoal } from "@/actions/goal";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { AddFundsModal } from "../forms/AddFundsModal";
@@ -128,31 +129,7 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
 
                   <div className="flex items-center gap-1 transition-opacity shrink-0">
                     <GoalForm goal={goal} onUpdate={() => {}} />
-                    {goal.currentAmount > 0 ? (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-muted-foreground opacity-50 cursor-not-allowed rounded-full"
-                        title="Cannot delete goal with saved funds. Please withdraw funds first."
-                        onClick={() => {}}
-                      >
-                        <Trash className="w-4 h-4" />
-                      </Button>
-                    ) : (
-                      <Popconfirm
-                        title="Delete Goal"
-                        description="Are you sure you want to delete this savings goal?"
-                        onConfirm={async () => {
-                          await deleteGoal(goal._id);
-                        }}
-                        okText="Yes"
-                        cancelText="No"
-                      >
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </Popconfirm>
-                    )}
+                    <GoalDeleteModal goal={goal} accounts={accounts} />
                   </div>
                 </div>
 

@@ -12,6 +12,9 @@ export interface ILoan extends Document {
   linkedAccountId?: mongoose.Types.ObjectId;
   startDate: Date;
   tenureMonths: number;
+  interestRate?: number; // Annual interest rate (% p.a.)
+  interestType?: "simple" | "compound"; // User-selected calculation method
+  calculationMode?: "manual" | "auto"; // How values were entered
   status: "active" | "completed";
   color: string;
   icon: string;
@@ -33,6 +36,9 @@ const LoanSchema: Schema<ILoan> = new Schema(
     linkedAccountId: { type: Schema.Types.ObjectId, ref: "Account" },
     startDate: { type: Date, required: true },
     tenureMonths: { type: Number, required: true },
+    interestRate: { type: Number },
+    interestType: { type: String, enum: ["simple", "compound"] },
+    calculationMode: { type: String, enum: ["manual", "auto"], default: "manual" },
     status: { type: String, enum: ["active", "completed"], default: "active" },
     color: { type: String, default: "#3b82f6" },
     icon: { type: String, default: "Landmark" },
@@ -46,3 +52,4 @@ LoanSchema.index({ userId: 1, status: 1 });
 const Loan: Model<ILoan> = mongoose.models.Loan || mongoose.model<ILoan>("Loan", LoanSchema);
 
 export default Loan;
+

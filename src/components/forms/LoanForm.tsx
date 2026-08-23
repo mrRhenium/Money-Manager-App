@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,25 +9,20 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { PenLine, Plus, Briefcase, Landmark, HandCoins, Activity, CalendarDays, Percent, AlignLeft } from "lucide-react";
+import { PenLine, Plus, Landmark, Calculator, PenTool } from "lucide-react";
 import { getCurrentFormatted, formatDateString } from "@/lib/dateTimeHelper";
 import { upsertLoan } from "@/actions/loan";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
 import { ColorPicker, IconPicker } from "@/components/ui/IconColorPicker";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { useCurrency } from "@/hooks/useCurrency";
-import { CategoryIcon } from "@/components/ui/CategoryIcon";
-
-const iconsList = [
-  "Landmark", "Banknote", "Wallet", "CreditCard", "Building", "Home", "Car", "Briefcase", "GraduationCap", "User"
-];
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   type: z.enum(["taken", "given"]),
   principalAmount: z.string().refine(val => !isNaN(parseIndianNumber(val)) && parseIndianNumber(val) > 0, "Valid amount required"),
-  totalAmount: z.string().refine(val => !isNaN(parseIndianNumber(val)) && parseIndianNumber(val) > 0, "Valid amount required"),
-  emiAmount: z.string().refine(val => !isNaN(parseIndianNumber(val)) && parseIndianNumber(val) > 0, "Valid amount required"),
+  totalAmount: z.string(),
+  emiAmount: z.string(),
   emiDate: z.string().refine(val => {
     const num = parseInt(val);
     return !isNaN(num) && num >= 1 && num <= 31;
@@ -35,7 +30,30 @@ const formSchema = z.object({
   startDate: z.string().min(1, "Start Date is required"),
   tenureMonths: z.string().refine(val => !isNaN(parseInt(val)) && parseInt(val) > 0, "Must be a positive number"),
   linkedAccountId: z.string().optional(),
+  interestRate: z.string().optional(),
+  interestType: z.string().optional(),
 });
+
+// Simple Interest: Total = P + (P × R × T / 1200), EMI = Total / T
+function calcSimpleInterest(principal: number, rate: number, tenureMonths: number) {
+  const totalInterest = (principal * rate * tenureMonths) / 1200;
+  const totalPayable = principal + totalInterest;
+  const emi = totalPayable / tenureMonths;
+  return { totalPayable: Math.round(totalPayable), emi: Math.round(emi), totalInterest: Math.round(totalInterest) };
+}
+
+// Compound Interest (Reducing Balance): EMI = P × r × (1+r)^n / ((1+r)^n - 1)
+function calcCompoundInterest(principal: number, rate: number, tenureMonths: number) {
+  const r = rate / 12 / 100; // monthly rate
+  if (r === 0) {
+    return { totalPayable: principal, emi: Math.round(principal / tenureMonths), totalInterest: 0 };
+  }
+  const factor = Math.pow(1 + r, tenureMonths);
+  const emi = principal * r * factor / (factor - 1);
+  const totalPayable = emi * tenureMonths;
+  const totalInterest = totalPayable - principal;
+  return { totalPayable: Math.round(totalPayable), emi: Math.round(emi), totalInterest: Math.round(totalInterest) };
+}
 
 export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accounts: any[], loan?: any, onUpdate?: () => void, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
@@ -43,6 +61,8 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
   const [color, setColor] = useState(loan?.color || "#3b82f6");
   const [icon, setIcon] = useState(loan?.icon || "Landmark");
   const [currency, setCurrency] = useState(loan?.currency || "INR");
+  const [calcMode, setCalcMode] = useState<"manual" | "auto">(loan?.calculationMode || "manual");
+  const [autoCalc, setAutoCalc] = useState<{ totalPayable: number; emi: number; totalInterest: number } | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,20 +76,73 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
       startDate: loan?.startDate ? formatDateString(loan.startDate, "YYYY-MM-DD") : getCurrentFormatted("YYYY-MM-DD"),
       tenureMonths: loan?.tenureMonths ? loan.tenureMonths.toString() : "12",
       linkedAccountId: loan?.linkedAccountId?._id || loan?.linkedAccountId || "",
+      interestRate: loan?.interestRate ? loan.interestRate.toString() : "",
+      interestType: loan?.interestType || "compound",
     },
   });
 
+  const watchPrincipal = form.watch("principalAmount");
+  const watchRate = form.watch("interestRate");
+  const watchTenure = form.watch("tenureMonths");
+  const watchInterestType = form.watch("interestType");
+
+  // Auto-calculate when relevant fields change in auto mode
+  useEffect(() => {
+    if (calcMode !== "auto") return;
+
+    const principal = parseIndianNumber(watchPrincipal);
+    const rate = parseFloat(watchRate || "0");
+    const tenure = parseInt(watchTenure || "0");
+
+    if (principal > 0 && rate > 0 && tenure > 0) {
+      const result = watchInterestType === "simple"
+        ? calcSimpleInterest(principal, rate, tenure)
+        : calcCompoundInterest(principal, rate, tenure);
+
+      setAutoCalc(result);
+      form.setValue("totalAmount", formatIndianNumber(result.totalPayable));
+      form.setValue("emiAmount", formatIndianNumber(result.emi));
+    } else {
+      setAutoCalc(null);
+    }
+  }, [watchPrincipal, watchRate, watchTenure, watchInterestType, calcMode]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const principal = parseIndianNumber(values.principalAmount);
+    const total = parseIndianNumber(values.totalAmount);
+    const emi = parseIndianNumber(values.emiAmount);
+
+    // Validations
+    if (total < principal) {
+      form.setError("totalAmount", { message: "Total payable must be ≥ principal amount" });
+      return;
+    }
+    if (emi > total) {
+      form.setError("emiAmount", { message: "EMI cannot exceed total payable amount" });
+      return;
+    }
+    if (emi <= 0) {
+      form.setError("emiAmount", { message: "Valid EMI amount required" });
+      return;
+    }
+    if (total <= 0) {
+      form.setError("totalAmount", { message: "Valid total amount required" });
+      return;
+    }
+
     setLoading(true);
     try {
       await upsertLoan({
         _id: loan?._id,
         ...values,
-        principalAmount: parseIndianNumber(values.principalAmount),
-        totalAmount: parseIndianNumber(values.totalAmount),
-        emiAmount: parseIndianNumber(values.emiAmount),
+        principalAmount: principal,
+        totalAmount: total,
+        emiAmount: emi,
         emiDate: parseInt(values.emiDate),
         tenureMonths: parseInt(values.tenureMonths),
+        interestRate: values.interestRate ? parseFloat(values.interestRate) : undefined,
+        interestType: values.interestType || undefined,
+        calculationMode: calcMode,
         color,
         icon,
         currency
@@ -82,6 +155,8 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
       setLoading(false);
     }
   }
+
+  const { format } = useCurrency();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -105,8 +180,31 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
           </DialogTitle>
         </DialogHeader>
 
+        {/* Calculation Mode Toggle */}
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/30 border">
+          <span className="text-sm font-medium text-muted-foreground mr-auto">Calculation Mode:</span>
+          <Button
+            type="button"
+            variant={calcMode === "manual" ? "default" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5"
+            onClick={() => setCalcMode("manual")}
+          >
+            <PenTool className="w-3.5 h-3.5" /> Manual
+          </Button>
+          <Button
+            type="button"
+            variant={calcMode === "auto" ? "default" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5"
+            onClick={() => setCalcMode("auto")}
+          >
+            <Calculator className="w-3.5 h-3.5" /> Auto-Calculate
+          </Button>
+        </div>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -165,26 +263,73 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
                   </FormItem>
                 )}
               />
+
+              {calcMode === "auto" ? (
+                <FormField
+                  control={form.control}
+                  name="interestRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Interest Rate (% p.a.)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01" 
+                          placeholder="e.g. 8.5" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="totalAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Payable (Inc. Interest)</FormLabel>
+                      <FormControl>
+                        <CurrencyInput 
+                          placeholder="e.g. 12,00,000"
+                          currency={currency}
+                          onCurrencyChange={setCurrency}
+                          {...field}
+                          onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            {/* Interest Type — visible in auto mode */}
+            {calcMode === "auto" && (
               <FormField
                 control={form.control}
-                name="totalAmount"
+                name="interestType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Total Payable (Inc. Interest)</FormLabel>
+                    <FormLabel>Interest Calculation Method</FormLabel>
                     <FormControl>
-                      <CurrencyInput 
-                        placeholder="e.g. 12,00,000"
-                        currency={currency}
-                        onCurrencyChange={setCurrency}
-                        {...field}
-                        onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
+                      <Select
+                        className="w-full h-10"
+                        value={field.value || "compound"}
+                        onChange={field.onChange}
+                        options={[
+                          { label: "📊 Simple Interest — Flat Rate (Personal/Gold Loans)", value: "simple" },
+                          { label: "🏦 Compound Interest — Reducing Balance EMI (Home/Car/Education Loans)", value: "compound" },
+                        ]}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -192,7 +337,7 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
                 name="emiAmount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>EMI Amount</FormLabel>
+                    <FormLabel>EMI Amount {calcMode === "auto" && "(Auto)"}</FormLabel>
                     <FormControl>
                       <CurrencyInput 
                         placeholder="e.g. 15,000"
@@ -200,6 +345,7 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
                         onCurrencyChange={setCurrency}
                         {...field}
                         onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
+                        disabled={calcMode === "auto"}
                       />
                     </FormControl>
                     <FormMessage />
@@ -220,6 +366,58 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
                 )}
               />
             </div>
+
+            {/* Auto-Calc Live Preview */}
+            {calcMode === "auto" && autoCalc && (
+              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 space-y-2">
+                <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
+                  <Calculator className="w-4 h-4" /> Loan Calculation Summary
+                </h4>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Monthly EMI</p>
+                    <p className="font-bold text-foreground">{format(autoCalc.emi)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total Interest</p>
+                    <p className="font-bold text-red-500">{format(autoCalc.totalInterest)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total Payable</p>
+                    <p className="font-bold text-foreground">{format(autoCalc.totalPayable)}</p>
+                  </div>
+                </div>
+                {autoCalc.totalInterest > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Interest to Principal Ratio: <span className="font-bold">{(autoCalc.totalInterest / parseIndianNumber(watchPrincipal) * 100).toFixed(1)}%</span> 
+                    {" "}({watchInterestType === "simple" ? "Simple" : "Compound / Reducing Balance"})
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Show total payable as read-only in auto mode */}
+            {calcMode === "auto" && (
+              <FormField
+                control={form.control}
+                name="totalAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Total Payable (Auto-Calculated)</FormLabel>
+                    <FormControl>
+                      <CurrencyInput 
+                        placeholder="Auto-calculated"
+                        currency={currency}
+                        onCurrencyChange={setCurrency}
+                        {...field}
+                        disabled
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField
@@ -269,6 +467,48 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
                 )}
               />
             </div>
+
+            {/* Interest rate field in manual mode (optional, for display) */}
+            {calcMode === "manual" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="interestRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Interest Rate % (Optional)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" placeholder="e.g. 8.5" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="interestType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Interest Type (Optional)</FormLabel>
+                      <FormControl>
+                        <Select
+                          className="w-full h-10"
+                          allowClear
+                          placeholder="Select type"
+                          value={field.value || undefined}
+                          onChange={field.onChange}
+                          options={[
+                            { label: "Simple Interest", value: "simple" },
+                            { label: "Compound Interest", value: "compound" },
+                          ]}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
                <ColorPicker value={color} onChange={setColor} id={`loanColor-${loan?._id || 'new'}`} />

@@ -1,37 +1,66 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import AuditLog from "@/models/AuditLog";
+import { auth } from "@/lib/auth";
 
-export async function logAuditEvent(
-  entityType: string,
-  entityId: string,
-  action: "CREATE" | "UPDATE" | "DELETE",
-  previousValue?: any,
-  currentValue?: any
-) {
+interface CreateAuditLogParams {
+  action: string;
+  entityType: string;
+  entityId: string;
+  entityName?: string;
+  previousValue?: any;
+  currentValue?: any;
+  details?: {
+    reason?: string;
+    notes?: string;
+    amountInvolved?: number;
+    currency?: string;
+    reversalAccountId?: string;
+    reversalAccountName?: string;
+    transactionsReversed?: number;
+    metadata?: Record<string, any>;
+  };
+}
+
+export async function createAuditLog(params: CreateAuditLogParams) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return; // Silent return if not logged in
+    if (!session?.user?.id) {
+      console.warn("Audit log creation skipped: Unauthorized");
+      return null;
+    }
 
     await dbConnect();
 
-    // Clean data from raw MongoDB Document types to plain JS objects for clean JSON serialization
-    const cleanPrev = previousValue ? JSON.parse(JSON.stringify(previousValue)) : undefined;
-    const cleanCurr = currentValue ? JSON.parse(JSON.stringify(currentValue)) : undefined;
-
-    await AuditLog.create({
+    const auditLog = await AuditLog.create({
       userId: session.user.id,
-      entityType,
-      entityId,
-      action,
-      previousValue: cleanPrev,
-      currentValue: cleanCurr,
+      ...params,
     });
+
+    return JSON.parse(JSON.stringify(auditLog));
   } catch (error) {
-    console.error("Failed to log audit event:", error);
+    console.error("Failed to create audit log:", error);
+    // Don't throw, we don't want audit log failure to break the main flow
+    return null;
   }
+}
+
+// Alias/Wrapper for older code that uses the 5-argument signature
+export async function logAuditEvent(
+  entityType: string,
+  entityId: string,
+  action: string,
+  previousValue?: any,
+  currentValue?: any
+) {
+  return createAuditLog({
+    action,
+    entityType,
+    entityId,
+    previousValue,
+    currentValue,
+  });
 }
 
 export async function getAuditLogs() {
@@ -39,9 +68,6 @@ export async function getAuditLogs() {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   await dbConnect();
-  const logs = await AuditLog.find({ userId: session.user.id })
-    .sort({ createdAt: -1 })
-    .limit(200); // Limit to top 200 logs for performance
-
+  const logs = await AuditLog.find({ userId: session.user.id }).sort({ createdAt: -1 }).limit(100).lean();
   return JSON.parse(JSON.stringify(logs));
 }

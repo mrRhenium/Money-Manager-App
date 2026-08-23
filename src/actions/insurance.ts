@@ -6,6 +6,7 @@ import PremiumPaymentHistory from "@/models/PremiumPaymentHistory";
 import ClaimHistory from "@/models/ClaimHistory";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getInsurancePolicies() {
   const session = await auth();
@@ -50,10 +51,18 @@ export async function createInsurancePolicy(data: any) {
 
   await dbConnect();
   
+  if (data.coverageAmount <= 0) throw new Error("Coverage amount must be greater than 0");
+  if (data.premiumAmount <= 0) throw new Error("Premium amount must be greater than 0");
+  if (data.endDate && new Date(data.endDate) <= new Date(data.startDate)) {
+    throw new Error("End date must be after start date");
+  }
+
   const policy = await InsurancePolicy.create({
     ...data,
     userId: session.user.id,
   });
+
+  await logAuditEvent("InsurancePolicy", policy._id.toString(), "CREATE", undefined, policy);
 
   // Log first upcoming premium if not already paid
   await PremiumPaymentHistory.create({
@@ -75,11 +84,24 @@ export async function updateInsurancePolicy(id: string, data: any) {
 
   await dbConnect();
 
+  if (data.coverageAmount <= 0) throw new Error("Coverage amount must be greater than 0");
+  if (data.premiumAmount <= 0) throw new Error("Premium amount must be greater than 0");
+  if (data.endDate && new Date(data.endDate) <= new Date(data.startDate)) {
+    throw new Error("End date must be after start date");
+  }
+
+  const oldPolicy = await InsurancePolicy.findOne({ _id: id, userId: session.user.id });
+  if (!oldPolicy) throw new Error("Policy not found");
+
   const policy = await InsurancePolicy.findOneAndUpdate(
     { _id: id, userId: session.user.id },
     { $set: data },
     { new: true }
   );
+  
+  if (policy) {
+    await logAuditEvent("InsurancePolicy", policy._id.toString(), "UPDATE", oldPolicy, policy);
+  }
 
   revalidatePath("/dashboard/insurance");
   revalidatePath(`/dashboard/insurance/${id}`);
@@ -88,7 +110,7 @@ export async function updateInsurancePolicy(id: string, data: any) {
   return JSON.parse(JSON.stringify(policy));
 }
 
-export async function deleteInsurancePolicy(id: string) {
+export async function deleteInsurancePolicy(id: string, reason?: string, notes?: string) {
   try {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
@@ -98,9 +120,21 @@ export async function deleteInsurancePolicy(id: string) {
     const policy = await InsurancePolicy.findOne({ _id: id, userId: session.user.id });
     if (!policy) return { success: false, error: "Policy not found" };
     
-    await InsurancePolicy.deleteOne({ _id: id });
-    await PremiumPaymentHistory.deleteMany({ policyId: id });
-    await ClaimHistory.deleteMany({ policyId: id });
+    // Check if there are any premium payments actually paid
+    const paidPremiumsCount = await PremiumPaymentHistory.countDocuments({ policyId: id, status: "paid" });
+
+    if (paidPremiumsCount > 0) {
+      // Soft delete: change status to lapsed or surrendered
+      const statusToSet = reason === "surrender" ? "surrendered" : "lapsed";
+      await InsurancePolicy.updateOne({ _id: id }, { $set: { status: statusToSet } });
+      await logAuditEvent("InsurancePolicy", id, "DELETE_SOFT", policy, { status: statusToSet, reason, notes });
+    } else {
+      // Hard delete
+      await InsurancePolicy.deleteOne({ _id: id });
+      await PremiumPaymentHistory.deleteMany({ policyId: id });
+      await ClaimHistory.deleteMany({ policyId: id });
+      await logAuditEvent("InsurancePolicy", id, "DELETE", policy, null);
+    }
 
     revalidatePath("/dashboard/insurance");
     revalidatePath("/dashboard");
@@ -122,6 +156,8 @@ export async function logPremiumPayment(policyId: string, paymentData: any) {
     status: "paid"
   });
 
+  await logAuditEvent("InsurancePolicy", policyId, "UPDATE", undefined, { paymentLogged: payment });
+
   revalidatePath(`/dashboard/insurance/${policyId}`);
   return JSON.parse(JSON.stringify(payment));
 }
@@ -137,6 +173,8 @@ export async function fileClaim(policyId: string, claimData: any) {
     ...claimData,
     claimStatus: "filed"
   });
+
+  await logAuditEvent("InsurancePolicy", policyId, "UPDATE", undefined, { claimFiled: claim });
 
   revalidatePath(`/dashboard/insurance/${policyId}`);
   return JSON.parse(JSON.stringify(claim));

@@ -39,6 +39,7 @@ export async function getPeople() {
       return {
         ...person,
         netBalance,
+        transactionCount: transactions.length,
       };
     })
   );
@@ -80,7 +81,7 @@ export async function createPerson(data: { name: string; relation: "Friend" | "F
   return JSON.parse(JSON.stringify(person));
 }
 
-export async function deletePerson(id: string) {
+export async function deletePerson(id: string, reason?: string, notes?: string) {
   try {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
@@ -89,15 +90,20 @@ export async function deletePerson(id: string) {
     
     // Check if person is used in any transactions
     const txCount = await Transaction.countDocuments({ personId: id });
-    if (txCount > 0) {
-      return { success: false, error: `This Person cannot be deleted because they are used in ${txCount} transaction(s).` };
-    }
-
+    
     const person = await Person.findOne({ _id: id, userId: session.user.id });
-    if (person) {
+    if (!person) return { success: false, error: "Contact not found" };
+
+    if (txCount > 0) {
+      if (!reason || !notes) {
+        return { success: false, error: "Reason and notes are mandatory for deleting a utilized contact." };
+      }
+      await logAuditEvent("Person", id, "DELETE", person, { reason, notes, transactionsRetained: txCount });
+    } else {
       await logAuditEvent("Person", id, "DELETE", person, undefined);
-      await Person.deleteOne({ _id: id });
     }
+    
+    await Person.deleteOne({ _id: id, userId: session.user.id });
 
     revalidatePath("/people");
     return { success: true };

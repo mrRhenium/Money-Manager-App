@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "antd";
 import { PersonForm } from "../forms/PersonForm";
+import { PersonDeleteModal } from "../forms/PersonDeleteModal";
 import { deletePerson } from "@/actions/person";
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -61,34 +62,7 @@ export function PersonList({ people }: { people: any[] }) {
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <PersonForm person={person} />
-            <Popconfirm
-              title="Delete Contact"
-              description="Are you sure you want to delete this contact?"
-              onConfirm={async () => {
-                try {
-                  const res = await deletePerson(person._id);
-                  if (res && !res.success) {
-                    Modal.error({
-                      title: "Cannot Delete Contact",
-                      content: res.error || "This contact is in use elsewhere.",
-                      okText: "Close",
-                    });
-                  }
-                } catch (err: any) {
-                  Modal.error({
-                    title: "Cannot Delete Contact",
-                    content: err.message || "This contact is in use elsewhere.",
-                    okText: "Close",
-                  });
-                }
-              }}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors">
-                <Trash className="w-4 h-4" />
-              </Button>
-            </Popconfirm>
+            <PersonDeleteModal person={person} />
           </div>
         </div>
         <div className="pt-2 border-t flex items-center justify-between mt-auto">
@@ -135,14 +109,14 @@ export function PersonList({ people }: { people: any[] }) {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border shadow-sm p-4">
+      <div className="">
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
           items={[
             {
               key: "merchants",
-              label: "Merchants & Shopkeepers",
+              label: `Merchants & Shopkeepers (${filteredMerchants.length})`,
               children: (
                 <div className="pt-2">
                   {filteredMerchants.length === 0 ? (
@@ -162,7 +136,7 @@ export function PersonList({ people }: { people: any[] }) {
             },
             {
               key: "personal",
-              label: "Personal & Others",
+              label: `Personal & Others (${filteredPersonal.length})`,
               children: (
                 <div className="pt-2">
                   {filteredPersonal.length === 0 ? (

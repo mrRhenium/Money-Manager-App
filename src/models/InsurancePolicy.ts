@@ -19,6 +19,8 @@ export interface IInsurancePolicy extends Document {
   currency: string;
   color?: string;
   icon?: string;
+  nomineeName?: string;
+  documentUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,6 +55,8 @@ const InsurancePolicySchema: Schema<IInsurancePolicy> = new Schema(
     currency: { type: String, default: "INR" },
     color: { type: String, default: "#10b981" },
     icon: { type: String, default: "Shield" },
+    nomineeName: { type: String },
+    documentUrl: { type: String },
   },
   { timestamps: true }
 );

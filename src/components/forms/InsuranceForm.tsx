@@ -28,6 +28,8 @@ const formSchema = z.object({
   endDate: z.string().optional(),
   renewalDate: z.string().optional(),
   linkedAccountId: z.string().optional(),
+  nomineeName: z.string().optional(),
+  documentUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
 export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?: any, accounts: any[], triggerClassName?: string }) {
@@ -35,6 +37,7 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
   const [currency, setCurrency] = useState(policy?.currency || "INR");
   const [color, setColor] = useState(policy?.color || "#10b981");
   const [icon, setIcon] = useState(policy?.icon || "Shield");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,10 +53,13 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
       endDate: policy?.endDate ? formatDateString(policy.endDate, "YYYY-MM-DD") : undefined,
       renewalDate: policy?.renewalDate ? formatDateString(policy.renewalDate, "YYYY-MM-DD") : undefined,
       linkedAccountId: policy?.linkedAccountId || undefined,
+      nomineeName: policy?.nomineeName || "",
+      documentUrl: policy?.documentUrl || "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setErrorMsg("");
     try {
       const payload = {
         ...values,
@@ -74,8 +80,9 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
       }
       setOpen(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      setErrorMsg(error.message || "Failed to save policy");
     }
   }
 
@@ -100,6 +107,13 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
             <span className="text-foreground">{policy ? "Edit Policy" : "Add New Policy"}</span>
           </DialogTitle>
         </DialogHeader>
+        
+        {errorMsg && (
+          <div className="p-3 mb-2 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
+            <span className="font-semibold">Error:</span> {errorMsg}
+          </div>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
             
@@ -272,6 +286,35 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
                     <FormLabel>Maturity/End (Optional)</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="nomineeName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nominee Name (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="documentUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Document Link (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://drive.google.com/..." type="url" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

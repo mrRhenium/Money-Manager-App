@@ -237,19 +237,6 @@ export async function undoLastEMI(loanId: string) {
     throw new Error("Can only undo EMIs paid within the last 24 hours.");
   }
 
-  // Reverse amount from account if it was linked
-  if (txn.accountId) {
-    const account = await Account.findById(txn.accountId);
-    if (account) {
-      if (txn.type === "expense") {
-        account.balance += txn.amount; // Restore expense
-      } else {
-        account.balance -= txn.amount; // Restore income
-      }
-      await account.save();
-    }
-  }
-
   // Re-add outstanding balance to loan
   loan.outstandingBalance += txn.amount;
   if (loan.outstandingBalance > 0 && loan.status === "completed") {
@@ -257,8 +244,18 @@ export async function undoLastEMI(loanId: string) {
   }
   await loan.save();
 
-  // Delete the transaction
-  await Transaction.deleteOne({ _id: txn._id });
+  // Create a reversal transaction instead of deleting the old one
+  await createTransaction({
+    type: txn.type === "expense" ? "income" : "expense",
+    amount: txn.amount,
+    date: getCurrentDate().toISOString(),
+    accountId: txn.accountId?.toString(),
+    note: `EMI Reversal for ${loan.name}`,
+    originalCurrency: txn.originalCurrency || loan.currency || "INR",
+    paymentMode: txn.paymentMode,
+    status: "completed",
+    paymentSource: "manual_entry",
+  });
 
   await createAuditLog({
     action: "EMI_REVERSED",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { LoanForm } from "@/components/forms/LoanForm";
 import { LoanDeleteModal } from "@/components/forms/LoanDeleteModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,12 +12,13 @@ import { payEMI, undoLastEMI } from "@/actions/loan";
 import { useToast } from "@/hooks/useToast";
 import { AlertCircle, CheckCircle2, ArrowUpRight, ArrowDownLeft, Search, ArrowUpDown, CalendarDays, AlertTriangle, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Select as AntSelect, Tabs } from "antd";
+import { Select as AntSelect, Tabs, Modal } from "antd";
 import dayjs from "dayjs";
 
 export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] }) {
   const { format } = useCurrency();
   const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
   const [isPaying, setIsPaying] = useState<string | null>(null);
   const [isUndoing, setIsUndoing] = useState<string | null>(null);
   
@@ -25,32 +26,41 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("date-nearest");
 
-  const handlePayEMI = async (loanId: string) => {
+  const handlePayEMI = (loanId: string) => {
     setIsPaying(loanId);
-    try {
-      await payEMI(loanId);
-      toast.success("EMI paid successfully!");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to pay EMI");
-    } finally {
-      setIsPaying(null);
-    }
+    startTransition(async () => {
+      try {
+        await payEMI(loanId);
+        toast.success("EMI paid successfully!");
+      } catch (err: any) {
+        toast.error(err.message || "Failed to pay EMI");
+      } finally {
+        setIsPaying(null);
+      }
+    });
   };
 
-  const handleUndoEMI = async (loanId: string) => {
-    if (!confirm("Are you sure you want to undo the last EMI payment? This will reverse the transaction and update your account balance.")) {
-      return;
-    }
-    
-    setIsUndoing(loanId);
-    try {
-      await undoLastEMI(loanId);
-      toast.success("Last EMI payment successfully reversed!");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to undo EMI");
-    } finally {
-      setIsUndoing(null);
-    }
+  const handleUndoEMI = (loanId: string) => {
+    Modal.confirm({
+      title: 'Undo EMI Payment',
+      content: 'Are you sure you want to undo the last EMI payment? This will reverse the transaction and update your account balance.',
+      okText: 'Yes, Undo',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: () => {
+        setIsUndoing(loanId);
+        startTransition(async () => {
+          try {
+            await undoLastEMI(loanId);
+            toast.success("Last EMI payment successfully reversed!");
+          } catch (err: any) {
+            toast.error(err.message || "Failed to undo EMI");
+          } finally {
+            setIsUndoing(null);
+          }
+        });
+      }
+    });
   };
 
   const totalLiabilities = loans.filter(l => l.status === "active" && l.type === "taken").reduce((sum, l) => sum + l.outstandingBalance, 0);
@@ -139,7 +149,7 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
                   )}
                   
                   {loan.interestRate !== undefined && (
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase text-white ${loan.interestType === 'compound' ? 'bg-purple-500' : 'bg-blue-500'}`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${loan.interestType === 'compound' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
                       {loan.interestRate}% {loan.interestType === 'compound' ? 'COMPOUND' : 'SIMPLE'}
                     </span>
                   )}

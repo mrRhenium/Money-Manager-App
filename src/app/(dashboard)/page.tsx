@@ -4,7 +4,9 @@ import { getTransactions } from "@/actions/transaction";
 import { getPeople } from "@/actions/person";
 import { getCreditCards } from "@/actions/creditCard";
 import { getMissingBudgets } from "@/actions/budget";
+import { snapshotNetWorth, getNetWorthHistory } from "@/actions/netWorth";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
+import { NetWorthChart } from "@/components/dashboard/NetWorthChart";
 import { 
   ArrowUpRight, 
   ArrowDownRight, 
@@ -52,7 +54,7 @@ export default async function DashboardPage() {
   const userTimezone = (session.user as any).timezone || "UTC";
   const userCurrency = (session.user as any).currency || "INR";
 
-  const [accounts, transactions, people, cards, investments, policies, loans, missingBudgets] = await Promise.all([
+  const [accounts, transactions, people, cards, investments, policies, loans, missingBudgets, nwHistory] = await Promise.all([
     getAccounts(),
     getTransactions(100), // Get recent 100 for dashboard
     getPeople(),
@@ -60,8 +62,12 @@ export default async function DashboardPage() {
     import("@/actions/investment").then(m => m.getInvestments()),
     import("@/actions/insurance").then(m => m.getInsurancePolicies()),
     import("@/actions/loan").then(m => m.getLoans()),
-    getMissingBudgets()
+    getMissingBudgets(),
+    getNetWorthHistory(30)
   ]);
+
+  // Fire and forget net worth snapshot
+  snapshotNetWorth().catch(console.error);
 
   const totalOutstanding = cards.reduce((sum: number, c: any) => sum + c.currentOutstanding, 0);
   
@@ -217,16 +223,15 @@ export default async function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1">
+        <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1 md:col-span-2 lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Net Worth</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Net Worth History</CardTitle>
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Wallet className="w-4 h-4 text-primary" />
+              <TrendingUp className="w-4 h-4 text-primary" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
-            <p className="text-xs text-muted-foreground mt-1">Across all accounts</p>
+          <CardContent className="pt-2 h-[80px] overflow-hidden px-2 relative -mx-2">
+             <NetWorthChart data={nwHistory} />
           </CardContent>
         </Card>
 

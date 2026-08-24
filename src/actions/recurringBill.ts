@@ -102,12 +102,13 @@ export async function deleteRecurringBill(id: string, reason?: string, notes?: s
         return { success: false, error: "Reason and notes are mandatory for deleting a utilized subscription." };
       }
       
-      await logAuditEvent("RecurringBill", id, "DELETE", bill, { reason, notes, transactionsRetained: txCount });
+      await logAuditEvent("RecurringBill", id, "DELETE_SOFT", bill, { reason, notes, transactionsRetained: txCount });
+      bill.isActive = false;
+      await bill.save();
     } else {
-      await logAuditEvent("RecurringBill", id, "DELETE", bill, undefined);
+      await logAuditEvent("RecurringBill", id, "DELETE_HARD", bill, undefined);
+      await RecurringBill.deleteOne({ _id: id, userId: session.user.id });
     }
-
-    await RecurringBill.deleteOne({ _id: id, userId: session.user.id });
 
     revalidatePath("/subscriptions");
     return { success: true };

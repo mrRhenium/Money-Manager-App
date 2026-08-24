@@ -91,19 +91,19 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
               <span>{record.investmentType} {record.platform ? `• ${record.platform}` : ""}</span>
               {(record.units || record.currentPrice || record.interestRate || record.maturityDate) && (
                 <span className="text-[10.5px] mt-0.5 font-medium opacity-85">
-                  {record.investmentType === "FD" || record.investmentType === "RD" || record.investmentType === "Bonds" ? (
-                    <>
-                      {record.interestRate ? `${record.interestRate}% interest` : ""}
-                      {record.interestRate && record.maturityDate ? " • " : ""}
-                      {record.maturityDate ? `Matures: ${formatDateString(record.maturityDate, "MMM DD, YYYY")}` : ""}
-                    </>
-                  ) : (
-                    <>
-                      {record.units ? `${record.units} units` : ""}
-                      {record.units && record.currentPrice ? " @ " : ""}
-                      {record.currentPrice ? format(record.currentPrice) : ""}
-                    </>
-                  )}
+                    {record.investmentType === "FD" || record.investmentType === "RD" || record.investmentType === "Bonds" ? (
+                      <>
+                        {record.interestRate ? `${record.interestRate}% interest` : ""}
+                        {record.interestRate && record.maturityDate ? " • " : ""}
+                        {record.maturityDate ? `Matures: ${formatDateString(record.maturityDate, "MMM DD, YYYY")}` : ""}
+                      </>
+                    ) : (
+                      <>
+                        {record.units ? `${record.units} units` : ""}
+                        {record.units && record.currentPrice ? " • " : ""}
+                        {record.currentPrice ? `${record.investmentType === "MutualFund" || record.investmentType === "SIP" ? "NAV:" : "Price:"} ${format(record.currentPrice)}` : ""}
+                      </>
+                    )}
                 </span>
               )}
             </div>
@@ -192,62 +192,60 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm mt-4 mb-4">
-        <div className="relative flex-1">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-card p-3 rounded-xl border shadow-sm mt-4 mb-4">
+        <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name, platform, or ticker..."
-            className="pl-9 bg-background"
+            className="pl-9 bg-background h-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         
-        <div className="grid grid-cols-2 sm:flex sm:flex-row sm:items-center gap-2 w-full sm:w-auto sm:justify-end">
-          <AntSelect
-            value={statusFilter}
-            onChange={setStatusFilter}
-            className="w-full sm:min-w-[120px] h-10"
-            popupMatchSelectWidth={false}
-            options={[
-              { label: "Active", value: "active" },
-              { label: "Closed/Sold", value: "closed" },
-              { label: "All", value: "all" },
-            ]}
-          />
-          
-          <AntSelect
-            mode="multiple"
-            allowClear
-            maxTagCount="responsive"
-            placeholder="All Types"
-            className="w-full sm:min-w-[180px] min-h-10"
-            popupMatchSelectWidth={false}
-            value={typeFilters}
-            onChange={setTypeFilters}
-            options={typeOptions}
-            optionRender={(option) => (
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={typeFilters.includes(option.value as string)} readOnly className="cursor-pointer" />
-                <span>{option.label}</span>
-              </div>
-            )}
-          />
-          
-          <AntSelect
-            value={sortBy}
-            onChange={setSortBy}
-            className="col-span-2 sm:col-span-1 w-full sm:min-w-[170px] h-10"
-            popupMatchSelectWidth={false}
-            options={[
-              { label: "✨ Newest First", value: "newest" },
-              { label: "🕒 Oldest First", value: "oldest" },
-              { label: "📈 Highest Value", value: "highest_value" },
-              { label: "📉 Lowest Value", value: "lowest_value" },
-              { label: "🚀 Highest Return", value: "highest_return" },
-            ]}
-          />
-        </div>
+        <AntSelect
+          value={statusFilter}
+          onChange={setStatusFilter}
+          className="w-full h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Active", value: "active" },
+            { label: "Closed/Sold", value: "closed" },
+            { label: "All", value: "all" },
+          ]}
+        />
+        
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Types"
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          value={typeFilters}
+          onChange={setTypeFilters}
+          options={typeOptions}
+          optionRender={(option) => (
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={typeFilters.includes(option.value as string)} readOnly className="cursor-pointer" />
+              <span>{option.label}</span>
+            </div>
+          )}
+        />
+        
+        <AntSelect
+          value={sortBy}
+          onChange={setSortBy}
+          className="w-full h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "✨ Newest First", value: "newest" },
+            { label: "🕒 Oldest First", value: "oldest" },
+            { label: "📈 Highest Value", value: "highest_value" },
+            { label: "📉 Lowest Value", value: "lowest_value" },
+            { label: "🚀 Highest Return", value: "highest_return" },
+          ]}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:hidden">
@@ -288,8 +286,8 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                         ) : (
                           <>
                             {record.units ? `${record.units} units` : ""}
-                            {record.units && record.currentPrice ? " @ " : ""}
-                            {record.currentPrice ? format(record.currentPrice) : ""}
+                            {record.units && record.currentPrice ? " • " : ""}
+                            {record.currentPrice ? `${record.investmentType === "MutualFund" || record.investmentType === "SIP" ? "NAV:" : "Price:"} ${format(record.currentPrice)}` : ""}
                           </>
                         )}
                       </p>

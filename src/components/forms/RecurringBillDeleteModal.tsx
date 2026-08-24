@@ -103,7 +103,7 @@ export function RecurringBillDeleteModal({ bill }: { bill: any }) {
         <div className="space-y-4 py-2">
           <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
             <p className="font-semibold mb-1">Warning: Stop Tracking Subscription</p>
-            <p>You have paid this subscription <strong>{bill.transactionsCount}</strong> times. <strong>Your payment history will not be deleted</strong>, but the subscription will be completely removed.</p>
+            <p>You have paid this subscription <strong>{bill.transactionsCount}</strong> times. <strong>Your payment history will not be deleted</strong>. This subscription will be moved to your paused list and future tracking will stop.</p>
           </div>
 
           <div className="space-y-2">
@@ -144,7 +144,7 @@ export function RecurringBillDeleteModal({ bill }: { bill: any }) {
               htmlFor="confirm-sub-deletion"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              I confirm that I want to remove this subscription and keep my past payments.
+              I confirm that I want to pause this subscription and keep my past payments.
             </label>
           </div>
         </div>

@@ -231,7 +231,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
   );
 
   return (
-    <div className="w-full">
+    <div className="w-full flex-1 flex flex-col h-full overflow-hidden">
       <MasterToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -253,7 +253,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           columns={columns}
           dataSource={filteredLogs}
           rowKey="_id"
-          pagination={{ defaultPageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
+          pagination={{ defaultPageSize: 10, position: ["bottomRight"], showSizeChanger: true }}
           className="audit-logs-table"
           locale={{ emptyText: "No audit logs found." }}
         />

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 interface MasterToolbarProps {
   searchQuery: string;
   onSearchChange: (val: string) => void;
-  onFilterClick: () => void;
+  onFilterClick?: () => void;
   isFilterActive: boolean;
   searchPlaceholder?: string;
   // Tabs config
@@ -77,17 +77,19 @@ export function MasterToolbar({
               className="w-full pl-9 h-10 bg-card text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 border-slate-200 dark:border-slate-800 shadow-sm"
             />
           </div>
-          <Button
-            variant={isFilterActive ? "default" : "outline"}
-            onClick={onFilterClick}
-            className={cn(
-              "h-10 shrink-0 text-sm shadow-sm",
-              !isFilterActive && "bg-card text-foreground hover:bg-card/80 hover:text-foreground border-slate-200 dark:border-slate-800"
-            )}
-          >
-            <FilterIcon className="w-4 h-4 mr-2" />
-            Advance Filter {isFilterActive && " (Active)"}
-          </Button>
+          {onFilterClick && (
+            <Button
+              variant={isFilterActive ? "default" : "outline"}
+              onClick={onFilterClick}
+              className={cn(
+                "h-10 shrink-0 text-sm shadow-sm",
+                !isFilterActive && "bg-card text-foreground hover:bg-card/80 hover:text-foreground border-slate-200 dark:border-slate-800"
+              )}
+            >
+              <FilterIcon className="w-4 h-4 mr-2" />
+              Advance Filter {isFilterActive && " (Active)"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

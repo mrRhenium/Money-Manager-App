@@ -354,7 +354,7 @@ export default async function DashboardPage() {
             <div className="space-y-4">
               {transactions.slice(0, 5).map((t: any) => (
                 <div key={t._id} className="flex items-center justify-between group cursor-pointer hover:bg-secondary/40 p-2 -mx-2 rounded-lg transition-colors">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
                       style={{ backgroundColor: t.categoryId?.color || (t.type === 'income' ? '#10b981' : '#f43f5e') }}
@@ -365,14 +365,14 @@ export default async function DashboardPage() {
                         getFallbackTransactionIcon(t.type)
                       )}
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">{t.categoryId?.name || t.type}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">{t.categoryId?.name || t.type}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}</p>
                     </div>
                   </div>
                   <CurrencyDisplay
                     amount={t.type === 'expense' || t.type === 'lend' ? -t.amount : t.amount}
-                    className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}
+                    className={`shrink-0 font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}
                     showSign={t.type === 'income'}
                   />
                 </div>

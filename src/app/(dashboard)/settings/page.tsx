@@ -542,7 +542,6 @@ function SettingsContent() {
           onSearchChange={setSearchQuery}
           searchPlaceholder="Search settings..."
           isFilterActive={false} // no filter drawer on settings
-          onFilterClick={() => {}} // required prop
           tabs={[]}
           activeTab=""
           onTabChange={() => {}}

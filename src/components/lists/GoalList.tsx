@@ -16,11 +16,24 @@ import { AddFundsModal } from "../forms/AddFundsModal";
 import { WithdrawFundsModal } from "../forms/WithdrawFundsModal";
 import { useCurrency } from "@/hooks/useCurrency";
 
-export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activeGoals: any[], completedGoals: any[], accounts?: any[] }) {
+export function GoalList({ 
+  activeGoals, 
+  completedGoals, 
+  accounts = [],
+  externalSort,
+  hideToolbar = false
+}: { 
+  activeGoals: any[], 
+  completedGoals: any[], 
+  accounts?: any[],
+  externalSort?: string,
+  hideToolbar?: boolean
+}) {
   const { format } = useCurrency();
   const [activeTab, setActiveTab] = useState("in-progress");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("deadline-nearest");
+  const [internalSortBy, setInternalSortBy] = useState("deadline-nearest");
+  const sortBy = externalSort || internalSortBy;
 
   const getDaysLeft = (deadline: string | undefined) => {
     if (!deadline) return Infinity;
@@ -85,7 +98,7 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
     }
     return (
       <List
-        grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+        grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
         dataSource={goals}
         pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(goal: any) => {
@@ -179,6 +192,15 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
     );
   };
 
+  if (hideToolbar) {
+    const allGoals = sortGoals([...activeGoals, ...completedGoals]);
+    return (
+      <div className="w-full">
+        {renderGoalsList(allGoals)}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full space-y-4">
       <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-card p-3 rounded-xl border shadow-sm items-center">
@@ -193,8 +215,8 @@ export function GoalList({ activeGoals, completedGoals, accounts = [] }: { activ
         </div>
         <div className="relative flex-1 w-full">
           <AntSelect
-            value={sortBy}
-            onChange={setSortBy}
+            value={internalSortBy}
+            onChange={setInternalSortBy}
             className="w-full h-10"
             suffixIcon={<ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />}
             options={[

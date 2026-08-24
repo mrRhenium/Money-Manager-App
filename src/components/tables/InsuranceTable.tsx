@@ -12,7 +12,21 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
-export function InsuranceTable({ policies, accounts }: { policies: any[], accounts: any[] }) {
+export function InsuranceTable({ 
+  policies, 
+  accounts,
+  hideToolbar = false,
+  externalSort = "",
+  externalSearch = "",
+  externalType = "all"
+}: { 
+  policies: any[]; 
+  accounts: any[];
+  hideToolbar?: boolean;
+  externalSort?: string;
+  externalSearch?: string;
+  externalType?: string;
+}) {
   const { format } = useCurrency();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -26,74 +40,80 @@ export function InsuranceTable({ policies, accounts }: { policies: any[], accoun
     // Let's filter out non-active if we don't want to show them, but for now we show all
     result = result.filter(p => p.status !== "mistake" && !hiddenIds.has(p._id));
 
-    if (search) {
-      const q = search.toLowerCase();
+    const currentSearch = hideToolbar ? externalSearch : search;
+    const currentType = hideToolbar ? externalType : filterType;
+    const currentSort = hideToolbar ? externalSort : sortBy;
+
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
       result = result.filter(p => 
         p.policyName?.toLowerCase().includes(q) || 
         p.provider?.toLowerCase().includes(q) ||
         p.policyNumber?.toLowerCase().includes(q)
       );
     }
-    if (filterType !== "all") {
-      result = result.filter(p => p.type === filterType);
+    if (currentType !== "all") {
+      result = result.filter(p => p.type === currentType);
     }
 
     result.sort((a, b) => {
-      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sortBy === "highest_coverage") return (b.coverageAmount || 0) - (a.coverageAmount || 0);
-      if (sortBy === "highest_premium") return (b.premiumAmount || 0) - (a.premiumAmount || 0);
+      if (currentSort === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (currentSort === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (currentSort === "highest_coverage") return (b.coverageAmount || 0) - (a.coverageAmount || 0);
+      if (currentSort === "highest_premium") return (b.premiumAmount || 0) - (a.premiumAmount || 0);
       return 0;
     });
 
     return result;
-  }, [policies, search, filterType, sortBy, hiddenIds]);
+  }, [policies, search, filterType, sortBy, hiddenIds, hideToolbar, externalSearch, externalType, externalSort]);
 
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-card p-3 rounded-xl border shadow-sm items-center">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search by name, provider, or number..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 w-full bg-background border-input"
-          />
+      {!hideToolbar && (
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-card p-3 rounded-xl border shadow-sm items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by name, provider, or number..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 w-full bg-background border-input"
+            />
+          </div>
+          <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 w-full sm:w-auto">
+            <Select 
+              value={filterType}
+              onChange={setFilterType}
+              className="w-full sm:min-w-[130px] h-10"
+              options={[
+                { label: "All Types", value: "all" },
+                { label: "Life", value: "Life" },
+                { label: "Health", value: "Health" },
+                { label: "Vehicle", value: "Vehicle" },
+                { label: "Home", value: "Home" },
+                { label: "Travel", value: "Travel" },
+                { label: "Other", value: "Other" },
+              ]}
+            />
+            <Select 
+              value={sortBy}
+              onChange={setSortBy}
+              className="w-full sm:min-w-[150px] h-10"
+              options={[
+                { label: "✨ Newest First", value: "newest" },
+                { label: "🕒 Oldest First", value: "oldest" },
+                { label: "📈 Highest Coverage", value: "highest_coverage" },
+                { label: "💵 Highest Premium", value: "highest_premium" },
+              ]}
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 w-full sm:w-auto">
-          <Select 
-            value={filterType}
-            onChange={setFilterType}
-            className="w-full sm:min-w-[130px] h-10"
-            options={[
-              { label: "All Types", value: "all" },
-              { label: "Life", value: "Life" },
-              { label: "Health", value: "Health" },
-              { label: "Vehicle", value: "Vehicle" },
-              { label: "Home", value: "Home" },
-              { label: "Travel", value: "Travel" },
-              { label: "Other", value: "Other" },
-            ]}
-          />
-          <Select 
-            value={sortBy}
-            onChange={setSortBy}
-            className="w-full sm:min-w-[150px] h-10"
-            options={[
-              { label: "✨ Newest First", value: "newest" },
-              { label: "🕒 Oldest First", value: "oldest" },
-              { label: "📈 Highest Coverage", value: "highest_coverage" },
-              { label: "💵 Highest Premium", value: "highest_premium" },
-            ]}
-          />
-        </div>
-      </div>
+      )}
 
       <div className="pt-2 pb-4">
         <List
-          grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+          grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
           dataSource={filteredAndSorted}
           pagination={{ pageSize: 9, position: "bottom", align: "end" }}
           renderItem={(record: any) => (

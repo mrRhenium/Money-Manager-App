@@ -20,7 +20,9 @@ export function BudgetList({
   selectedMonth,
   mode = "monthly",
   startDate = "",
-  endDate = ""
+  endDate = "",
+  hideToolbar = false,
+  externalSort = ""
 }: { 
   budgets: any[]; 
   categories: any[]; 
@@ -28,6 +30,8 @@ export function BudgetList({
   mode?: string;
   startDate?: string;
   endDate?: string;
+  hideToolbar?: boolean;
+  externalSort?: string;
 }) {
   const { format: formatCurrency } = useCurrency();
   const [search, setSearch] = useState("");
@@ -38,8 +42,18 @@ export function BudgetList({
 
   const filteredBudgets = budgets.filter((b) => {
     if (hiddenIds.has(b._id)) return false;
-    return b.categoryId?.name?.toLowerCase().includes(search.toLowerCase());
+    if (!hideToolbar) {
+      return b.categoryId?.name?.toLowerCase().includes(search.toLowerCase());
+    }
+    return true; // If hideToolbar is true, filtering is handled externally
   });
+
+  if (externalSort) {
+    filteredBudgets.sort((a, b) => {
+      // Sorting logic can be added here if needed, for now we just handle it externally if passed
+      return 0;
+    });
+  }
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -73,58 +87,60 @@ export function BudgetList({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-col md:flex-row gap-3 mb-6 bg-card p-3 rounded-xl border shadow-sm items-center">
-        <div className="relative flex-1 w-full min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search by category name..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 w-full bg-background"
-          />
-        </div>
-        
-        <div className="flex flex-col sm:flex-row flex-[1.5] w-full gap-2 items-center">
-          <Select 
-            value={mode}
-            onChange={handleModeChange}
-            className="h-10 min-w-[130px] w-full sm:w-auto"
-            options={[
-              { label: "Monthly", value: "monthly" },
-              { label: "Custom Range", value: "custom" }
-            ]}
-          />
-          {mode === "monthly" ? (
+      {!hideToolbar && (
+        <div className="flex flex-col md:flex-row gap-3 mb-6 bg-card p-3 rounded-xl border shadow-sm items-center">
+          <div className="relative flex-1 w-full min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              type="month" 
-              value={selectedMonth}
-              onChange={handleMonthChange}
-              className="h-10 w-full bg-background"
+              placeholder="Search by category name..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 w-full bg-background"
             />
-          ) : (
-            <div className="flex gap-2 w-full">
-              <div className="flex-1">
-                <span className="text-[10px] text-muted-foreground absolute -top-4 left-0 hidden md:block">Start Date</span>
-                <Input 
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => handleDateChange("startDate", e.target.value)}
-                  className="h-10 w-full bg-background"
-                />
+          </div>
+          
+          <div className="flex flex-col sm:flex-row flex-[1.5] w-full gap-2 items-center">
+            <Select 
+              value={mode}
+              onChange={handleModeChange}
+              className="h-10 min-w-[130px] w-full sm:w-auto"
+              options={[
+                { label: "Monthly", value: "monthly" },
+                { label: "Custom Range", value: "custom" }
+              ]}
+            />
+            {mode === "monthly" ? (
+              <Input 
+                type="month" 
+                value={selectedMonth}
+                onChange={handleMonthChange}
+                className="h-10 w-full bg-background"
+              />
+            ) : (
+              <div className="flex gap-2 w-full">
+                <div className="flex-1">
+                  <span className="text-[10px] text-muted-foreground absolute -top-4 left-0 hidden md:block">Start Date</span>
+                  <Input 
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => handleDateChange("startDate", e.target.value)}
+                    className="h-10 w-full bg-background"
+                  />
+                </div>
+                <div className="flex-1">
+                  <span className="text-[10px] text-muted-foreground absolute -top-4 left-0 hidden md:block">End Date</span>
+                  <Input 
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => handleDateChange("endDate", e.target.value)}
+                    className="h-10 w-full bg-background"
+                  />
+                </div>
               </div>
-              <div className="flex-1">
-                <span className="text-[10px] text-muted-foreground absolute -top-4 left-0 hidden md:block">End Date</span>
-                <Input 
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => handleDateChange("endDate", e.target.value)}
-                  className="h-10 w-full bg-background"
-                />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {filteredBudgets.length === 0 ? (
         <div className="col-span-full p-8 text-center border rounded-xl border-dashed">
@@ -132,7 +148,7 @@ export function BudgetList({
         </div>
       ) : (
         <List
-          grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+          grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
           dataSource={filteredBudgets}
           pagination={{ pageSize: 9, position: "bottom", align: "end" }}
           renderItem={(budget: any, index: number) => {

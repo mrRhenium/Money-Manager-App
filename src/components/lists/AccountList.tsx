@@ -37,20 +37,36 @@ const getAccountColor = (type: string) => {
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
 
-export function AccountList({ accounts }: { accounts: any[] }) {
+export function AccountList({ accounts, hideToolbar = false, externalSort }: { accounts: any[], hideToolbar?: boolean, externalSort?: string }) {
   const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
   const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredAccounts = useMemo(() => {
-    return accounts.filter((acc) => {
-      if (hiddenIds.has(acc._id)) return false;
-      const matchesSearch = acc.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilters.length === 0 || typeFilters.includes(acc.type);
-      return matchesSearch && matchesType;
-    });
-  }, [accounts, searchQuery, typeFilters, hiddenIds]);
+    let result = accounts.filter((acc) => !hiddenIds.has(acc._id));
+    
+    if (!hideToolbar) {
+      result = result.filter((acc) => {
+        const matchesSearch = acc.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType = typeFilters.length === 0 || typeFilters.includes(acc.type);
+        return matchesSearch && matchesType;
+      });
+    }
+
+    if (externalSort) {
+      // Basic sorting mapping
+      result.sort((a, b) => {
+        if (externalSort === "balance-high") return b.balance - a.balance;
+        if (externalSort === "balance-low") return a.balance - b.balance;
+        if (externalSort === "name-asc") return a.name.localeCompare(b.name);
+        if (externalSort === "name-desc") return b.name.localeCompare(a.name);
+        return 0;
+      });
+    }
+
+    return result;
+  }, [accounts, searchQuery, typeFilters, hiddenIds, hideToolbar, externalSort]);
   if (accounts.length === 0) {
     return (
       <div className="p-8 text-center border rounded-xl border-dashed col-span-full">
@@ -62,44 +78,46 @@ export function AccountList({ accounts }: { accounts: any[] }) {
   return (
     <div className="w-full space-y-4">
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search accounts..."
-            className="pl-9 bg-background"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {!hideToolbar && (
+        <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search accounts..."
+              className="pl-9 bg-background"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 sm:w-[200px]">
+            <Filter className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
+            <Select
+              mode="multiple"
+              allowClear
+              maxTagCount="responsive"
+              placeholder="All Types"
+              className="w-full min-h-10"
+              value={typeFilters}
+              onChange={setTypeFilters}
+              options={[
+                { label: "Bank Account", value: "bank" },
+                { label: "Cash", value: "cash" },
+                { label: "Saving Account", value: "saving" },
+                { label: "Credit Card", value: "card" },
+                { label: "Wallet", value: "wallet" },
+                { label: "Investment", value: "investment" },
+                { label: "Other", value: "other" },
+              ]}
+              optionRender={(option) => (
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" checked={typeFilters.includes(option.value as string)} readOnly className="cursor-pointer" />
+                  <span>{option.label}</span>
+                </div>
+              )}
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2 sm:w-[200px]">
-          <Filter className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
-          <Select
-            mode="multiple"
-            allowClear
-            maxTagCount="responsive"
-            placeholder="All Types"
-            className="w-full min-h-10"
-            value={typeFilters}
-            onChange={setTypeFilters}
-            options={[
-              { label: "Bank Account", value: "bank" },
-              { label: "Cash", value: "cash" },
-              { label: "Saving Account", value: "saving" },
-              { label: "Credit Card", value: "card" },
-              { label: "Wallet", value: "wallet" },
-              { label: "Investment", value: "investment" },
-              { label: "Other", value: "other" },
-            ]}
-            optionRender={(option) => (
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={typeFilters.includes(option.value as string)} readOnly className="cursor-pointer" />
-                <span>{option.label}</span>
-              </div>
-            )}
-          />
-        </div>
-      </div>
+      )}
 
       {filteredAccounts.length === 0 && (
         <div className="p-8 text-center border rounded-xl border-dashed">

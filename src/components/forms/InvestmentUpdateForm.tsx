@@ -36,11 +36,12 @@ export function InvestmentUpdateForm({ investment, onUpdate }: { investment: any
   return (
     <div className="flex gap-2">
       <Input 
-        type="number"
+        type="text"
+        inputMode="numeric"
         placeholder={`New Value (${currencyCode})`} 
         value={val}
         onChange={(e) => setVal(formatIndianNumber(e.target.value))}
-        className="flex-1"
+        className="flex-1 min-w-0"
       />
       <Button onClick={handleUpdate} disabled={loading || !val}>
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update"}

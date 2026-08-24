@@ -1,7 +1,7 @@
+import React from "react";
 import { getBudgetsWithProgress } from "@/actions/budget";
 import { getCategories } from "@/actions/category";
-import { BudgetForm } from "@/components/forms/BudgetForm";
-import { BudgetList } from "@/components/lists/BudgetList";
+import { BudgetClient } from "./BudgetClient";
 import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 
 export default async function BudgetsPage(props: { searchParams: Promise<{ month?: string; mode?: string; startDate?: string; endDate?: string }> }) {
@@ -21,23 +21,13 @@ export default async function BudgetsPage(props: { searchParams: Promise<{ month
   ]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Budgets</h1>
-          <p className="text-muted-foreground">Manage your spending limits.</p>
-        </div>
-        <BudgetForm categories={categories} />
-      </div>
-
-      <BudgetList 
-        budgets={budgets} 
-        categories={categories} 
-        selectedMonth={currentMonth} 
-        mode={mode}
-        startDate={startDate}
-        endDate={endDate}
-      />
-    </div>
+    <BudgetClient 
+      initialBudgets={budgets} 
+      categories={categories} 
+      initialMonth={currentMonth}
+      initialMode={mode}
+      initialStartDate={startDate}
+      initialEndDate={endDate}
+    />
   );
 }

@@ -11,11 +11,27 @@ import { deletePerson } from "@/actions/person";
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
 
-export function PersonList({ people }: { people: any[] }) {
+export function PersonList({ 
+  people,
+  hideToolbar = false,
+  externalSearch = "",
+  externalFilter = "All",
+  externalTab = "merchants"
+}: { 
+  people: any[];
+  hideToolbar?: boolean;
+  externalSearch?: string;
+  externalFilter?: string;
+  externalTab?: string;
+}) {
   const { format } = useCurrency();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [relationFilter, setRelationFilter] = useState("All");
-  const [activeTab, setActiveTab] = useState("merchants");
+  const [internalSearch, setInternalSearch] = useState("");
+  const [internalFilter, setInternalFilter] = useState("All");
+  const [internalTab, setInternalTab] = useState("merchants");
+
+  const searchQuery = hideToolbar ? externalSearch : internalSearch;
+  const relationFilter = hideToolbar ? externalFilter : internalFilter;
+  const activeTab = hideToolbar ? externalTab : internalTab;
 
   const filteredPeople = useMemo(() => {
     return people.filter((person) => {
@@ -77,25 +93,32 @@ export function PersonList({ people }: { people: any[] }) {
     </List.Item>
   );
 
+  const activePeople = activeTab === "merchants" 
+    ? filteredMerchants 
+    : activeTab === "personal" 
+      ? filteredPersonal 
+      : filteredPeople;
+
   return (
     <div className="w-full space-y-4">
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm">
+      {!hideToolbar && (
+        <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name, phone, or VPA..."
             className="pl-9 bg-background"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={internalSearch}
+            onChange={(e) => setInternalSearch(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-2 sm:w-[200px]">
           <Filter className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
           <Select
             className="w-full h-10"
-            value={relationFilter}
-            onChange={setRelationFilter}
+            value={internalFilter}
+            onChange={setInternalFilter}
             options={[
               { label: "All Relations", value: "All" },
               { label: "Friend", value: "Friend" },
@@ -106,57 +129,75 @@ export function PersonList({ people }: { people: any[] }) {
               { label: "Other", value: "Other" },
             ]}
           />
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="">
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={[
-            {
-              key: "merchants",
-              label: `Merchants & Shopkeepers (${filteredMerchants.length})`,
-              children: (
-                <div className="pt-2">
-                  {filteredMerchants.length === 0 ? (
-                    <div className="p-8 text-center border rounded-xl border-dashed">
-                      <p className="text-muted-foreground">No merchants match your filters.</p>
-                    </div>
-                  ) : (
-                    <List
-                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
-                      dataSource={filteredMerchants}
-                      pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-                      renderItem={renderPersonItem}
-                    />
-                  )}
-                </div>
-              ),
-            },
-            {
-              key: "personal",
-              label: `Personal & Others (${filteredPersonal.length})`,
-              children: (
-                <div className="pt-2">
-                  {filteredPersonal.length === 0 ? (
-                    <div className="p-8 text-center border rounded-xl border-dashed">
-                      <p className="text-muted-foreground">No personal contacts match your filters.</p>
-                    </div>
-                  ) : (
-                    <List
-                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
-                      dataSource={filteredPersonal}
-                      pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-                      renderItem={renderPersonItem}
-                    />
-                  )}
-                </div>
-              ),
-            },
-          ]}
-        />
-      </div>
+      {hideToolbar ? (
+        <div className="pt-2">
+          {activePeople.length === 0 ? (
+            <div className="p-8 text-center border rounded-xl border-dashed">
+              <p className="text-muted-foreground">No people match your filters in this tab.</p>
+            </div>
+          ) : (
+            <List
+              grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+              dataSource={activePeople}
+              pagination={{ pageSize: 12, position: "bottom", align: "end" }}
+              renderItem={renderPersonItem}
+            />
+          )}
+        </div>
+      ) : (
+        <div className="">
+          <Tabs
+            activeKey={internalTab}
+            onChange={setInternalTab}
+            items={[
+              {
+                key: "merchants",
+                label: `Merchants & Shopkeepers (${filteredMerchants.length})`,
+                children: (
+                  <div className="pt-2">
+                    {filteredMerchants.length === 0 ? (
+                      <div className="p-8 text-center border rounded-xl border-dashed">
+                        <p className="text-muted-foreground">No merchants match your filters.</p>
+                      </div>
+                    ) : (
+                      <List
+                        grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+                        dataSource={filteredMerchants}
+                        pagination={{ pageSize: 12, position: "bottom", align: "end" }}
+                        renderItem={renderPersonItem}
+                      />
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: "personal",
+                label: `Personal & Others (${filteredPersonal.length})`,
+                children: (
+                  <div className="pt-2">
+                    {filteredPersonal.length === 0 ? (
+                      <div className="p-8 text-center border rounded-xl border-dashed">
+                        <p className="text-muted-foreground">No personal contacts match your filters.</p>
+                      </div>
+                    ) : (
+                      <List
+                        grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+                        dataSource={filteredPersonal}
+                        pagination={{ pageSize: 12, position: "bottom", align: "end" }}
+                        renderItem={renderPersonItem}
+                      />
+                    )}
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
+      )}
     </div>
   );
 }

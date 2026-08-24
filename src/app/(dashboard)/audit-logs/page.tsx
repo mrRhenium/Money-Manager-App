@@ -2,6 +2,8 @@ import { getAuditLogs } from "@/actions/auditLog";
 import { AuditLogsList } from "@/components/audit/AuditLogsList";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { MasterLayout } from "@/components/layout/MasterLayout";
+import { MasterHeader } from "@/components/layout/MasterHeader";
 
 export default async function AuditLogsPage() {
   const session = await auth();
@@ -11,13 +13,14 @@ export default async function AuditLogsPage() {
   const logs = await getAuditLogs();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
-        <p className="text-muted-foreground">Detailed history of all creates, updates, and deletes of your records.</p>
+    <MasterLayout>
+      <MasterHeader 
+        title="Audit Logs"
+        subtitle="Detailed history of all creates, updates, and deletes of your records."
+      />
+      <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
+        <AuditLogsList logs={logs} userTimezone={userTimezone} />
       </div>
-
-      <AuditLogsList logs={logs} userTimezone={userTimezone} />
-    </div>
+    </MasterLayout>
   );
 }

@@ -24,7 +24,7 @@ const formSchema = z.object({
   }, "Balance must be a valid number"),
 });
 
-export function AccountForm({ account }: { account?: any }) {
+export function AccountForm({ account, triggerClassName }: { account?: any, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState(account?.currency || "INR");
   const [color, setColor] = useState(account?.color || "#3b82f6");
@@ -83,7 +83,7 @@ export function AccountForm({ account }: { account?: any }) {
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="w-full sm:w-auto font-semibold shadow-md rounded-xl h-11 px-6 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary">
+          <Button className={`w-full sm:w-auto font-semibold shadow-md rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary ${triggerClassName || 'h-11 px-6'}`}>
             <Plus className="w-4 h-4 mr-2" />
             Add Account
           </Button>

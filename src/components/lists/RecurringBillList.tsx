@@ -22,9 +22,21 @@ interface RecurringBillListProps {
   bills: any[];
   accounts: any[];
   categories: any[];
+  hideToolbar?: boolean;
+  externalSort?: string;
+  externalSearch?: string;
+  externalTab?: string;
 }
 
-export function RecurringBillList({ bills, accounts, categories }: RecurringBillListProps) {
+export function RecurringBillList({ 
+  bills, 
+  accounts, 
+  categories, 
+  hideToolbar = false,
+  externalSort = "",
+  externalSearch = "",
+  externalTab = "1"
+}: RecurringBillListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("1");
   const [sortBy, setSortBy] = useState("date-nearest");
@@ -37,25 +49,29 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
   const pausedBills = bills.filter(b => !b.isActive);
 
   const displayedBills = useMemo(() => {
-    let list = activeTab === "1" ? activeBills : pausedBills;
+    const currentTab = hideToolbar ? externalTab : activeTab;
+    const currentSearch = hideToolbar ? externalSearch : searchTerm;
+    const currentSort = hideToolbar ? externalSort : sortBy;
+
+    let list = currentTab === "1" ? activeBills : pausedBills;
 
     // Filter
-    if (searchTerm) {
+    if (currentSearch) {
       list = list.filter(bill => 
-        bill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (bill.autoPayPlatform && bill.autoPayPlatform.toLowerCase().includes(searchTerm.toLowerCase()))
+        bill.name.toLowerCase().includes(currentSearch.toLowerCase()) ||
+        (bill.autoPayPlatform && bill.autoPayPlatform.toLowerCase().includes(currentSearch.toLowerCase()))
       );
     }
 
     // Sort
     return list.sort((a, b) => {
-      if (sortBy === "date-nearest") return new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime();
-      if (sortBy === "date-farthest") return new Date(b.nextDueDate).getTime() - new Date(a.nextDueDate).getTime();
-      if (sortBy === "amount-high") return b.amount - a.amount;
-      if (sortBy === "amount-low") return a.amount - b.amount;
+      if (currentSort === "date-nearest") return new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime();
+      if (currentSort === "date-farthest") return new Date(b.nextDueDate).getTime() - new Date(a.nextDueDate).getTime();
+      if (currentSort === "amount-high") return b.amount - a.amount;
+      if (currentSort === "amount-low") return a.amount - b.amount;
       return 0;
     });
-  }, [activeBills, pausedBills, activeTab, searchTerm, sortBy]);
+  }, [activeBills, pausedBills, activeTab, searchTerm, sortBy, hideToolbar, externalTab, externalSearch, externalSort]);
 
   const [variablePayBill, setVariablePayBill] = useState<any>(null);
   const [variableAmount, setVariableAmount] = useState("");
@@ -132,47 +148,51 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-card p-3 rounded-xl border shadow-sm items-center">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search subscriptions by name or platform..." 
-            className="pl-9 bg-background h-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="relative flex-1 w-full">
-          <AntSelect
-            value={sortBy}
-            onChange={setSortBy}
-            className="w-full h-10"
-            suffixIcon={<ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />}
-            options={[
-              { label: "🔥 Due: Nearest First", value: "date-nearest" },
-              { label: "🕐 Due: Farthest First", value: "date-farthest" },
-              { label: "📈 Amount: High to Low", value: "amount-high" },
-              { label: "📉 Amount: Low to High", value: "amount-low" },
+      {!hideToolbar && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-card p-3 rounded-xl border shadow-sm items-center">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Search subscriptions by name or platform..." 
+                className="pl-9 bg-background h-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="relative flex-1 w-full">
+              <AntSelect
+                value={sortBy}
+                onChange={setSortBy}
+                className="w-full h-10"
+                suffixIcon={<ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />}
+                options={[
+                  { label: "🔥 Due: Nearest First", value: "date-nearest" },
+                  { label: "🕐 Due: Farthest First", value: "date-farthest" },
+                  { label: "📈 Amount: High to Low", value: "amount-high" },
+                  { label: "📉 Amount: Low to High", value: "amount-low" },
+                ]}
+              />
+            </div>
+          </div>
+
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            className="budget-tabs"
+            items={[
+              {
+                key: "1",
+                label: <span className="px-4 py-1 font-semibold">Active ({activeBills.length})</span>,
+              },
+              {
+                key: "2",
+                label: <span className="px-4 py-1 font-semibold text-muted-foreground">Paused ({pausedBills.length})</span>,
+              }
             ]}
           />
-        </div>
-      </div>
-
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        className="budget-tabs"
-        items={[
-          {
-            key: "1",
-            label: <span className="px-4 py-1 font-semibold">Active ({activeBills.length})</span>,
-          },
-          {
-            key: "2",
-            label: <span className="px-4 py-1 font-semibold text-muted-foreground">Paused ({pausedBills.length})</span>,
-          }
-        ]}
-      />
+        </>
+      )}
 
       {displayedBills.length === 0 && (
         <div className="col-span-full py-12 text-center bg-card rounded-2xl border border-dashed">
@@ -189,7 +209,7 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
       {displayedBills.length > 0 && (
         <div className="pt-2 pb-4">
           <List
-            grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+            grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
             dataSource={displayedBills}
             pagination={{ pageSize: 9, position: "bottom", align: "end" }}
             renderItem={(bill: any, index: number) => {

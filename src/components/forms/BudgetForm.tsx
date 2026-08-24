@@ -45,9 +45,10 @@ const formSchema = z.object({
 interface BudgetFormProps {
   categories: any[];
   budget?: any;
+  triggerClassName?: string;
 }
 
-export function BudgetForm({ categories, budget }: BudgetFormProps) {
+export function BudgetForm({ categories, budget, triggerClassName }: BudgetFormProps) {
   const [open, setOpen] = useState(false);
   const [color, setColor] = useState(budget?.color || "#f59e0b");
   const [icon, setIcon] = useState(budget?.icon || "PiggyBank");
@@ -129,9 +130,9 @@ export function BudgetForm({ categories, budget }: BudgetFormProps) {
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="w-full sm:w-auto">
-            <Plus className="w-4 h-4 mr-2" />
-            Set Budget
+          <Button className={triggerClassName || "gap-2"}>
+            <Plus className="w-4 h-4" />
+            New Budget
           </Button>
         )
       } />

@@ -18,7 +18,7 @@ export function SidebarClient({ user }: { user: any }) {
         transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
       }} 
       className={cn(
-        "hidden md:flex flex-col relative group shrink-0 z-40",
+        "hidden md:flex flex-col relative group shrink-0 z-50",
         // Force text color in dark mode
         "dark:text-white",
         // Modern glassmorphism
@@ -28,7 +28,7 @@ export function SidebarClient({ user }: { user: any }) {
     >
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-4 top-8 bg-background border border-border text-foreground hover:text-primary rounded-full p-1.5 shadow-md z-50 hover:scale-110 transition-all hover:border-primary/50"
+        className="absolute -right-4 top-6 bg-background border border-border text-foreground hover:text-primary rounded-full p-1.5 shadow-md z-50 hover:scale-110 transition-all hover:border-primary/50"
       >
         {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>

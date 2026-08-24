@@ -350,3 +350,45 @@ a:hover {
   color: var(--muted-foreground);
 }
 
+/* Dark mode fixes for Ant Design Select */
+.dark .ant-select-selector {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+.dark .ant-select-selection-item {
+  color: var(--foreground) !important;
+}
+
+.dark .ant-select-arrow, .dark .ant-select-clear {
+  color: var(--muted-foreground) !important;
+  background-color: transparent !important;
+}
+
+.dark .ant-select-selection-placeholder {
+  color: var(--muted-foreground) !important;
+}
+
+/* Dark mode fixes for Ant Design Drawer */
+.dark .ant-drawer-content {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+}
+
+.dark .ant-drawer-header {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.dark .ant-drawer-title {
+  color: var(--foreground) !important;
+}
+
+.dark .ant-drawer-close {
+  color: var(--muted-foreground) !important;
+}
+.dark .ant-drawer-close:hover {
+  color: var(--foreground) !important;
+}

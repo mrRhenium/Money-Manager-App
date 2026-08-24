@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useMemo } from "react";
 
 export function TransactionTable({
   transactions,
@@ -19,6 +20,10 @@ export function TransactionTable({
   categories,
   people = [],
   creditCards = [],
+  externalMobileSearch,
+  externalMobileType,
+  externalMobileCategory,
+  externalMobileAccount,
 }: {
   transactions: any[];
   userTimezone: string;
@@ -27,8 +32,34 @@ export function TransactionTable({
   people?: any[];
   creditCards?: any[];
   userCurrency?: string;
+  externalMobileSearch?: string;
+  externalMobileType?: string;
+  externalMobileCategory?: string[];
+  externalMobileAccount?: string[];
 }) {
   const { format } = useCurrency();
+
+  const filteredMobileTransactions = useMemo(() => {
+    let result = [...transactions];
+
+    if (externalMobileType && externalMobileType !== "all") {
+      result = result.filter(t => t.type === externalMobileType);
+    }
+    if (externalMobileCategory && externalMobileCategory.length > 0) {
+      result = result.filter(t => t.categoryId && externalMobileCategory.includes(t.categoryId._id));
+    }
+    if (externalMobileAccount && externalMobileAccount.length > 0) {
+      result = result.filter(t => (t.accountId && externalMobileAccount.includes(t.accountId._id)) || (t.toAccountId && externalMobileAccount.includes(t.toAccountId._id)));
+    }
+
+    if (externalMobileSearch) {
+      const q = externalMobileSearch.toLowerCase();
+      result = result.filter(
+        (t) => (t.note && t.note.toLowerCase().includes(q)) || (t.upiPayeeName && t.upiPayeeName.toLowerCase().includes(q))
+      );
+    }
+    return result;
+  }, [transactions, externalMobileSearch, externalMobileType, externalMobileCategory, externalMobileAccount]);
 
   const getColumnSearchProps = (dataIndex: string | string[], title: string, renderText?: (record: any) => string) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
@@ -238,7 +269,7 @@ export function TransactionTable({
       </div>
       <div className="md:hidden w-full">
         <List
-          dataSource={transactions}
+          dataSource={filteredMobileTransactions}
           pagination={{ pageSize: 10, align: "center", size: "small" }}
           renderItem={(record: any) => {
             const isTransfer = record.type === "transfer";

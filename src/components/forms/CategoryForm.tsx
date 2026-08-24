@@ -20,7 +20,7 @@ const formSchema = z.object({
   icon: z.string().default("Circle"),
 });
 
-export function CategoryForm({ category }: { category?: any }) {
+export function CategoryForm({ category, triggerClassName }: { category?: any, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -66,9 +66,9 @@ export function CategoryForm({ category }: { category?: any }) {
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Category
+          <Button className={triggerClassName || "gap-2"}>
+            <Plus className="w-4 h-4" />
+            New Category
           </Button>
         )
       } />

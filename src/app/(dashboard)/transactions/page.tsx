@@ -11,6 +11,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { UploadCloud } from "lucide-react";
 
+import { TransactionClient } from "./TransactionClient";
+
+export const metadata = {
+  title: "Transactions | Money Manager",
+  description: "Track all your incomes and expenses.",
+};
+
 export default async function TransactionsPage() {
   const session = await auth();
   const userTimezone = (session?.user as any)?.timezone || "UTC";
@@ -24,25 +31,13 @@ export default async function TransactionsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
-          <p className="text-muted-foreground">Track all your incomes and expenses.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-          <Link href="/import">
-            <Button variant="outline" className="gap-2">
-              <UploadCloud className="w-4 h-4" />
-              Import Statements
-            </Button>
-          </Link>
-          <ExportButton />
-          <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} />
-        </div>
-      </div>
-
-      <TransactionTable transactions={transactions} userTimezone={userTimezone} accounts={accounts} categories={categories} people={people} creditCards={creditCards} />
-    </div>
+    <TransactionClient 
+      initialTransactions={transactions}
+      userTimezone={userTimezone}
+      accounts={accounts}
+      categories={categories}
+      people={people}
+      creditCards={creditCards}
+    />
   );
 }

@@ -10,7 +10,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <main style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="pb-16 md:pb-0">
-        <div className="max-w-[1400px] mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+        <div>
           {children}
         </div>
       </main>

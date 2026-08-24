@@ -6,12 +6,15 @@ import { Input } from "@/components/ui/input";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatDate } from "@/lib/helpers";
 import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search, Filter } from "lucide-react";
+import { MasterToolbar, MasterViewLayout, MasterFilterDrawer } from "@/components/layout/MasterView";
 
 export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezone: string }) {
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [actionFilter, setActionFilter] = useState("All");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const isFilterActive = searchQuery !== "" || typeFilter !== "All" || actionFilter !== "All";
 
   const getFriendlyEntityName = (log: any) => {
     if (log.entityName) return log.entityName;
@@ -159,21 +162,57 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
   const totalPages = Math.ceil(filteredLogs.length / mobilePageSize);
   const pagedLogs = filteredLogs.slice((mobilePage - 1) * mobilePageSize, mobilePage * mobilePageSize);
 
-  return (
-    <div>
-      <div className="flex flex-col md:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search by entity name..." 
+  const filterContent = (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <input
+            placeholder="Search by entity name..."
+            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
           />
         </div>
-        <Select value={typeFilter} onChange={setTypeFilter} className="w-full md:w-40" options={[{label: "All Types", value: "All"}, {label: "Transaction", value: "Transaction"}, {label: "Category", value: "Category"}, {label: "Account", value: "Account"}, {label: "Person", value: "Person"}, {label: "CreditCard", value: "CreditCard"}, {label: "Budget", value: "Budget"}]} />
-        <Select value={actionFilter} onChange={setActionFilter} className="w-full md:w-40" options={[{label: "All Actions", value: "All"}, {label: "Create", value: "CREATE"}, {label: "Update", value: "UPDATE"}, {label: "Delete", value: "DELETE"}]} />
       </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Type</h3>
+        <Select 
+          value={typeFilter} 
+          onChange={setTypeFilter} 
+          className="w-full h-10" 
+          options={[{label: "All Types", value: "All"}, {label: "Transaction", value: "Transaction"}, {label: "Category", value: "Category"}, {label: "Account", value: "Account"}, {label: "Person", value: "Person"}, {label: "CreditCard", value: "CreditCard"}, {label: "Budget", value: "Budget"}]} 
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Action</h3>
+        <Select 
+          value={actionFilter} 
+          onChange={setActionFilter} 
+          className="w-full h-10" 
+          options={[{label: "All Actions", value: "All"}, {label: "Create", value: "CREATE"}, {label: "Update", value: "UPDATE"}, {label: "Delete", value: "DELETE"}]} 
+        />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full">
+      <MasterToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onFilterClick={() => setMobileFilterOpen(true)}
+        isFilterActive={isFilterActive}
+        tabs={[]} // No tabs needed
+        activeTab="logs"
+        onTabChange={() => {}}
+        searchPlaceholder="Search logs..."
+      />
+      
+
+
+      <MasterViewLayout sidebar={undefined}>
 
       {/* Desktop Table */}
       <div className="hidden md:block bg-card rounded-2xl overflow-hidden">
@@ -249,14 +288,10 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           }
           open={!!selectedLog}
           onCancel={() => setSelectedLog(null)}
-          footer={[
-            <Button key="close" onClick={() => setSelectedLog(null)} className="rounded-xl px-5">
-              Close
-            </Button>
-          ]}
-          width={800}
-          className="audit-log-modal"
-          centered
+          footer={null}
+          width={700}
+          className="audit-modal"
+          classNames={{ body: 'p-0 overflow-hidden' }}
         >
           {selectedLog && (
             <div className="space-y-6 pt-4">
@@ -279,24 +314,16 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                 <div className="flex gap-2.5 items-start">
                   <Layers className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Entity Type</p>
-                    <p className="mt-1">
-                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-secondary text-secondary-foreground border">
-                        {selectedLog.entityType}
-                      </span>
-                    </p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Type</p>
+                    <p className="font-semibold text-foreground mt-1">{selectedLog.entityType}</p>
                   </div>
                 </div>
                 <div className="flex gap-2.5 items-start">
                   <Activity className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Action Type</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Action</p>
                     <p className="mt-1">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        selectedLog.action === "CREATE" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" :
-                        selectedLog.action === "DELETE" ? "bg-red-500/10 text-red-600 border border-red-500/20" :
-                        "bg-blue-500/10 text-blue-600 border border-blue-500/20"
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold border ${getActionStyle(selectedLog.action)}`}>
                         {selectedLog.action}
                       </span>
                     </p>
@@ -375,6 +402,16 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
         </Modal>
         );
       })()}
+      
+      </MasterViewLayout>
+      <MasterFilterDrawer
+        isOpen={mobileFilterOpen}
+        onClose={() => setMobileFilterOpen(false)}
+        isFilterActive={isFilterActive}
+        onClearFilters={() => { setSearchQuery(""); setTypeFilter("All"); setActionFilter("All"); }}
+      >
+        {filterContent}
+      </MasterFilterDrawer>
     </div>
   );
 }

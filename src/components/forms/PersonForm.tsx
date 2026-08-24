@@ -24,7 +24,7 @@ const formSchema = z.object({
   vpas: z.array(z.object({ value: z.string() })).optional(),
 });
 
-export function PersonForm({ person }: { person?: any }) {
+export function PersonForm({ person, triggerClassName }: { person?: any, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>(person?.avatarUrl || "");
   const [isUploading, setIsUploading] = useState(false);
@@ -134,12 +134,12 @@ export function PersonForm({ person }: { person?: any }) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
         person ? (
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+          <Button variant="ghost" size="icon" className={triggerClassName || "text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors"}>
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
+          <Button className={triggerClassName}>
+            <UserPlus className="w-4 h-4 mr-2" />
             Add Person
           </Button>
         )

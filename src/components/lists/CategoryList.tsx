@@ -10,7 +10,19 @@ import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useState, useMemo } from "react";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
-export function CategoryList({ expenseCategories, incomeCategories }: { expenseCategories: any[], incomeCategories: any[] }) {
+export function CategoryList({ 
+  expenseCategories, 
+  incomeCategories,
+  hideToolbar,
+  externalType = "expense",
+  externalSearch = ""
+}: { 
+  expenseCategories: any[];
+  incomeCategories: any[];
+  hideToolbar?: boolean;
+  externalType?: string;
+  externalSearch?: string;
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("expense");
   const { hiddenIds, triggerDelete } = useUndoableDelete();
@@ -18,16 +30,18 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
   const filteredExpenses = useMemo(() => {
     return expenseCategories.filter(cat => {
       if (hiddenIds.has(cat._id)) return false;
-      return cat.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const search = hideToolbar ? externalSearch : searchQuery;
+      return cat.name.toLowerCase().includes(search.toLowerCase());
     });
-  }, [expenseCategories, searchQuery, hiddenIds]);
+  }, [expenseCategories, searchQuery, hiddenIds, hideToolbar, externalSearch]);
 
   const filteredIncomes = useMemo(() => {
     return incomeCategories.filter(cat => {
       if (hiddenIds.has(cat._id)) return false;
-      return cat.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const search = hideToolbar ? externalSearch : searchQuery;
+      return cat.name.toLowerCase().includes(search.toLowerCase());
     });
-  }, [incomeCategories, searchQuery, hiddenIds]);
+  }, [incomeCategories, searchQuery, hiddenIds, hideToolbar, externalSearch]);
   const renderCategoryItem = (cat: any, index: number) => (
     <List.Item className="!p-0 !border-0 mb-2">
       <div className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm w-full relative overflow-hidden group">
@@ -71,6 +85,26 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
     </List.Item>
   );
 
+  if (hideToolbar) {
+    const dataSource = externalType === "income" ? filteredIncomes : filteredExpenses;
+    return (
+      <div className="w-full">
+        {dataSource.length === 0 ? (
+          <div className="p-8 text-center border rounded-xl border-dashed">
+            <p className="text-muted-foreground">No {externalType} categories match.</p>
+          </div>
+        ) : (
+            <List
+              dataSource={dataSource}
+              pagination={{ pageSize: 12, size: "small", position: "bottom", align: "end" }}
+              renderItem={renderCategoryItem}
+              grid={{ gutter: 16, xs: 2, sm: 2, md: 2, lg: 2, xl: 3, xxl: 3 }}
+            />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="w-full space-y-4">
       {(expenseCategories.length > 0 || incomeCategories.length > 0) && (
@@ -106,7 +140,7 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
                       dataSource={filteredExpenses}
                       pagination={{ pageSize: 12, size: "small", position: "bottom", align: "end" }}
                       renderItem={renderCategoryItem}
-                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+                      grid={{ gutter: 16, xs: 2, sm: 2, md: 2, lg: 2, xl: 3, xxl: 3 }}
                     />
                   )}
                 </div>
@@ -126,7 +160,7 @@ export function CategoryList({ expenseCategories, incomeCategories }: { expenseC
                       dataSource={filteredIncomes}
                       pagination={{ pageSize: 12, size: "small", position: "bottom", align: "end" }}
                       renderItem={renderCategoryItem}
-                      grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+                      grid={{ gutter: 16, xs: 2, sm: 2, md: 2, lg: 2, xl: 3, xxl: 3 }}
                     />
                   )}
                 </div>

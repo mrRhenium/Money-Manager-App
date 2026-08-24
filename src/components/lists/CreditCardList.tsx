@@ -12,19 +12,36 @@ import { deleteCreditCard } from "@/actions/creditCard";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 
-export function CreditCardList({ cards }: { cards: any[] }) {
+export function CreditCardList({ cards, hideToolbar = false, externalSort }: { cards: any[], hideToolbar?: boolean, externalSort?: string }) {
   const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredCards = useMemo(() => {
-    return cards.filter(card => {
-      if (hiddenIds.has(card._id)) return false;
-      return card.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-             card.cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-             card.last4Digits.includes(searchQuery);
-    });
-  }, [cards, searchQuery, hiddenIds]);
+    let result = cards.filter(card => !hiddenIds.has(card._id));
+
+    if (!hideToolbar) {
+      result = result.filter(card => {
+        return card.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               card.cardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               card.last4Digits.includes(searchQuery);
+      });
+    }
+
+    if (externalSort) {
+      result.sort((a, b) => {
+        if (externalSort === "limit-high") return b.creditLimit - a.creditLimit;
+        if (externalSort === "limit-low") return a.creditLimit - b.creditLimit;
+        if (externalSort === "used-high") return b.currentOutstanding - a.currentOutstanding;
+        if (externalSort === "used-low") return a.currentOutstanding - b.currentOutstanding;
+        if (externalSort === "bank-asc") return a.bankName.localeCompare(b.bankName);
+        if (externalSort === "bank-desc") return b.bankName.localeCompare(a.bankName);
+        return 0;
+      });
+    }
+
+    return result;
+  }, [cards, searchQuery, hiddenIds, hideToolbar, externalSort]);
 
   if (cards.length === 0) {
     return null; // The parent page handles empty state beautifully
@@ -32,17 +49,19 @@ export function CreditCardList({ cards }: { cards: any[] }) {
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex bg-card p-3 rounded-xl border shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search credit cards by bank, name, or last 4 digits..."
-            className="pl-9 bg-background"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      {!hideToolbar && (
+        <div className="flex bg-card p-3 rounded-xl border shadow-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search credit cards by bank, name, or last 4 digits..."
+              className="pl-9 bg-background"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {filteredCards.length === 0 && (
         <div className="p-8 text-center border rounded-xl border-dashed">
@@ -52,7 +71,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
 
       {filteredCards.length > 0 && (
         <List
-          grid={{ gutter: 24, xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 3 }}
+          grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 1, lg: 2, xl: 2, xxl: 3 }}
           dataSource={filteredCards}
           pagination={{ pageSize: 9, position: "bottom", align: "end" }}
         renderItem={(card: any, index: number) => {
@@ -94,7 +113,7 @@ export function CreditCardList({ cards }: { cards: any[] }) {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                        className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-full transition-colors"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();

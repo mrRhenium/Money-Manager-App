@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { MasterLayout } from "@/components/layout/MasterLayout";
@@ -9,18 +9,23 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
-import { Search, Landmark, ArrowDownLeft, ArrowUpRight, CheckCircle2, AlertTriangle, LayoutList } from "lucide-react";
-import { LoanForm } from "@/components/forms/LoanForm";
-import { LoanList } from "@/components/lists/LoanList";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Search, Repeat, CalendarDays, TrendingDown, LayoutList, ArrowUpDown } from "lucide-react";
+import { RecurringBillForm } from "@/components/forms/RecurringBillForm";
+import { RecurringBillList } from "@/components/lists/RecurringBillList";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
+import { getStartOfDay } from "@/lib/dateTimeHelper";
 
-export function LoanClient({ 
-  initialLoans, 
-  accounts
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#14b8a6', '#f43f5e'];
+
+export function SubscriptionClient({ 
+  initialBills, 
+  accounts,
+  categories
 }: { 
-  initialLoans: any[];
+  initialBills: any[];
   accounts: any[];
+  categories: any[];
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -28,7 +33,7 @@ export function LoanClient({
   // State
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [listTab, setListTab] = useState(searchParams.get("status") || "active");
+  const [listTab, setListTab] = useState(searchParams.get("status") || "1");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "date-nearest");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -41,7 +46,7 @@ export function LoanClient({
     if (searchQuery) current.set("q", searchQuery);
     else current.delete("q");
     
-    if (listTab !== "active") current.set("status", listTab);
+    if (listTab !== "1") current.set("status", listTab);
     else current.delete("status");
 
     if (sortBy !== "date-nearest") current.set("sort", sortBy);
@@ -52,31 +57,73 @@ export function LoanClient({
     window.history.replaceState(null, '', `${pathname}${query}`);
   }, [activeTab, searchQuery, listTab, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || listTab !== "active" || sortBy !== "date-nearest";
+  const isFilterActive = searchQuery !== "" || listTab !== "1" || sortBy !== "date-nearest";
 
   const clearFilters = () => {
     setSearchQuery("");
-    setListTab("active");
+    setListTab("1");
     setSortBy("date-nearest");
   };
 
   // Derived Data (KPIs)
-  const activeLoans = initialLoans.filter(l => l.status === "active");
-  const totalOutstanding = activeLoans.reduce((sum, l) => sum + (l.outstandingBalance || 0), 0);
-  const totalBorrowed = activeLoans.reduce((sum, l) => sum + (l.totalAmount || 0), 0);
-  const totalEmiPaid = totalBorrowed - totalOutstanding;
+  const activeBills = initialBills.filter(b => b.isActive);
   
-  // Liabilities vs Assets (for reference)
-  const totalLiabilities = activeLoans.filter(l => l.type === "taken").reduce((sum, l) => sum + (l.outstandingBalance || 0), 0);
-  const totalAssets = activeLoans.filter(l => l.type === "given").reduce((sum, l) => sum + (l.outstandingBalance || 0), 0);
+  let totalMonthly = 0;
+  let totalAnnual = 0;
+  let upcomingRenewals = 0;
 
-  // Chart data
-  const chartData = activeLoans.map(l => ({
-    name: l.name,
-    "Repaid": (l.totalAmount || 0) - (l.outstandingBalance || 0),
-    "Outstanding": l.outstandingBalance || 0,
-    total: l.totalAmount || 0
-  })).sort((a, b) => b.total - a.total).slice(0, 10);
+  const today = getStartOfDay().getTime();
+  const nextWeek = today + 7 * 24 * 60 * 60 * 1000;
+
+  // Chart data aggregation map
+  const categoryMonthlyMap: Record<string, number> = {};
+
+  activeBills.forEach(bill => {
+    const amt = bill.amount || 0;
+    let monthly = 0;
+    let annual = 0;
+
+    switch (bill.frequency) {
+      case "weekly":
+        monthly = amt * 4.33;
+        annual = amt * 52;
+        break;
+      case "bi-weekly":
+        monthly = amt * 2.16;
+        annual = amt * 26;
+        break;
+      case "quarterly":
+        monthly = amt / 3;
+        annual = amt * 4;
+        break;
+      case "yearly":
+        monthly = amt / 12;
+        annual = amt;
+        break;
+      case "monthly":
+      default:
+        monthly = amt;
+        annual = amt * 12;
+        break;
+    }
+
+    totalMonthly += monthly;
+    totalAnnual += annual;
+
+    // Upcoming check
+    const dueTime = new Date(bill.nextDueDate).getTime();
+    if (dueTime >= today && dueTime <= nextWeek) {
+      upcomingRenewals++;
+    }
+
+    // Chart Aggregation
+    const catName = bill.categoryId?.name || "Uncategorized";
+    categoryMonthlyMap[catName] = (categoryMonthlyMap[catName] || 0) + monthly;
+  });
+
+  const chartData = Object.keys(categoryMonthlyMap)
+    .map(key => ({ name: key, value: categoryMonthlyMap[key] }))
+    .sort((a, b) => b.value - a.value);
 
   const filterPanelContent = (
     <div className="space-y-6">
@@ -85,7 +132,7 @@ export function LoanClient({
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
-            placeholder="Search loans..."
+            placeholder="Search subscriptions..."
             className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -100,8 +147,8 @@ export function LoanClient({
           className="w-full h-10"
           popupMatchSelectWidth={false}
           options={[
-            { label: "Active", value: "active" },
-            { label: "Completed", value: "completed" },
+            { label: "Active", value: "1" },
+            { label: "Paused", value: "2" },
           ]}
         />
       </div>
@@ -113,12 +160,10 @@ export function LoanClient({
           className="w-full h-10"
           popupMatchSelectWidth={false}
           options={[
-            { label: "EMI: Nearest First", value: "date-nearest" },
-            { label: "EMI: Farthest First", value: "date-farthest" },
-            { label: "Outstanding: High to Low", value: "out-high" },
-            { label: "Outstanding: Low to High", value: "out-low" },
-            { label: "Progress: Most Paid", value: "prog-high" },
-            { label: "Progress: Least Paid", value: "prog-low" },
+            { label: "Due: Nearest First", value: "date-nearest" },
+            { label: "Due: Farthest First", value: "date-farthest" },
+            { label: "Amount: High to Low", value: "amount-high" },
+            { label: "Amount: Low to High", value: "amount-low" },
           ]}
         />
       </div>
@@ -128,9 +173,9 @@ export function LoanClient({
   return (
     <MasterLayout>
       <MasterHeader 
-        title={<><Landmark className="w-6 h-6 text-primary" /> Loans & EMIs</>}
-        subtitle="Track your debts, active EMIs, and money lent to others."
-        actions={<div className="sm:hidden"><LoanForm accounts={accounts} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        title={<><Repeat className="w-6 h-6 text-primary" /> Subscriptions</>}
+        subtitle="Manage your recurring bills and auto-pays."
+        actions={<div className="sm:hidden"><RecurringBillForm accounts={accounts} categories={categories} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
@@ -143,7 +188,7 @@ export function LoanClient({
             isFilterActive={isFilterActive}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            primaryAction={<LoanForm accounts={accounts} triggerClassName="h-10 px-6 text-base font-semibold" />}
+            primaryAction={<RecurringBillForm accounts={accounts} categories={categories} triggerClassName="h-10 px-6 text-base font-semibold" />}
           />
 
           <MasterViewLayout
@@ -158,9 +203,10 @@ export function LoanClient({
           >
             <TabsContent value="data" className="h-full m-0">
               <div className="pb-24">
-                <LoanList 
-                  loans={initialLoans} 
+                <RecurringBillList 
+                  bills={initialBills} 
                   accounts={accounts} 
+                  categories={categories}
                   hideToolbar={true}
                   externalSearch={searchQuery}
                   externalSort={sortBy}
@@ -174,24 +220,24 @@ export function LoanClient({
                 
                 {/* KPI Cards */}
                 <div className="grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-4">
-                  <KPICard label="Active Loans" value={activeLoans.length.toString()} icon={LayoutList} themeColor="indigo" />
+                  <KPICard label="Active Subs" value={activeBills.length.toString()} icon={LayoutList} themeColor="indigo" />
                   <KPICard 
-                    label="Total Outstanding" 
-                    value={<CurrencyDisplay amount={totalOutstanding} />} 
-                    icon={AlertTriangle} 
+                    label="Monthly Cost" 
+                    value={<CurrencyDisplay amount={totalMonthly} />} 
+                    icon={TrendingDown} 
                     themeColor="destructive" 
                   />
                   <KPICard 
-                    label="Total Borrowed" 
-                    value={<CurrencyDisplay amount={totalBorrowed} />} 
-                    icon={ArrowDownLeft} 
+                    label="Annual Cost" 
+                    value={<CurrencyDisplay amount={totalAnnual} />} 
+                    icon={TrendingDown} 
                     themeColor="amber" 
                   />
                   <KPICard 
-                    label="Total EMI Paid" 
-                    value={<CurrencyDisplay amount={totalEmiPaid} />} 
-                    icon={CheckCircle2} 
-                    themeColor="emerald" 
+                    label="Due in 7 Days" 
+                    value={upcomingRenewals.toString()} 
+                    icon={CalendarDays} 
+                    themeColor={upcomingRenewals > 0 ? "destructive" : "emerald"} 
                   />
                 </div>
 
@@ -200,64 +246,40 @@ export function LoanClient({
                   <div className="md:col-span-2 space-y-6">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                       <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                        <h2 className="text-lg font-bold text-foreground">Top 10 Loans (Repaid vs Outstanding)</h2>
-                        <p className="text-sm text-muted-foreground mt-1">Comparison of amount paid and remaining balance.</p>
+                        <h2 className="text-lg font-bold text-foreground">Monthly Cost Breakdown</h2>
+                        <p className="text-sm text-muted-foreground mt-1">Subscription costs distributed by category (converted to monthly).</p>
                       </div>
                       <div className="p-4 sm:p-6 h-[400px]">
                         {chartData.length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground) / 0.2)" />
-                              <XAxis 
-                                dataKey="name" 
-                                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
-                                axisLine={false} 
-                                tickLine={false} 
-                                dy={10} 
-                              />
-                              <YAxis 
-                                tickFormatter={(val: number) => `₹${formatIndianNumber(val.toString())}`}
-                                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
-                                axisLine={false} 
-                                tickLine={false} 
-                                dx={-10}
-                              />
+                            <PieChart>
+                              <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={80}
+                                outerRadius={120}
+                                paddingAngle={2}
+                                dataKey="value"
+                              >
+                                {chartData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
                               <Tooltip 
                                 formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
                                 itemStyle={{ color: 'hsl(var(--foreground))' }}
                               />
-                              <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                              <Bar dataKey="Repaid" stackId="a" fill="#10b981" maxBarSize={40} />
-                              <Bar dataKey="Outstanding" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                            </BarChart>
+                              <Legend verticalAlign="bottom" height={36} />
+                            </PieChart>
                           </ResponsiveContainer>
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-800">
-                            <Landmark className="w-8 h-8 mb-2 opacity-50" />
-                            <p>No active loans to chart.</p>
+                            <Repeat className="w-8 h-8 mb-2 opacity-50" />
+                            <p>No active subscriptions to chart.</p>
                           </div>
                         )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Additional KPI context for Loans */}
-                  <div className="space-y-4">
-                    <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-red-500/5 overflow-hidden">
-                      <div className="p-4 sm:p-6">
-                        <h2 className="text-sm font-medium text-muted-foreground">Total Liabilities (Taken)</h2>
-                        <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-                          <CurrencyDisplay amount={totalLiabilities} />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-emerald-500/5 overflow-hidden">
-                      <div className="p-4 sm:p-6">
-                        <h2 className="text-sm font-medium text-muted-foreground">Total Assets (Given)</h2>
-                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-                          <CurrencyDisplay amount={totalAssets} />
-                        </div>
                       </div>
                     </div>
                   </div>

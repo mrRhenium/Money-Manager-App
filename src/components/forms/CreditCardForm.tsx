@@ -34,7 +34,7 @@ const formSchema = z.object({
   color: z.string(),
 });
 
-export function CreditCardForm({ card }: { card?: any }) {
+export function CreditCardForm({ card, triggerClassName }: { card?: any, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -121,7 +121,7 @@ export function CreditCardForm({ card }: { card?: any }) {
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="w-full sm:w-auto gap-2 rounded-xl">
+          <Button className={`w-full sm:w-auto gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-md font-semibold ${triggerClassName || 'h-11 px-6'}`}>
             <Plus className="w-4 h-4" />
             Add Credit Card
           </Button>

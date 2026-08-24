@@ -9,6 +9,7 @@ import { Select } from "antd";
 import { bulkInsertTransactions } from "@/actions/bulkImport";
 import { useToast } from "@/hooks/useToast";
 import { parseToDate } from "@/lib/dateTimeHelper";
+import dayjs from "dayjs";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/currencyFormatter";
@@ -136,12 +137,14 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
 
       const note = String(row[descCol] || "").substring(0, 100);
       
-      // Auto-categorize (Basic heuristic)
+      // Auto-categorize (Robust word boundary matching)
       let categoryId = "";
-      const lowerNote = note.toLowerCase();
       const matchedCat = categories.find(c => {
         if (c.type === type) {
-          return lowerNote.includes(c.name.toLowerCase());
+          // Escape special characters in category name for regex, then use word boundaries
+          const escapedName = c.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`\\b${escapedName}\\b`, 'i');
+          return regex.test(note);
         }
         return false;
       });
@@ -149,16 +152,16 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
         categoryId = matchedCat._id;
       }
 
-      // Format date (XLSX sometimes parses dates as numbers)
+      // Format date
       let dateStr = row[dateCol];
       if (typeof dateStr === 'number') {
         const dateObj = parseToDate((dateStr - (25567 + 1)) * 86400 * 1000);
         dateStr = dateObj.toISOString().split('T')[0];
       } else if (typeof dateStr === 'string') {
-        // basic conversion attempt
-        const d = parseToDate(dateStr);
-        if (!isNaN(d.getTime())) {
-          dateStr = d.toISOString().split('T')[0];
+        // Robust dayjs parsing
+        const d = dayjs(dateStr);
+        if (d.isValid()) {
+          dateStr = d.format('YYYY-MM-DD');
         }
       }
 

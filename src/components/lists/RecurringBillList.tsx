@@ -11,7 +11,7 @@ import { RecurringBillForm } from "@/components/forms/RecurringBillForm";
 import { RecurringBillDeleteModal } from "@/components/forms/RecurringBillDeleteModal";
 import { markSubscriptionPaid } from "@/actions/recurringBill";
 import { useToast } from "@/hooks/useToast";
-import { Tabs, Select as AntSelect } from "antd";
+import { Tabs, Select as AntSelect, List } from "antd";
 import { formatDateString, parseToDate, getStartOfDay } from "@/lib/dateTimeHelper";
 import { SubscriptionHistoryModal } from "@/components/forms/SubscriptionHistoryModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -187,88 +187,95 @@ export function RecurringBillList({ bills, accounts, categories }: RecurringBill
       )}
 
       {displayedBills.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
-          {displayedBills.map((bill, index) => {
-            const dueDate = parseToDate(bill.nextDueDate);
-            const today = getStartOfDay();
-            const dueDay = getStartOfDay(dueDate);
-            const isOverdue = dueDay.getTime() < today.getTime() && bill.isActive;
-            const isToday = dueDay.getTime() === today.getTime() && bill.isActive;
-
-            return (
-              <div key={bill._id} className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
-                <div className="flex justify-between items-start gap-4 z-10">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
-                    <div 
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${!bill.isActive ? 'grayscale opacity-60' : ''}`}
-                      style={{ backgroundColor: bill.color || '#6366f1' }}
-                    >
-                      <CategoryIcon name={bill.icon} className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className={`font-bold text-lg leading-tight line-clamp-1 ${!bill.isActive ? 'text-muted-foreground' : ''}`} title={bill.name}>{bill.name}</h3>
-                      <p className={`text-sm font-semibold mt-1 ${!bill.isActive ? 'text-muted-foreground' : ''}`}>
-                        {format(bill.amount)} <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground font-normal">/ {bill.frequency}</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 transition-opacity shrink-0">
-                    <SubscriptionHistoryModal bill={bill} />
-                    <RecurringBillForm accounts={accounts} categories={categories} bill={bill} />
-                    <RecurringBillDeleteModal bill={bill} />
-                  </div>
-                </div>
-
-                <div className="z-10 mt-auto">
-                  <div className="space-y-3 pt-4 border-t border-border/50">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Wallet className="w-3 h-3" /> FROM</span>
-                      <span className="font-semibold truncate max-w-[120px]">{bill.accountId?.name || "Not set"}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> PAID</span>
-                      <span className="font-semibold truncate max-w-[120px]">
-                        <Badge variant="outline" className="text-[10px]">{bill.transactionsCount || 0} times</Badge>
-                      </span>
-                    </div>
-                    {bill.autoPayPlatform && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Smartphone className="w-3 h-3" /> PLATFORM</span>
-                        <span className="font-semibold truncate max-w-[120px]">{bill.autoPayPlatform}</span>
+        <div className="pt-2 pb-4">
+          <List
+            grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+            dataSource={displayedBills}
+            pagination={{ pageSize: 9, position: "bottom", align: "end" }}
+            renderItem={(bill: any, index: number) => {
+              const dueDate = parseToDate(bill.nextDueDate);
+              const today = getStartOfDay();
+              const dueDay = getStartOfDay(dueDate);
+              const isOverdue = dueDay.getTime() < today.getTime() && bill.isActive;
+              const isToday = dueDay.getTime() === today.getTime() && bill.isActive;
+  
+              return (
+                <List.Item className="h-full !mb-0 block">
+                  <div className="relative group block rounded-2xl p-5 border border-border/60 bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
+                    <div className="flex justify-between items-start gap-4 z-10">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
+                        <div 
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${!bill.isActive ? 'grayscale opacity-60' : ''}`}
+                          style={{ backgroundColor: bill.color || '#6366f1' }}
+                        >
+                          <CategoryIcon name={bill.icon} className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className={`font-bold text-lg leading-tight line-clamp-1 ${!bill.isActive ? 'text-muted-foreground' : ''}`} title={bill.name}>{bill.name}</h3>
+                          <p className={`text-sm font-semibold mt-1 ${!bill.isActive ? 'text-muted-foreground' : ''}`}>
+                            {format(bill.amount)} <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground font-normal">/ {bill.frequency}</span>
+                          </p>
+                        </div>
                       </div>
-                    )}
+                      <div className="flex items-center gap-1 transition-opacity shrink-0">
+                        <SubscriptionHistoryModal bill={bill} />
+                        <RecurringBillForm accounts={accounts} categories={categories} bill={bill} />
+                        <RecurringBillDeleteModal bill={bill} />
+                      </div>
+                    </div>
+  
+                    <div className="z-10 mt-auto">
+                      <div className="space-y-3 pt-4 border-t border-border/50">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Wallet className="w-3 h-3" /> FROM</span>
+                          <span className="font-semibold truncate max-w-[120px]">{bill.accountId?.name || "Not set"}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> PAID</span>
+                          <span className="font-semibold truncate max-w-[120px]">
+                            <Badge variant="outline" className="text-[10px]">{bill.transactionsCount || 0} times</Badge>
+                          </span>
+                        </div>
+                        {bill.autoPayPlatform && (
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Smartphone className="w-3 h-3" /> PLATFORM</span>
+                            <span className="font-semibold truncate max-w-[120px]">{bill.autoPayPlatform}</span>
+                          </div>
+                        )}
+                      </div>
+  
+                      <div className="mt-5 flex items-center justify-between">
+                        <Badge variant={!bill.isActive ? "outline" : isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-bold px-3 py-1">
+                          {!bill.isActive ? "Paused" : isOverdue ? "Overdue" : isToday ? "Due Today" : `Due: ${formatDateString(dueDate, "DD-MM-YYYY")}`}
+                        </Badge>
+                        
+                        {bill.isActive && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 text-xs font-semibold rounded-full hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-colors disabled:opacity-50" 
+                            disabled={payingId === bill._id || (!isOverdue && !isToday)}
+                            title={(!isOverdue && !isToday) ? "Cannot mark paid before due date" : "Mark as paid"}
+                            onClick={() => handleMarkPaid(bill)}
+                          >
+                            {payingId === bill._id ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />} 
+                            Mark Paid
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+  
+                    {/* Decorative background circle */}
+                    <div 
+                      className={`absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${!bill.isActive ? 'grayscale' : ''}`}
+                      style={{ backgroundColor: bill.color || '#6366f1' }}
+                    />
                   </div>
-
-                  <div className="mt-5 flex items-center justify-between">
-                    <Badge variant={!bill.isActive ? "outline" : isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-bold px-3 py-1">
-                      {!bill.isActive ? "Paused" : isOverdue ? "Overdue" : isToday ? "Due Today" : `Due: ${formatDateString(dueDate, "DD-MM-YYYY")}`}
-                    </Badge>
-                    
-                    {bill.isActive && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-8 text-xs font-semibold rounded-full hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-colors disabled:opacity-50" 
-                        disabled={payingId === bill._id || (!isOverdue && !isToday)}
-                        title={(!isOverdue && !isToday) ? "Cannot mark paid before due date" : "Mark as paid"}
-                        onClick={() => handleMarkPaid(bill)}
-                      >
-                        {payingId === bill._id ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />} 
-                        Mark Paid
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Decorative background circle */}
-                <div 
-                  className={`absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none ${!bill.isActive ? 'grayscale' : ''}`}
-                  style={{ backgroundColor: bill.color || '#6366f1' }}
-                />
-              </div>
-            );
-          })}
+                </List.Item>
+              );
+            }}
+          />
         </div>
       )}
     </div>

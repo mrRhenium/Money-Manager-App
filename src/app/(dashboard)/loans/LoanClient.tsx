@@ -12,7 +12,7 @@ import { payEMI, undoLastEMI } from "@/actions/loan";
 import { useToast } from "@/hooks/useToast";
 import { AlertCircle, CheckCircle2, ArrowUpRight, ArrowDownLeft, Search, ArrowUpDown, CalendarDays, AlertTriangle, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Select as AntSelect, Tabs, Modal } from "antd";
+import { Select as AntSelect, Tabs, Modal, List } from "antd";
 import dayjs from "dayjs";
 
 export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] }) {
@@ -125,8 +125,9 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
     const emisPaid = Math.floor(amountPaid / loan.emiAmount);
 
     return (
-      <Card key={loan._id} className="relative overflow-hidden group hover:shadow-md transition-all h-full flex flex-col justify-between">
-        <CardContent className="p-5 flex flex-col h-full z-10">
+      <List.Item className="h-full !mb-0 block">
+        <Card key={loan._id} className="relative overflow-hidden group hover:shadow-md transition-all h-full flex flex-col justify-between border-border/60">
+          <CardContent className="p-5 flex flex-col h-full z-10">
           <div className="flex justify-between items-start mb-4 gap-2">
             <div className="flex items-center gap-3 min-w-0">
               <div
@@ -235,7 +236,8 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
           className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
           style={{ backgroundColor: loan.color }}
         />
-      </Card>
+        </Card>
+      </List.Item>
     );
   };
 
@@ -247,9 +249,15 @@ export function LoanClient({ loans, accounts }: { loans: any[], accounts: any[] 
         </div>
       );
     }
+
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pt-2">
-        {list.map(renderLoanCard)}
+      <div className="pt-2 pb-4">
+        <List
+          grid={{ gutter: 24, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
+          dataSource={list}
+          pagination={{ pageSize: 9, position: "bottom", align: "end" }}
+          renderItem={renderLoanCard}
+        />
       </div>
     );
   };

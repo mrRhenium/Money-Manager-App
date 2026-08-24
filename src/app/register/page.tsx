@@ -112,9 +112,7 @@ export default function RegisterPage() {
       )}
 
       <div className="mb-8 text-center">
-        <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', boxShadow: '0 10px 15px -3px hsla(var(--primary), 0.2)' }}>
-          {step === 1 ? <WalletOutlined style={{ fontSize: '32px' }} /> : <KeyOutlined style={{ fontSize: '32px' }} />}
-        </div>
+
         <Title level={2} style={{ margin: 0 }}>
           {step === 1 ? "Create Account" : "Verify Email"}
         </Title>

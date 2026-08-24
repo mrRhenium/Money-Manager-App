@@ -41,9 +41,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8 text-center">
-        <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', boxShadow: '0 10px 15px -3px hsla(var(--primary), 0.2)' }}>
-          <WalletOutlined style={{ fontSize: '32px' }} />
-        </div>
+
         <Title level={2} style={{ margin: 0 }}>Welcome Back</Title>
         <Text type="secondary">Sign in to manage your finances</Text>
       </div>

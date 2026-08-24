@@ -135,60 +135,22 @@ export async function deleteGoal(id: string, reason?: string, notes?: string, re
     throw new Error("Completed goals cannot be deleted.");
   }
 
-  // If there are funds saved, we need to reverse them
-  if (goal.currentAmount > 0) {
-    if (!reason || !notes || !returnAccountId) {
-      throw new Error("Reason, notes, and a return account are mandatory for deleting a utilized goal.");
+  // Create Audit Log before deletion
+  const { createAuditLog } = await import('./auditLog');
+  await createAuditLog({
+    action: "GOAL_DELETED",
+    entityType: "goal",
+    entityId: id,
+    entityName: goal.name,
+    details: {
+      reason: reason || "User deleted goal",
+      notes: notes || "",
+      amountInvolved: goal.currentAmount
     }
+  });
 
-    const returnAccount = await Account.findOne({ _id: returnAccountId, userId: session.user.id });
-    if (!returnAccount) throw new Error("Return account not found");
-
-    // Credit the return account
-    returnAccount.balance += goal.currentAmount;
-    await returnAccount.save();
-
-    // Create a reversal transaction
-    await createTransaction({
-      type: "income",
-      amount: goal.currentAmount,
-      date: new Date().toISOString(),
-      accountId: returnAccount._id.toString(),
-      note: `Goal Deleted — Reversal: ${goal.name}. Reason: ${reason}`,
-      originalCurrency: "INR",
-      paymentMode: "bank",
-      status: "completed",
-      paymentSource: "manual_entry",
-    });
-
-    // Delete all related fund transactions
-    await Transaction.deleteMany({ goalId: goal._id, userId: session.user.id });
-
-    // Create Audit Log
-    const { createAuditLog } = await import('./auditLog');
-    await createAuditLog({
-      action: "GOAL_DELETED",
-      entityType: "goal",
-      entityId: id,
-      entityName: goal.name,
-      details: {
-        reason,
-        notes,
-        amountInvolved: goal.currentAmount,
-        reversalAccountId: returnAccount._id.toString(),
-        reversalAccountName: returnAccount.name,
-      }
-    });
-  } else {
-    // Simple deletion (unused goal)
-    const { createAuditLog } = await import('./auditLog');
-    await createAuditLog({
-      action: "GOAL_DELETED",
-      entityType: "goal",
-      entityId: id,
-      entityName: goal.name,
-    });
-  }
+  // Remove goalId reference from all related transactions so they become regular transfers
+  await Transaction.updateMany({ goalId: goal._id, userId: session.user.id }, { $unset: { goalId: 1 } });
 
   await Goal.deleteOne({ _id: id, userId: session.user.id });
 

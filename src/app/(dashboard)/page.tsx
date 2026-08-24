@@ -7,15 +7,15 @@ import { getMissingBudgets } from "@/actions/budget";
 import { snapshotNetWorth, getNetWorthHistory } from "@/actions/netWorth";
 import { OverviewChart } from "@/components/dashboard/OverviewChart";
 import { NetWorthChart } from "@/components/dashboard/NetWorthChart";
-import { 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Wallet, 
-  Users, 
-  ChevronRight, 
-  Activity, 
-  Sparkles, 
-  CreditCard as CardIcon, 
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  Wallet,
+  Users,
+  ChevronRight,
+  Activity,
+  Sparkles,
+  CreditCard as CardIcon,
   AlertCircle,
   ArrowDownLeft,
   ArrowRightLeft,
@@ -50,7 +50,7 @@ function getFallbackTransactionIcon(type: string) {
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
-  
+
   const userTimezone = (session.user as any).timezone || "UTC";
   const userCurrency = (session.user as any).currency || "INR";
 
@@ -69,19 +69,39 @@ export default async function DashboardPage() {
   // Fire and forget net worth snapshot
   snapshotNetWorth().catch(console.error);
 
-  const totalOutstanding = cards.reduce((sum: number, c: any) => sum + c.currentOutstanding, 0);
-  
-  const activeLoans = loans.filter((l: any) => l.status === "active");
-  const totalLoansTaken = activeLoans.filter((l: any) => l.type === "taken").reduce((sum: number, l: any) => sum + l.outstandingBalance, 0);
-  const totalLoansGiven = activeLoans.filter((l: any) => l.type === "given").reduce((sum: number, l: any) => sum + l.outstandingBalance, 0);
-
   const rates = await fetchExchangeRates();
+
+  const totalOutstanding = cards.reduce((sum: number, c: any) => {
+    const rate = getConversionRate(c.currency || "INR", rates);
+    return sum + (c.currentOutstanding || 0) / rate;
+  }, 0);
+
+  const activeLoans = loans.filter((l: any) => l.status === "active");
+  const totalLoansTaken = activeLoans.filter((l: any) => l.type === "taken").reduce((sum: number, l: any) => {
+    const rate = getConversionRate(l.currency || "INR", rates);
+    return sum + (l.outstandingBalance || 0) / rate;
+  }, 0);
+  const totalLoansGiven = activeLoans.filter((l: any) => l.type === "given").reduce((sum: number, l: any) => {
+    const rate = getConversionRate(l.currency || "INR", rates);
+    return sum + (l.outstandingBalance || 0) / rate;
+  }, 0);
+
+
+  const totalInvestmentValue = investments.filter((i: any) => i.status === "active").reduce((sum: number, i: any) => {
+    const rate = getConversionRate(i.currency || "INR", rates);
+    return sum + (i.currentValue || 0) / rate;
+  }, 0);
+
+  const totalCardOutstanding = cards.reduce((sum: number, c: any) => {
+    const rate = getConversionRate(c.currency || "INR", rates);
+    return sum + (c.currentOutstanding || 0) / rate;
+  }, 0);
 
   const totalBalance = accounts.reduce((acc: number, curr: any) => {
     const rate = getConversionRate(curr.currency || "INR", rates);
     const baseBalance = curr.balance / rate;
     return curr.isLiability ? acc - baseBalance : acc + baseBalance;
-  }, 0) - totalLoansTaken + totalLoansGiven;
+  }, 0) - totalLoansTaken + totalLoansGiven + totalInvestmentValue - totalCardOutstanding;
 
   // Calculate current month's income and expenses
   const currentMonthTxns = transactions.filter((t: any) => {
@@ -162,7 +182,7 @@ export default async function DashboardPage() {
     if (loan.status === 'active' && loan.emiDate && loan.emiAmount > 0) {
       let emiDate = parseToDate(`${now.getFullYear()}-${now.getMonth() + 1}-${loan.emiDate}`);
       if (emiDate < now) emiDate.setMonth(now.getMonth() + 1);
-      
+
       if (emiDate <= next30Days) {
         upcomingDues.push({ title: `${loan.name} EMI`, amount: loan.emiAmount, dueDate: emiDate, type: loan.type === 'taken' ? 'loan_emi' : 'loan_emi_receive' });
       }
@@ -225,13 +245,16 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
         <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1 md:col-span-2 lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Net Worth History</CardTitle>
+            <div>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Current Net Worth</CardTitle>
+              <div className="text-2xl font-bold mt-1 text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
+            </div>
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-primary" />
             </div>
           </CardHeader>
-          <CardContent className="pt-2 h-[80px] overflow-hidden px-2 relative -mx-2">
-             <NetWorthChart data={nwHistory} />
+          <CardContent className="pt-2 h-[65px] overflow-hidden px-2 relative -mx-2">
+            <NetWorthChart data={nwHistory} />
           </CardContent>
         </Card>
 
@@ -297,11 +320,11 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalOutstanding} /></div>
               {totalOutstanding > 0 ? (
-                 <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                   <AlertCircle className="w-3 h-3" /> Unpaid dues
-                 </p>
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> Unpaid dues
+                </p>
               ) : (
-                 <p className="text-xs text-muted-foreground mt-1">All clear</p>
+                <p className="text-xs text-muted-foreground mt-1">All clear</p>
               )}
             </CardContent>
           </Card>
@@ -347,10 +370,10 @@ export default async function DashboardPage() {
                       <p className="text-xs text-muted-foreground mt-0.5">{formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}</p>
                     </div>
                   </div>
-                  <CurrencyDisplay 
-                    amount={t.type === 'expense' || t.type === 'lend' ? -t.amount : t.amount} 
+                  <CurrencyDisplay
+                    amount={t.type === 'expense' || t.type === 'lend' ? -t.amount : t.amount}
                     className={`font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}
-                    showSign={t.type === 'income'} 
+                    showSign={t.type === 'income'}
                   />
                 </div>
               ))}

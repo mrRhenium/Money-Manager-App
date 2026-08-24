@@ -191,6 +191,10 @@ export async function createTransaction(data: {
         const addAmt = destAcc.currency === "INR" ? finalAmount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * finalAmount;
         destAcc.balance += addAmt;
         await destAcc.save();
+
+        transaction.destinationAmount = addAmt;
+        transaction.destinationCurrency = destAcc.currency;
+        await transaction.save();
       }
     } else if (data.accountId) {
       const acc = await Account.findOne({ _id: data.accountId, userId: session.user.id });
@@ -278,8 +282,8 @@ export async function deleteTransaction(id: string) {
       }
       const destAcc = await Account.findOne({ _id: transaction.toAccountId, userId: session.user.id });
       if (destAcc) {
-        const amt = destAcc.currency === "INR" ? transaction.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * transaction.amount;
-        destAcc.balance -= amt; // revert destination
+        const amt = transaction.destinationAmount !== undefined ? transaction.destinationAmount : (destAcc.currency === "INR" ? transaction.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * transaction.amount);
+        destAcc.balance -= amt; // revert destination exactly
         await destAcc.save();
       }
     } else if (transaction.accountId) {
@@ -371,6 +375,10 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
         const amt = destAcc.currency === "INR" ? transaction.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * transaction.amount;
         destAcc.balance += amt;
         await destAcc.save();
+
+        transaction.destinationAmount = amt;
+        transaction.destinationCurrency = destAcc.currency;
+        await transaction.save();
       }
     } else if (transaction.accountId) {
       const acc = await Account.findOne({ _id: transaction.accountId, userId: session.user.id });
@@ -457,7 +465,7 @@ export async function updateTransaction(
       }
       const destAcc = await Account.findOne({ _id: oldTxn.toAccountId, userId: session.user.id });
       if (destAcc) {
-        const amt = destAcc.currency === "INR" ? oldTxn.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * oldTxn.amount;
+        const amt = oldTxn.destinationAmount !== undefined ? oldTxn.destinationAmount : (destAcc.currency === "INR" ? oldTxn.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * oldTxn.amount);
         destAcc.balance -= amt;
         await destAcc.save();
       }
@@ -569,6 +577,10 @@ export async function updateTransaction(
         const amt = destAcc.currency === "INR" ? oldTxn.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * oldTxn.amount;
         destAcc.balance += amt;
         await destAcc.save();
+
+        oldTxn.destinationAmount = amt;
+        oldTxn.destinationCurrency = destAcc.currency;
+        await oldTxn.save();
       }
     } else if (oldTxn.accountId) {
       const acc = await Account.findOne({ _id: oldTxn.accountId, userId: session.user.id });

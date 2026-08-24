@@ -104,6 +104,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
         investedAmount: parseIndianNumber(values.investedAmount),
         currentValue: parseIndianNumber(values.currentValue),
         units: values.units ? parseFloat(values.units) : undefined,
+        currentPrice: assetPrice !== null ? assetPrice : undefined,
         startDate: parseToDate(values.startDate),
         currency,
         color,
@@ -111,7 +112,6 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
       };
 
       if (!isAutoPricedAsset) {
-        payload.autoPriceUpdateEnabled = false;
         payload.schemeCode = undefined;
         payload.ticker = undefined;
       }
@@ -251,6 +251,11 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                           }}
                         />
                       </FormControl>
+                      {assetPrice !== null && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                          <TrendingUp className="w-3 h-3" /> Latest {watchType === "MutualFund" ? "NAV" : "Price"}: ₹{formatIndianNumber(assetPrice.toString())}
+                        </div>
+                      )}
                       <p className="text-[10px] text-muted-foreground mt-1">If not found, type the name manually below.</p>
                       <FormMessage />
                     </FormItem>

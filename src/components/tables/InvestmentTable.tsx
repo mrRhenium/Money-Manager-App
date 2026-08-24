@@ -89,7 +89,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
             </div>
             <div className="text-xs text-muted-foreground flex flex-col">
               <span>{record.investmentType} {record.platform ? `• ${record.platform}` : ""}</span>
-              {(record.units || record.currentPrice || record.interestRate || record.maturityDate) && (
+              {(record.units || record.interestRate || record.maturityDate) && (
                 <span className="text-[10.5px] mt-0.5 font-medium opacity-85">
                     {record.investmentType === "FD" || record.investmentType === "RD" || record.investmentType === "Bonds" ? (
                       <>
@@ -100,8 +100,6 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                     ) : (
                       <>
                         {record.units ? `${record.units} units` : ""}
-                        {record.units && record.currentPrice ? " • " : ""}
-                        {record.currentPrice ? `${record.investmentType === "MutualFund" || record.investmentType === "SIP" ? "NAV:" : "Price:"} ${format(record.currentPrice)}` : ""}
                       </>
                     )}
                 </span>
@@ -110,6 +108,19 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
           </div>
         </div>
       )
+    },
+    {
+      title: "Latest Price",
+      key: "currentPrice",
+      render: (_: any, record: any) => {
+        if (!record.currentPrice) return <span className="text-muted-foreground text-xs opacity-50">-</span>;
+        return (
+          <div className={record.status !== "active" ? "opacity-60" : ""}>
+            <span className="font-medium">{format(record.currentPrice)}</span>
+            <div className="text-[10px] text-muted-foreground">{record.investmentType === "MutualFund" || record.investmentType === "SIP" ? "NAV" : "Price"}</div>
+          </div>
+        );
+      }
     },
     {
       title: "Invested",
@@ -192,7 +203,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-card p-3 rounded-xl border shadow-sm mt-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 bg-card p-3 rounded-xl border shadow-sm mt-4 mb-4">
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -275,7 +286,7 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                       {record.investmentType}
                       {record.platform ? ` • ${record.platform}` : ""}
                     </p>
-                    {(record.units || record.currentPrice || record.interestRate || record.maturityDate) && (
+                    {(record.units || record.interestRate || record.maturityDate) && (
                       <p className="text-[10px] mt-0.5 font-medium opacity-85 text-muted-foreground truncate">
                         {record.investmentType === "FD" || record.investmentType === "RD" || record.investmentType === "Bonds" ? (
                           <>
@@ -286,8 +297,6 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                         ) : (
                           <>
                             {record.units ? `${record.units} units` : ""}
-                            {record.units && record.currentPrice ? " • " : ""}
-                            {record.currentPrice ? `${record.investmentType === "MutualFund" || record.investmentType === "SIP" ? "NAV:" : "Price:"} ${format(record.currentPrice)}` : ""}
                           </>
                         )}
                       </p>
@@ -329,19 +338,23 @@ export function InvestmentTable({ investments, accounts }: { investments: any[],
                   <p className="font-semibold text-sm">{format(record.investedAmount)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Current Value</p>
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-sm">{format(record.currentValue)}</span>
-                    {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && !isClosed && (
-                      <span className="text-[10px] text-muted-foreground">Auto-synced</span>
-                    )}
-                    {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && !isClosed && (
-                      <span className="text-[10px] text-amber-500">Pending sync</span>
-                    )}
-                  </div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Latest Price</p>
+                  <p className="font-semibold text-sm">{record.currentPrice ? format(record.currentPrice) : "-"}</p>
                 </div>
                 <div className="col-span-2 pt-2 mt-2 border-t border-border/30">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Current Value</p>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-sm">{format(record.currentValue)}</span>
+                        {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && !isClosed && (
+                          <span className="text-[10px] text-muted-foreground">Auto-synced</span>
+                        )}
+                        {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && !isClosed && (
+                          <span className="text-[10px] text-amber-500">Pending sync</span>
+                        )}
+                      </div>
+                    </div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Returns</p>
                     <div className={`flex items-center gap-2 font-semibold ${isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground"}`}>
                       <span>{isPos ? "+" : ""}{format(ret)}</span>

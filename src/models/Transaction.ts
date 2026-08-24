@@ -34,6 +34,8 @@ export interface ITransaction extends Document {
   status?: "completed" | "pending" | "cancelled" | "awaiting_confirmation";
   upiPayeeName?: string;
   upiPayeeVpa?: string;
+  destinationAmount?: number;
+  destinationCurrency?: string;
   createdAt: Date;
 }
 
@@ -87,6 +89,8 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     },
     upiPayeeName: { type: String },
     upiPayeeVpa: { type: String },
+    destinationAmount: { type: Number },
+    destinationCurrency: { type: String },
   },
   { timestamps: true }
 );

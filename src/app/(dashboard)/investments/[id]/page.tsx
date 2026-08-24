@@ -117,6 +117,18 @@ export default async function InvestmentDetailsPage({ params }: { params: Promis
                 <span className="text-muted-foreground flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Frequency</span>
                 <span className="font-medium">{investment.frequency}</span>
               </div>
+              {investment.units != null && (
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-muted-foreground flex items-center gap-2"><Hash className="w-4 h-4" /> Units Held</span>
+                  <span className="font-medium">{investment.units}</span>
+                </div>
+              )}
+              {investment.currentPrice != null && (
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-muted-foreground flex items-center gap-2"><Activity className="w-4 h-4" /> Latest {investment.investmentType === "MutualFund" || investment.investmentType === "SIP" ? "NAV" : "Price"}</span>
+                  <span className="font-medium"><CurrencyDisplay amount={investment.currentPrice} /></span>
+                </div>
+              )}
               {investment.folioNumber && (
                 <div className="flex justify-between items-center py-2 border-b">
                   <span className="text-muted-foreground flex items-center gap-2"><Hash className="w-4 h-4" /> Folio/Acc No</span>

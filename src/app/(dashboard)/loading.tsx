@@ -1,65 +1,58 @@
 "use client";
 
-import { Skeleton, Card } from "antd";
+import { MasterLayout } from "@/components/layout/MasterLayout";
+import { MasterHeader } from "@/components/layout/MasterHeader";
+import { MasterViewLayout } from "@/components/layout/MasterView";
 
 export default function DashboardLoading() {
   return (
-    <div className="space-y-8 pb-8 animate-in fade-in duration-500">
-      {/* Greeting Area Skeleton */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/10">
-        <div className="w-full max-w-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <Skeleton.Button active size="large" style={{ width: 200, height: 32, borderRadius: 8 }} />
+    <MasterLayout>
+      <MasterHeader 
+        title={<div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />}
+        subtitle={<div className="h-5 w-72 bg-slate-200 dark:bg-slate-800 rounded-md animate-pulse mt-2" />}
+      />
+
+      <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
+        
+        {/* Skeleton Toolbar Row */}
+        <div className="shrink-0 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <div className="h-12 w-64 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
           </div>
-          <Skeleton.Button active size="small" style={{ width: 300, height: 20, borderRadius: 8 }} />
+          <div className="flex items-center gap-2 sm:justify-end">
+            <div className="h-10 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse hidden sm:block" />
+            <div className="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
+          </div>
         </div>
-        <Skeleton.Button active size="large" style={{ width: 160, borderRadius: 999 }} />
-      </div>
 
-      {/* KPI Cards Skeleton */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Card key={i} className="border-none shadow-sm rounded-xl">
-            <div className="flex justify-between items-center mb-4">
-              <Skeleton.Button active size="small" style={{ width: 80 }} />
-              <Skeleton.Avatar active size="small" shape="circle" />
+        <MasterViewLayout sidebar={
+          <div className="space-y-6 animate-pulse">
+            <div className="space-y-3">
+              <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
+              <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
             </div>
-            <Skeleton.Button active style={{ width: 120, height: 28, marginBottom: 8 }} />
-            <Skeleton.Button active size="small" style={{ width: 60 }} />
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-7">
-        {/* Charts Skeleton */}
-        <Card className="md:col-span-4 border-none shadow-sm rounded-xl">
-          <Skeleton.Button active style={{ width: 180, height: 24, marginBottom: 24 }} />
-          <Skeleton.Image active style={{ width: '100%', height: 300 }} />
-        </Card>
-
-        {/* Recent Transactions Skeleton */}
-        <Card className="md:col-span-3 border-none shadow-sm rounded-xl">
-          <div className="flex justify-between items-center mb-6">
-            <Skeleton.Button active style={{ width: 140, height: 24 }} />
-            <Skeleton.Button active size="small" style={{ width: 60 }} />
+            <div className="space-y-3">
+              <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
+              <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
+            </div>
           </div>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Skeleton.Avatar active shape="square" size="large" style={{ borderRadius: 12 }} />
-                  <div>
-                    <Skeleton.Button active size="small" style={{ width: 100, marginBottom: 4 }} />
-                    <br />
-                    <Skeleton.Button active size="small" style={{ width: 140, height: 16 }} />
-                  </div>
+        }>
+          <div className="pb-24 pt-4 space-y-3">
+            {/* List Skeleton */}
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-card">
+                <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse shrink-0" />
+                <div className="flex-1 space-y-2.5">
+                  <div className="h-5 w-1/3 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+                  <div className="h-4 w-1/4 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
                 </div>
-                <Skeleton.Button active size="small" style={{ width: 60 }} />
+                <div className="w-24 h-8 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse shrink-0" />
               </div>
             ))}
           </div>
-        </Card>
+        </MasterViewLayout>
+
       </div>
-    </div>
+    </MasterLayout>
   );
 }

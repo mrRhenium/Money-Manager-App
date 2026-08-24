@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Table, Button, Modal, Badge, Select } from "antd";
 import { Input } from "@/components/ui/input";
+import { Button as UiButton } from "@/components/ui/button";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatDate } from "@/lib/helpers";
 import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search, Filter } from "lucide-react";
@@ -65,6 +66,37 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
     return <span className="font-mono text-xs">{String(val)}</span>;
   };
 
+  const getColumnSearchProps = (title: string, renderText: (record: any) => string) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+      <div className="p-3 w-64 bg-card border border-border shadow-md rounded-xl flex flex-col gap-3" onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          placeholder={`Search ${title}...`}
+          value={selectedKeys[0] || ""}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') confirm();
+          }}
+          className="h-9"
+        />
+        <div className="flex gap-2 justify-end">
+          <UiButton variant="ghost" size="sm" onClick={() => clearFilters && clearFilters()} className="h-8 px-3 text-xs">
+            Reset
+          </UiButton>
+          <UiButton variant="default" size="sm" onClick={() => confirm()} className="h-8 px-3 text-xs">
+            Search
+          </UiButton>
+        </div>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <Search className={`w-4 h-4 ${filtered ? 'text-primary' : 'text-muted-foreground'}`} />
+    ),
+    onFilter: (value: any, record: any) => {
+      const text = renderText(record);
+      return text ? text.toString().toLowerCase().includes((value as string).toLowerCase()) : false;
+    },
+  });
+
   const columns = [
     {
       title: "Timestamp",
@@ -123,6 +155,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           {getFriendlyEntityName(record)}
         </span>
       ),
+      ...getColumnSearchProps("Master Value", (record) => getFriendlyEntityName(record)),
     },
     {
       title: "Actions",
@@ -220,7 +253,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           columns={columns}
           dataSource={filteredLogs}
           rowKey="_id"
-          pagination={{ pageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
+          pagination={{ defaultPageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
           className="audit-logs-table"
           locale={{ emptyText: "No audit logs found." }}
         />

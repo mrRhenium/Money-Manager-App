@@ -19,7 +19,10 @@ import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine } fr
 import { QRCodeSVG } from "qrcode.react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getAllCurrencies } from "@/actions/currency";
-
+import { MasterLayout } from "@/components/layout/MasterLayout";
+import { MasterHeader } from "@/components/layout/MasterHeader";
+import { MasterToolbar, MasterViewLayout } from "@/components/layout/MasterView";
+import { Settings } from "lucide-react";
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -527,107 +530,110 @@ function SettingsContent() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Manage your account settings and preferences.</p>
-        </div>
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search settings..."
-            className="pl-9 bg-background"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+    <MasterLayout>
+      <MasterHeader 
+        title={<><Settings className="w-6 h-6 text-primary" /> Settings</>}
+        subtitle="Manage your account settings and preferences."
+      />
+      
+      <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
+        <MasterToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search settings..."
+          isFilterActive={false} // no filter drawer on settings
+          onFilterClick={() => {}} // required prop
+          tabs={[]}
+          activeTab=""
+          onTabChange={() => {}}
+        />
 
       {isSearching ? (
-        <div className="space-y-6">
-          {showProfile && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Profile Information</h3>{renderProfileCard(isMobile)}</div>}
-          {showPreferences && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Preferences</h3>{renderPreferencesCard(isMobile)}</div>}
-          {showTimezone && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Global Timezone</h3>{renderTimezoneCard(isMobile)}</div>}
-          {showNotifications && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Notifications</h3>{renderNotificationsCard(isMobile)}</div>}
-          {showLogout && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Sign Out</h3>{renderLogoutCard(isMobile)}</div>}
-          
-          {!showProfile && !showPreferences && !showTimezone && !showNotifications && !showLogout && (
-            <div className="p-12 text-center text-muted-foreground border rounded-xl border-dashed">
-              No settings match your search.
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar Navigation (always vertical listing) */}
-          <div className="w-full md:w-64 shrink-0 flex flex-col gap-2 md:border-r md:pr-4">
-            <button
-              onClick={() => handleTabChange("profile")}
-              className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
-                activeTab === "profile" && !isMobile
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-              }`}
-            >
-              <User className="w-4 h-4" />
-              Profile Information
-            </button>
-            <button
-              onClick={() => handleTabChange("preferences")}
-              className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
-                activeTab === "preferences" && !isMobile
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-              }`}
-            >
-              <Palette className="w-4 h-4" />
-              Preferences
-            </button>
-            <button
-              onClick={() => handleTabChange("timezone")}
-              className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
-                activeTab === "timezone" && !isMobile
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-              }`}
-            >
-              <Globe className="w-4 h-4" />
-              Global Timezone
-            </button>
-            <button
-              onClick={() => handleTabChange("notifications")}
-              className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
-                activeTab === "notifications" && !isMobile
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-              }`}
-            >
-              <Bell className="w-4 h-4" />
-              Notifications
-            </button>
-            <button
-              onClick={() => handleTabChange("logout")}
-              className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
-                activeTab === "logout" && !isMobile
-                  ? "bg-primary text-white border-primary shadow-sm"
-                  : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-              }`}
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
+        <MasterViewLayout sidebar={null}>
+          <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
+            {showProfile && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Profile Information</h3>{renderProfileCard(isMobile)}</div>}
+            {showPreferences && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Preferences</h3>{renderPreferencesCard(isMobile)}</div>}
+            {showTimezone && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Global Timezone</h3>{renderTimezoneCard(isMobile)}</div>}
+            {showNotifications && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Notifications</h3>{renderNotificationsCard(isMobile)}</div>}
+            {showLogout && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Sign Out</h3>{renderLogoutCard(isMobile)}</div>}
+            
+            {!showProfile && !showPreferences && !showTimezone && !showNotifications && !showLogout && (
+              <div className="p-12 text-center text-muted-foreground border rounded-xl border-dashed">
+                No settings match your search.
+              </div>
+            )}
           </div>
-
-          {/* Dedicated Section Panel (Desktop Only) */}
-          <div className="hidden md:block flex-1 min-w-0">
+        </MasterViewLayout>
+      ) : (
+        <MasterViewLayout
+          sidebar={
+            <div className="w-full shrink-0 flex flex-col gap-2">
+              <button
+                onClick={() => handleTabChange("profile")}
+                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                  activeTab === "profile" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
+                }`}
+              >
+                <User className="w-4 h-4" />
+                Profile Information
+              </button>
+              <button
+                onClick={() => handleTabChange("preferences")}
+                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                  activeTab === "preferences" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
+                }`}
+              >
+                <Palette className="w-4 h-4" />
+                Preferences
+              </button>
+              <button
+                onClick={() => handleTabChange("timezone")}
+                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                  activeTab === "timezone" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                Global Timezone
+              </button>
+              <button
+                onClick={() => handleTabChange("notifications")}
+                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                  activeTab === "notifications" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
+                }`}
+              >
+                <Bell className="w-4 h-4" />
+                Notifications
+              </button>
+              <button
+                onClick={() => handleTabChange("logout")}
+                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                  activeTab === "logout" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
+                }`}
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          }
+        >
+          <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
             {activeTab === "profile" && renderProfileCard()}
             {activeTab === "preferences" && renderPreferencesCard()}
             {activeTab === "timezone" && renderTimezoneCard()}
             {activeTab === "notifications" && renderNotificationsCard()}
             {activeTab === "logout" && renderLogoutCard()}
           </div>
-        </div>
+        </MasterViewLayout>
       )}
 
       {/* Mobile Dialog Popup */}
@@ -663,6 +669,7 @@ function SettingsContent() {
         </DialogContent>
       </Dialog>
     </div>
+    </MasterLayout>
   );
 }
 

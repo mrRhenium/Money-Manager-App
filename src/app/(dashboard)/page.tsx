@@ -192,7 +192,7 @@ export default async function DashboardPage() {
   upcomingDues.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-6 px-4 md:px-6 lg:px-8 pt-4 md:pt-6 lg:pt-8 pb-24">
       {/* Greeting Area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/10">
         <div className="flex items-center gap-4">
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1 md:col-span-2 lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>

@@ -262,7 +262,7 @@ export function TransactionTable({
           columns={columns} 
           dataSource={transactions} 
           rowKey="_id"
-          pagination={{ pageSize: 10, position: ["bottomRight"], showSizeChanger: true }}
+          pagination={{ defaultPageSize: 10, position: ["bottomRight"], showSizeChanger: true }}
           scroll={{ x: 'max-content' }}
           className="w-full"
         />

@@ -49,10 +49,10 @@ export function TransactionClient({
     const current = new URLSearchParams(window.location.search);
     if (activeTab !== "data") current.set("tab", activeTab);
     else current.delete("tab");
-    
+
     if (searchQuery) current.set("q", searchQuery);
     else current.delete("q");
-    
+
     if (typeFilter !== "all") current.set("type", typeFilter);
     else current.delete("type");
 
@@ -101,16 +101,16 @@ export function TransactionClient({
   // Chart Data preparation
   const chartData = useMemo(() => {
     const dailyTotals: Record<string, { date: string, timestamp: number, income: number, expense: number }> = {};
-    
+
     // Process all transactions for graph, ignoring current filters to show global trend, or you can use filteredTransactions. Let's use filteredTransactions for context-aware graphs.
     filteredTransactions.forEach(t => {
       const dateStr = formatDateString(t.date, "MMM DD");
       const timestamp = parseToDate(t.date).getTime();
-      
+
       if (!dailyTotals[dateStr]) {
         dailyTotals[dateStr] = { date: dateStr, timestamp, income: 0, expense: 0 };
       }
-      
+
       if (t.type === "income") dailyTotals[dateStr].income += t.amount;
       if (t.type === "expense") dailyTotals[dateStr].expense += t.amount;
     });
@@ -188,15 +188,15 @@ export function TransactionClient({
 
   return (
     <MasterLayout>
-      <MasterHeader 
+      <MasterHeader
         title="Transactions"
         subtitle="Track all your incomes and expenses."
       />
 
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full overflow-hidden">
-          
-          <MasterToolbar 
+
+          <MasterToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onFilterClick={() => setMobileFilterOpen(true)}
@@ -205,7 +205,7 @@ export function TransactionClient({
             onTabChange={setActiveTab}
             tabs={[
               { value: "data", label: "Data View", icon: <LayoutGrid className="w-4 h-4 mr-2" /> },
-              { value: "insights", label: "Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
+              { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
             ]}
             primaryAction={
               <div className="flex items-center gap-2 sm:gap-3">
@@ -225,8 +225,8 @@ export function TransactionClient({
             sidebar={
               activeTab === "insights" ? (
                 <div className="hidden md:block">
-                  <MasterFilterSidebar 
-                    isFilterActive={isFilterActive} 
+                  <MasterFilterSidebar
+                    isFilterActive={isFilterActive}
                     onClearFilters={clearFilters}
                   >
                     {filterPanelContent}
@@ -237,12 +237,12 @@ export function TransactionClient({
           >
             <TabsContent value="data" className="h-full m-0">
               <div className="pb-24 pt-2">
-                <TransactionTable 
-                  transactions={initialTransactions} 
+                <TransactionTable
+                  transactions={initialTransactions}
                   userTimezone={userTimezone}
-                  accounts={accounts} 
-                  categories={categories} 
-                  people={people} 
+                  accounts={accounts}
+                  categories={categories}
+                  people={people}
                   creditCards={creditCards}
                   // We pass the filter state ONLY to the mobile view component inside TransactionTable
                   externalMobileSearch={searchQuery}
@@ -255,26 +255,26 @@ export function TransactionClient({
 
             <TabsContent value="insights" className="h-full m-0">
               <div className="pb-24 pt-2 space-y-6">
-                
+
                 {/* KPI Cards */}
                 <div className="grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-3">
-                  <KPICard 
-                    label="Total Income" 
-                    value={<CurrencyDisplay amount={totalIncome} />} 
-                    icon={ArrowDownRight} 
-                    themeColor="emerald" 
+                  <KPICard
+                    label="Total Income"
+                    value={<CurrencyDisplay amount={totalIncome} />}
+                    icon={ArrowDownRight}
+                    themeColor="emerald"
                   />
-                  <KPICard 
-                    label="Total Expenses" 
-                    value={<CurrencyDisplay amount={totalExpense} />} 
-                    icon={ArrowUpRight} 
-                    themeColor="destructive" 
+                  <KPICard
+                    label="Total Expenses"
+                    value={<CurrencyDisplay amount={totalExpense} />}
+                    icon={ArrowUpRight}
+                    themeColor="destructive"
                   />
-                  <KPICard 
-                    label="Net Cashflow" 
-                    value={<CurrencyDisplay amount={netCashflow} showSign />} 
-                    icon={Wallet} 
-                    themeColor={netCashflow >= 0 ? "indigo" : "amber"} 
+                  <KPICard
+                    label="Net Cashflow"
+                    value={<CurrencyDisplay amount={netCashflow} showSign />}
+                    icon={Wallet}
+                    themeColor={netCashflow >= 0 ? "indigo" : "amber"}
                     className="col-span-2 md:col-span-1"
                   />
                 </div>
@@ -291,30 +291,30 @@ export function TransactionClient({
                         <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                             </linearGradient>
                             <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
-                          <XAxis 
-                            dataKey="date" 
+                          <XAxis
+                            dataKey="date"
                             axisLine={false}
                             tickLine={false}
                             tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                             dy={10}
                           />
-                          <YAxis 
+                          <YAxis
                             axisLine={false}
                             tickLine={false}
                             tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                             tickFormatter={(value) => `₹${(value / 1000)}k`}
                             width={60}
                           />
-                          <RechartsTooltip 
+                          <RechartsTooltip
                             formatter={(value: any) => `₹${Number(value).toLocaleString("en-IN")}`}
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
                             itemStyle={{ color: 'hsl(var(--foreground))' }}
@@ -338,8 +338,8 @@ export function TransactionClient({
         </Tabs>
       </div>
 
-      <MasterFilterDrawer 
-        isOpen={mobileFilterOpen} 
+      <MasterFilterDrawer
+        isOpen={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
         isFilterActive={isFilterActive}
         onClearFilters={clearFilters}

@@ -28,10 +28,10 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
     const current = new URLSearchParams(window.location.search);
     if (activeTab !== "data") current.set("tab", activeTab);
     else current.delete("tab");
-    
+
     if (searchQuery) current.set("q", searchQuery);
     else current.delete("q");
-    
+
     if (relationFilter !== "All") current.set("relation", relationFilter);
     else current.delete("relation");
 
@@ -88,15 +88,15 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
 
   return (
     <MasterLayout>
-      <MasterHeader 
+      <MasterHeader
         title={<><Users className="w-6 h-6 text-primary" /> People Ledger</>}
         subtitle="Manage money you lent or borrowed."
       />
 
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full overflow-hidden">
-          
-          <MasterToolbar 
+
+          <MasterToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onFilterClick={() => setMobileFilterOpen(true)}
@@ -105,15 +105,15 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
             onTabChange={setActiveTab}
             tabs={[
               { value: "data", label: "Data View", icon: <LayoutGrid className="w-4 h-4 mr-2" /> },
-              { value: "insights", label: "Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
+              { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
             ]}
             primaryAction={<PersonForm triggerClassName="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold" />}
           />
 
           <MasterViewLayout
             sidebar={
-              <MasterFilterSidebar 
-                isFilterActive={isFilterActive} 
+              <MasterFilterSidebar
+                isFilterActive={isFilterActive}
                 onClearFilters={clearFilters}
               >
                 {filterPanelContent}
@@ -126,8 +126,8 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
             */}
             <TabsContent value="data" className="h-full m-0">
               <div className="pb-24">
-                <PersonList 
-                  people={initialPeople} 
+                <PersonList
+                  people={initialPeople}
                   hideToolbar={true}
                   externalSearch={searchQuery}
                   externalFilter={relationFilter}
@@ -135,23 +135,23 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
                 />
               </div>
             </TabsContent>
-            
+
             <TabsContent value="insights" className="h-full m-0">
               <div className="pb-24 pt-2 space-y-6">
-                
+
                 {/* KPI Cards row */}
                 <div className="grid gap-2 sm:gap-4 grid-cols-2 shrink-0">
-                  <KPICard 
-                    label="Money to Receive" 
-                    value={<CurrencyDisplay amount={totalOweUs} showSign />} 
-                    icon={ArrowDownRight} 
-                    themeColor="emerald" 
+                  <KPICard
+                    label="Money to Receive"
+                    value={<CurrencyDisplay amount={totalOweUs} showSign />}
+                    icon={ArrowDownRight}
+                    themeColor="emerald"
                   />
-                  <KPICard 
-                    label="Money to Pay" 
-                    value={<CurrencyDisplay amount={-totalWeOwe} showSign />} 
-                    icon={ArrowUpRight} 
-                    themeColor="destructive" 
+                  <KPICard
+                    label="Money to Pay"
+                    value={<CurrencyDisplay amount={-totalWeOwe} showSign />}
+                    icon={ArrowUpRight}
+                    themeColor="destructive"
                   />
                 </div>
 
@@ -175,8 +175,8 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
         </Tabs>
       </div>
 
-      <MasterFilterDrawer 
-        isOpen={mobileFilterOpen} 
+      <MasterFilterDrawer
+        isOpen={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
         isFilterActive={isFilterActive}
         onClearFilters={clearFilters}

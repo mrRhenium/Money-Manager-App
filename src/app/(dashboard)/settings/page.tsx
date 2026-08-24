@@ -15,7 +15,7 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { Select } from "antd";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 import { useToast } from "@/hooks/useToast";
-import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine } from "lucide-react";
+import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine, ChevronRight } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getAllCurrencies } from "@/actions/currency";
@@ -97,7 +97,7 @@ function SettingsContent() {
   const isSearching = searchQuery.trim().length > 0;
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => setIsMobile(window.innerWidth < 1280);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -625,13 +625,82 @@ function SettingsContent() {
             </div>
           }
         >
-          <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
-            {activeTab === "profile" && renderProfileCard()}
-            {activeTab === "preferences" && renderPreferencesCard()}
-            {activeTab === "timezone" && renderTimezoneCard()}
-            {activeTab === "notifications" && renderNotificationsCard()}
-            {activeTab === "logout" && renderLogoutCard()}
-          </div>
+          {isMobile ? (
+            <div className="pb-24 pt-2 w-full max-w-4xl flex flex-col gap-3">
+              <button onClick={() => handleTabChange("profile")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-base text-foreground">Profile Information</p>
+                    <p className="text-sm text-muted-foreground">Update your account details</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+              
+              <button onClick={() => handleTabChange("preferences")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                    <Palette className="w-6 h-6 text-indigo-500" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-base text-foreground">Preferences</p>
+                    <p className="text-sm text-muted-foreground">App theme and currency</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+
+              <button onClick={() => handleTabChange("timezone")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                    <Globe className="w-6 h-6 text-emerald-500" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-base text-foreground">Global Timezone</p>
+                    <p className="text-sm text-muted-foreground">Set default times for tracking</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+
+              <button onClick={() => handleTabChange("notifications")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                    <Bell className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-base text-foreground">Notifications</p>
+                    <p className="text-sm text-muted-foreground">Push alerts and reminders</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+
+              <button onClick={() => handleTabChange("logout")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-red-500/5 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                    <LogOut className="w-6 h-6 text-red-500" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-base text-foreground">Sign Out</p>
+                    <p className="text-sm text-muted-foreground">End your current session</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+          ) : (
+            <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
+              {activeTab === "profile" && renderProfileCard()}
+              {activeTab === "preferences" && renderPreferencesCard()}
+              {activeTab === "timezone" && renderTimezoneCard()}
+              {activeTab === "notifications" && renderNotificationsCard()}
+              {activeTab === "logout" && renderLogoutCard()}
+            </div>
+          )}
         </MasterViewLayout>
       )}
 

@@ -35,7 +35,7 @@ export function NetWorthChart({ data }: { data: any[] }) {
   ];
 
   return (
-    <div className="w-full h-[80px]">
+    <div className="w-full h-full min-h-[250px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={formattedData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
           <defs>
@@ -44,6 +44,8 @@ export function NetWorthChart({ data }: { data: any[] }) {
               <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
             </linearGradient>
           </defs>
+          <XAxis dataKey="date" hide={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} dy={10} />
+          <YAxis hide={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(val) => `${val / 1000}k`} width={60} />
           <Tooltip 
             content={({ active, payload }) => {
               if (active && payload && payload.length) {

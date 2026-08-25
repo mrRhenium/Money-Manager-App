@@ -5,10 +5,12 @@ import { getPendingTransactions, confirmTransaction } from "@/actions/transactio
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import { useToast } from "@/hooks/useToast";
-import { Smartphone, Check, X, Clock, Loader2 } from "lucide-react";
+import { Smartphone, Check, X, Clock, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -21,6 +23,9 @@ export function PendingConfirmationsWidget() {
   const [pendingTxns, setPendingTxns] = useState<any[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const itemsPerPage = 10;
 
   const fetchPending = async () => {
     if (!session?.user?.id) return;
@@ -66,13 +71,28 @@ export function PendingConfirmationsWidget() {
 
   if (pendingTxns.length === 0) return null;
 
+  
+  const filteredTxns = pendingTxns.filter(txn => {
+    if (!searchQuery) return true;
+    const s = searchQuery.toLowerCase();
+    const receiver = (txn.note || txn.partyName || "UPI Recipient").toLowerCase();
+    const dateStr = formatDateString(txn.date, "DD-MM-YYYY");
+    return (
+      receiver.includes(s) ||
+      txn.amount.toString().includes(s) ||
+      dateStr.includes(s)
+    );
+  });
+  
   const totalAmount = pendingTxns.reduce((sum, txn) => sum + txn.amount, 0);
+  const totalPages = Math.ceil(filteredTxns.length / itemsPerPage);
+  const paginatedTxns = filteredTxns.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger render={
-        <Card className="cursor-pointer border border-amber-500/20 bg-amber-500/5 shadow-sm hover:bg-amber-500/10 transition-all duration-200">
-          <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <Card className="cursor-pointer border border-amber-500/20 bg-amber-500/5 shadow-sm hover:bg-amber-500/10 transition-all duration-200 h-full">
+          <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 h-full">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
                 <Smartphone className="w-6 h-6 animate-pulse" />
@@ -102,18 +122,36 @@ export function PendingConfirmationsWidget() {
           <p className="text-xs text-muted-foreground mt-1">
             Confirm whether these UPI payments were successful or cancelled to keep your balances aligned.
           </p>
+          <div className="relative mt-4">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search by receiver name, amount, or date..."
+              className="pl-9 bg-background w-full"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
         </DialogHeader>
         <div className="space-y-3 mt-4">
-          {pendingTxns.map((txn) => {
-            const payeeName = txn.note?.replace("UPI Payment to ", "") || "UPI Recipient";
+          {paginatedTxns.map((txn) => {
+            const payeeName = txn.partyName || txn.note?.replace("UPI Payment to ", "") || "UPI Recipient";
+            const noteText = txn.note || "No note attached";
             const isLoading = loadingId === txn._id;
             
             return (
               <div key={txn._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-background rounded-xl border border-amber-500/20 gap-3 shadow-inner">
                 <div>
                   <p className="font-bold text-sm text-foreground">{payeeName}</p>
-                  <p className="text-xs text-muted-foreground mt-1 truncate max-w-[200px]">
-                    Amount: <span className="font-semibold text-foreground">{format(txn.amount)}</span> • {formatDateString(txn.date, "DD-MM-YYYY")}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    <span className="font-semibold text-foreground bg-primary/10 px-1.5 py-0.5 rounded mr-2">{format(txn.amount)}</span>
+                    {formatDateString(txn.date, "DD-MM-YYYY hh:mm A")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 italic opacity-80">
+                    "{noteText}"
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -151,6 +189,20 @@ export function PendingConfirmationsWidget() {
             );
           })}
         </div>
+      
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 border-t mt-4">
+            <span className="text-xs text-muted-foreground">Page {currentPage} of {totalPages}</span>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

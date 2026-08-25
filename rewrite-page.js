@@ -1,4 +1,6 @@
-import React from "react";
+const fs = require('fs');
+
+const pageContent = `import React from "react";
 import { getAccounts } from "@/actions/account";
 import { getTransactions } from "@/actions/transaction";
 import { getPeople } from "@/actions/person";
@@ -21,19 +23,16 @@ import {
   TrendingUp,
   Circle,
   Shield,
-  Briefcase,
-  QrCode
+  Briefcase
 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { formatDate } from "@/lib/helpers";
 import { isSameMonthAndYear, getCurrentDate, parseToDate } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
-import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
@@ -53,24 +52,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   if (!session?.user) redirect("/login");
 
   const searchParams = props.searchParams ? await props.searchParams : {};
-  const daysParam = (searchParams.days as string) || "7";
-  const isCustom = daysParam === "custom";
-  const fromDateStr = searchParams.from as string;
-  const toDateStr = searchParams.to as string;
-
-  let daysFilter = 7;
-  let customStartDate: Date | null = null;
-  let customEndDate: Date | null = null;
-
-  if (isCustom && fromDateStr && toDateStr) {
-    customStartDate = new Date(fromDateStr);
-    customEndDate = new Date(toDateStr);
-    customEndDate.setHours(23, 59, 59, 999);
-    daysFilter = Math.max(1, Math.ceil((customEndDate.getTime() - customStartDate.getTime()) / (1000 * 3600 * 24)));
-  } else {
-    daysFilter = parseInt(daysParam, 10);
-    if (isNaN(daysFilter)) daysFilter = 7;
-  }
+  const daysFilter = parseInt((searchParams.days as string) || "7", 10);
 
   const userTimezone = (session.user as any).timezone || "UTC";
 
@@ -121,19 +103,12 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   // Calculate timeframe-based income and expenses
   const now = getCurrentDate();
-  let pastDate = new Date(now);
-  let effectiveNow = new Date(now);
-  
-  if (isCustom && customStartDate && customEndDate) {
-    pastDate = customStartDate;
-    effectiveNow = customEndDate;
-  } else {
-    pastDate.setDate(now.getDate() - daysFilter);
-  }
+  const pastDate = new Date(now);
+  pastDate.setDate(now.getDate() - daysFilter);
 
   const timeframeTxns = transactions.filter((t: any) => {
     const txDate = parseToDate(t.date);
-    return txDate >= pastDate && txDate <= effectiveNow;
+    return txDate >= pastDate && txDate <= now;
   });
 
   const timeframeIncome = timeframeTxns
@@ -174,7 +149,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       let dd = parseToDate(c.dueDate);
       if (dd.getMonth() < now.getMonth() && dd.getFullYear() <= now.getFullYear()) dd.setMonth(now.getMonth());
       if (dd <= nextXDays && dd >= now) {
-        upcomingDues.push({ title: `${c.bankName} CC Bill`, amount: c.currentOutstanding, dueDate: dd, type: 'credit_card' });
+        upcomingDues.push({ title: \`\${c.bankName} CC Bill\`, amount: c.currentOutstanding, dueDate: dd, type: 'credit_card' });
       }
     }
   });
@@ -187,7 +162,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       nextDue.setFullYear(now.getFullYear());
       if (nextDue < now) nextDue.setMonth(now.getMonth() + 1);
       if (nextDue <= nextXDays && nextDue >= now) {
-        upcomingDues.push({ title: `${inv.name} SIP`, amount: inv.investedAmount, dueDate: nextDue, type: 'sip' });
+        upcomingDues.push({ title: \`\${inv.name} SIP\`, amount: inv.investedAmount, dueDate: nextDue, type: 'sip' });
       }
     }
   });
@@ -197,7 +172,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     if (pol.status === 'active' && pol.renewalDate) {
       let rd = parseToDate(pol.renewalDate);
       if (rd >= now && rd <= nextXDays) {
-        upcomingDues.push({ title: `${pol.policyName} Premium`, amount: pol.premiumAmount, dueDate: rd, type: 'insurance' });
+        upcomingDues.push({ title: \`\${pol.policyName} Premium\`, amount: pol.premiumAmount, dueDate: rd, type: 'insurance' });
       }
     }
   });
@@ -205,10 +180,10 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   // Parse active loans (EMIs)
   activeLoans.forEach((loan: any) => {
     if (loan.status === 'active' && loan.emiDate && loan.emiAmount > 0) {
-      let emiDate = parseToDate(`${now.getFullYear()}-${now.getMonth() + 1}-${loan.emiDate}`);
+      let emiDate = parseToDate(\`\${now.getFullYear()}-\${now.getMonth() + 1}-\${loan.emiDate}\`);
       if (emiDate < now) emiDate.setMonth(now.getMonth() + 1);
       if (emiDate <= nextXDays && emiDate >= now) {
-        upcomingDues.push({ title: `${loan.name} EMI`, amount: loan.emiAmount, dueDate: emiDate, type: loan.type === 'taken' ? 'loan_emi' : 'loan_emi_receive' });
+        upcomingDues.push({ title: \`\${loan.name} EMI\`, amount: loan.emiAmount, dueDate: emiDate, type: loan.type === 'taken' ? 'loan_emi' : 'loan_emi_receive' });
       }
     }
   });
@@ -247,10 +222,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/my-upi" className={buttonVariants({ variant: "outline" })}>
-            <QrCode className="w-4 h-4 mr-2" /> My UPI
-          </Link>
-          <DashboardScanTrigger />
+          <DashboardAdvancedFilter />
         </div>
       </div>
 
@@ -258,10 +230,6 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <PendingConfirmationsWidget />
         <UpcomingDuesWidget dues={upcomingDues} daysAhead={daysFilter} />
-      </div>
-
-      <div className="flex justify-end my-4">
-        <DashboardAdvancedFilter />
       </div>
 
       {/* ZONE 2: MACRO OVERVIEW (KPIs) */}
@@ -280,7 +248,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
             </CardHeader>
             <CardContent className="relative z-10">
               <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
-              <p className={`text-xs mt-1 flex items-center gap-1 ${nwGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+              <p className={\`text-xs mt-1 flex items-center gap-1 \${nwGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}\`}>
                 {nwGrowth >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {Math.abs(nwGrowth).toFixed(1)}% vs past {daysFilter} days
               </p>
@@ -397,7 +365,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
                   </div>
                   <CurrencyDisplay
                     amount={t.type === 'expense' || t.type === 'lend' ? -t.amount : t.amount}
-                    className={`shrink-0 font-semibold text-sm ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}`}
+                    className={\`shrink-0 font-semibold text-sm \${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'}\`}
                     showSign={t.type === 'income'}
                   />
                 </div>
@@ -429,3 +397,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/app/(dashboard)/page.tsx', pageContent);
+console.log('Dashboard page rewritten.');

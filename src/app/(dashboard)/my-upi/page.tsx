@@ -10,6 +10,9 @@ import { QrCode, Plus, Trash, Copy, Loader2 } from "lucide-react";
 import { getUserProfile, updateProfile } from "@/actions/user";
 import { useToast } from "@/hooks/useToast";
 import { QRCodeSVG } from "qrcode.react";
+import { MasterLayout } from "@/components/layout/MasterLayout";
+import { MasterHeader } from "@/components/layout/MasterHeader";
+import { MasterViewLayout } from "@/components/layout/MasterView";
 
 function MyUpiContent() {
   const { data: session } = useSession();
@@ -62,20 +65,14 @@ function MyUpiContent() {
   const generatedUpiUrl = selectedUpiForQr ? `upi://pay?pa=${selectedUpiForQr}&pn=${encodeURIComponent(name || "User")}` : "";
 
   return (
-    <div className="flex-1 space-y-4 w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <QrCode className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-            My UPI & QR
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Manage your UPI IDs and share your receiving QR code.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-card rounded-none sm:rounded-2xl border-y sm:border-x sm:border-y shadow-sm p-4 md:p-6 space-y-6 -mx-2 sm:mx-0 mt-4 sm:mt-0">
+    <>
+      <MasterHeader 
+        title={<><QrCode className="w-6 h-6 text-primary" /> My UPI & QR</>}
+        subtitle="Manage your UPI IDs and share your receiving QR code."
+      />
+      <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
+        <MasterViewLayout sidebar={null}>
+          <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6 space-y-6 max-w-4xl pb-24">
         
         {/* UPI IDs Section */}
         <div className="space-y-4">
@@ -206,15 +203,19 @@ function MyUpiContent() {
           </div>
         </div>
 
+          </div>
+        </MasterViewLayout>
       </div>
-    </div>
+    </>
   );
 }
 
 export default function MyUpiPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-muted-foreground"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>}>
-      <MyUpiContent />
-    </Suspense>
+    <MasterLayout>
+      <Suspense fallback={<div className="p-12 text-center text-muted-foreground"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>}>
+        <MyUpiContent />
+      </Suspense>
+    </MasterLayout>
   );
 }

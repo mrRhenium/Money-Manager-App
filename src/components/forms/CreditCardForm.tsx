@@ -121,7 +121,7 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
             <PenLine className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className={`w-full sm:w-auto gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-black shadow-md font-semibold ${triggerClassName || 'h-11 px-6'}`}>
+          <Button className={`w-full sm:w-auto gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white dark:text-black shadow-md font-semibold ${triggerClassName || 'h-11 px-6'}`}>
             <Plus className="w-4 h-4" />
             Add Credit Card
           </Button>

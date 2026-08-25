@@ -61,13 +61,13 @@ export function KPICard({ label, value, icon: Icon, themeColor = 'default', tren
       <div className={cn("absolute top-0 right-0 p-3 opacity-50", style.text)}>
         <Icon className="w-5 h-5" />
       </div>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-1">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate z-10 relative">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1">
+        <CardTitle className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate z-10 relative">
           {label}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 z-10 relative">
-        <div className="text-2xl font-bold truncate">
+      <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 z-10 relative">
+        <div className="text-lg sm:text-2xl font-bold truncate">
           {value}
         </div>
         {trend && (

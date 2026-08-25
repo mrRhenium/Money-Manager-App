@@ -37,6 +37,7 @@ import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
+import { ActionCenterWrapper } from "@/components/dashboard/ActionCenterWrapper";
 import { DashboardAdvancedFilter } from "@/components/dashboard/DashboardAdvancedFilter";
 
 function getFallbackTransactionIcon(type: string) {
@@ -238,47 +239,17 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   }
 
   return (
-    <div className="space-y-8 px-4 md:px-6 lg:px-8 pt-4 md:pt-6 lg:pt-8 pb-24">
-      {/* Greeting & Filter Area */}
-      <div className="flex flex-row justify-between items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 sm:p-6 rounded-2xl border border-primary/10">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <Link href="/settings" className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex md:hidden items-center justify-center hover:opacity-80 transition-opacity">
-            {session.user.image ? (
-              <img src={session.user.image} alt={session.user.name || "User"} className="w-full h-full object-cover" />
-            ) : (
-              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            )}
-          </Link>
-          <div>
-            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground truncate max-w-[150px] sm:max-w-none">
-              Welcome, {session.user.name?.split(" ")[0] || "User"}!
-            </h1>
-            <p className="text-muted-foreground mt-0.5 text-xs sm:text-base hidden sm:block">
-              Here's your actionable financial overview.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Link
-            href="/my-upi"
-            className="flex items-center justify-center h-9 sm:h-11 px-4 sm:px-6 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 transition-all shadow-sm font-medium text-xs sm:text-sm"
-          >
-            <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary dark:text-blue-400" />
-            My UPI
-          </Link>
-          <DashboardScanTrigger />
-        </div>
+    <div className="absolute inset-0 flex flex-col md:relative md:block md:inset-auto md:h-auto overflow-hidden md:overflow-visible">
+      {/* Static Header Container */}
+      <div className="shrink-0 z-40 border-b md:border-none bg-card/80 md:bg-transparent backdrop-blur-md md:backdrop-blur-none px-4 md:px-6 lg:px-8 py-3 md:pt-6 lg:pt-8 shadow-sm md:shadow-none">
+        <ActionCenterWrapper upcomingDues={upcomingDues} daysAhead={daysFilter} user={session.user} />
       </div>
 
-      {/* ZONE 1: ACTION CENTER */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-6">
-        <PendingConfirmationsWidget />
-        <UpcomingDuesWidget dues={upcomingDues} daysAhead={daysFilter} />
-      </div>
+      {/* Scrollable Content Container */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar md:overflow-visible">
+        <div className="space-y-8 px-4 md:px-6 lg:px-8 pt-4 pb-24 md:pb-8">
 
-      <div className="flex justify-end my-4">
-        <DashboardAdvancedFilter />
-      </div>
+
 
       {/* ZONE 2: MACRO OVERVIEW (KPIs) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -288,15 +259,15 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <TrendingUp className="w-24 h-24 text-primary" />
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Net Worth</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Net Worth</CardTitle>
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Wallet className="w-4 h-4 text-primary" />
               </div>
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
-              <p className={`text-xs mt-1 flex items-center gap-1 ${nwGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10">
+              <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
+              <p className={`text-[10px] sm:text-xs mt-1 flex items-center gap-1 ${nwGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                 {nwGrowth >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {Math.abs(nwGrowth).toFixed(1)}% vs past {daysFilter} days
               </p>
@@ -310,15 +281,15 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <Briefcase className="w-24 h-24 text-purple-500" />
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Investments</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Investments</CardTitle>
               <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
                 <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               </div>
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalInvestmentValue} /></div>
-              <p className="text-xs text-muted-foreground mt-1">Across SIPs & FDs</p>
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10">
+              <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalInvestmentValue} /></div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Across SIPs & FDs</p>
             </CardContent>
           </Card>
         </Link>
@@ -329,15 +300,15 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <AlertCircle className="w-24 h-24 text-red-500" />
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Debt</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Debt</CardTitle>
               <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
                 <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
               </div>
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalDebtOwed} /></div>
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10">
+              <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalDebtOwed} /></div>
+              <p className="text-[10px] sm:text-xs text-red-500 mt-1 flex items-center gap-1">
                 Cards & Loans
               </p>
             </CardContent>
@@ -347,19 +318,19 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
         {/* Cashflow Summary */}
         <div className="block">
           <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm h-full relative overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Period Cashflow</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Period Cashflow</CardTitle>
               <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
                 <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
             </CardHeader>
-            <CardContent className="relative z-10 flex flex-col gap-1.5 mt-1">
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10 flex flex-col gap-1.5 mt-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground flex items-center"><ArrowDownLeft className="w-3 h-3 text-emerald-500 mr-1" /> IN</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center"><ArrowDownLeft className="w-3 h-3 text-emerald-500 mr-1" /> IN</span>
                 <CurrencyDisplay amount={timeframeIncome} className="text-sm font-semibold text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground flex items-center"><ArrowUpRight className="w-3 h-3 text-red-500 mr-1" /> OUT</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center"><ArrowUpRight className="w-3 h-3 text-red-500 mr-1" /> OUT</span>
                 <CurrencyDisplay amount={timeframeExpense} className="text-sm font-semibold text-red-600 dark:text-red-400" />
               </div>
             </CardContent>
@@ -441,7 +412,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           <NetWorthChart data={nwHistory} />
         </CardContent>
       </Card>
-
     </div>
+  </div>
+</div>
   );
 }

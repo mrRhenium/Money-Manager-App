@@ -29,7 +29,6 @@ const MutualFundSchemeSchema: Schema<IMutualFundScheme> = new Schema(
 
 // Indexes for fast searching
 MutualFundSchemeSchema.index({ schemeName: "text" });
-MutualFundSchemeSchema.index({ schemeCode: 1 });
 
 const MutualFundScheme: Model<IMutualFundScheme> =
   mongoose.models.MutualFundScheme || mongoose.model<IMutualFundScheme>("MutualFundScheme", MutualFundSchemeSchema);

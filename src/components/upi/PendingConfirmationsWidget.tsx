@@ -15,7 +15,7 @@ import { useSession } from "next-auth/react";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
 
-export function PendingConfirmationsWidget() {
+export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: (count: number) => void }) {
   const { format, currencyCode } = useCurrency();
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -32,6 +32,7 @@ export function PendingConfirmationsWidget() {
     try {
       const txns = await getPendingTransactions();
       setPendingTxns(txns);
+      if (onCountChange) onCountChange(txns.length);
     } catch (e) {
       console.error("Failed to load pending confirmations", e);
     }
@@ -95,16 +96,16 @@ export function PendingConfirmationsWidget() {
       <DialogTrigger render={
         <Card className="cursor-pointer border border-amber-500/20 bg-amber-500/5 shadow-sm hover:bg-amber-500/10 transition-all duration-200 h-full">
           <CardContent className="p-4 sm:p-5 flex flex-col justify-between gap-4 h-full">
-            <div className="flex items-center gap-3 w-full">
-              <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
-                <Smartphone className="w-5 h-5 animate-pulse" />
-              </div>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
+                  <Smartphone className="w-5 h-5 animate-pulse" />
+                </div>
                 <h3 className="font-bold text-sm sm:text-base text-amber-800 dark:text-amber-400 truncate">Pending UPI</h3>
-                <p className="text-xs text-amber-600 dark:text-amber-500 font-medium truncate">
-                  {pendingTxns.length} payment{pendingTxns.length !== 1 ? "s" : ""}
-                </p>
               </div>
+              <p className="text-xs text-amber-600 dark:text-amber-500 font-medium whitespace-nowrap">
+                {pendingTxns.length} payment{pendingTxns.length !== 1 ? "s" : ""}
+              </p>
             </div>
             <div className="text-left mt-auto">
               <span className="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold tracking-wider block">Total Pending: </span>

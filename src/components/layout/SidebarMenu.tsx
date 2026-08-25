@@ -3,12 +3,12 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
-  Home, 
-  Wallet, 
-  CreditCard, 
-  PieChart, 
-  Users, 
+import {
+  Home,
+  Wallet,
+  CreditCard,
+  PieChart,
+  Users,
   Settings,
   ShieldCheck,
   Landmark,
@@ -18,7 +18,8 @@ import {
   Repeat,
   Umbrella,
   Target,
-  UploadCloud
+  UploadCloud,
+  QrCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
 
   const items = [
     { href: "/", icon: Home, label: "Dashboard" },
+    { href: "/my-upi", icon: QrCode, label: "My UPI" },
     { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/categories", icon: Tags, label: "Categories" },
@@ -58,7 +60,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
               href={item.href}
               className={cn(
                 "flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300 relative group overflow-hidden",
-                isActive 
+                isActive
                   ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold"
                   : "text-muted-foreground dark:text-slate-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary hover:scale-[1.02]"
               )}
@@ -67,7 +69,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50" />
               )}
               <Icon className={cn("w-5 h-5 shrink-0 transition-transform duration-300", isActive && "scale-110 drop-shadow-sm")} />
-              
+
               {!isCollapsed && (
                 <span className="font-medium whitespace-nowrap z-10 transition-colors">
                   {item.label}
@@ -83,7 +85,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
                   href={item.href}
                   className={cn(
                     "flex items-center justify-center w-10 h-10 mx-auto rounded-xl transition-all duration-300 relative group overflow-hidden",
-                    isActive 
+                    isActive
                       ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold"
                       : "text-muted-foreground dark:text-slate-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary hover:scale-[1.02]"
                   )}

@@ -174,7 +174,7 @@ export function AccountList({ accounts, hideToolbar = false, externalSort }: { a
                 </div>
 
                 <div className="z-10 mt-auto pt-4">
-                  <div className="text-3xl font-bold truncate tracking-tight">
+                  <div className="text-xl sm:text-2xl font-bold truncate tracking-tight">
                     {formatCurrency(account.balance, account.currency || "INR")}
                   </div>
                 </div>

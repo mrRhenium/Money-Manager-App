@@ -141,13 +141,18 @@ export function TransactionTable({
           );
         }
         if (!record.categoryId) {
-          if (record.note?.toLowerCase().includes("emi payment")) {
+          if (record.note?.toLowerCase().includes("emi payment") || record.note?.toLowerCase().includes("emi reversal")) {
+            const isReversal = record.note.toLowerCase().includes("emi reversal");
             return (
               <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-red-500/10 text-red-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${isReversal ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                  {isReversal ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                  )}
                 </div>
-                <span>EMI Payment</span>
+                <span>{isReversal ? "EMI Reversal" : "EMI Payment"}</span>
               </div>
             );
           }
@@ -292,8 +297,8 @@ export function TransactionTable({
                         <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: record.categoryId ? `${record.categoryId.color}20` : (record.note?.toLowerCase().includes("emi payment") ? '#fee2e2' : '#f3f4f6') }}>
                           {record.categoryId ? (
                             <CategoryIcon name={record.categoryId.icon} color={record.categoryId.color} className="w-5 h-5" />
-                          ) : record.note?.toLowerCase().includes("emi payment") ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+                          ) : (record.note?.toLowerCase().includes("emi payment") || record.note?.toLowerCase().includes("emi reversal")) ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={record.note?.toLowerCase().includes("emi reversal") ? "text-emerald-500" : "text-red-500"}><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
                           ) : (
                             <span className="text-muted-foreground w-5 h-5" />
                           )}
@@ -301,7 +306,7 @@ export function TransactionTable({
                       )}
                       <div className="flex flex-col">
                         <span className="font-bold text-foreground text-base leading-tight">
-                          {isTransfer ? "Internal Transfer" : (record.categoryId?.name || (record.note?.toLowerCase().includes("emi payment") ? "EMI Payment" : "Uncategorized"))}
+                          {isTransfer ? "Internal Transfer" : (record.categoryId?.name || (record.note?.toLowerCase().includes("emi payment") ? "EMI Payment" : record.note?.toLowerCase().includes("emi reversal") ? "EMI Reversal" : "Uncategorized"))}
                         </span>
                         <span className="text-xs text-muted-foreground mt-0.5 font-medium">
                           {formatDate(record.date, "standard", userTimezone)}

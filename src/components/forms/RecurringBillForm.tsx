@@ -118,7 +118,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
         ) : (
           <Button className={`w-full sm:w-auto ${triggerClassName || ""}`}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Auto-Pay / Subscription
+            Add Subscription
           </Button>
         )}
       </DialogTrigger>
@@ -126,7 +126,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Repeat className="w-5 h-5" />
-            <span className="text-foreground">{bill ? (viewOnly ? "View Subscription" : "Edit Subscription") : "Add Subscription / Auto-Pay"}</span>
+            <span className="text-foreground">{bill ? (viewOnly ? "View Subscription" : "Edit Subscription") : "Add Subscription"}</span>
           </DialogTitle>
         </DialogHeader>
         

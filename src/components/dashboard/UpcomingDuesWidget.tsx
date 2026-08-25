@@ -68,16 +68,16 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
       <DialogTrigger render={
         <Card className="cursor-pointer border border-blue-500/20 bg-blue-500/5 shadow-sm hover:bg-blue-500/10 transition-all duration-200 h-full">
           <CardContent className="p-4 sm:p-5 flex flex-col justify-between gap-4 h-full">
-            <div className="flex items-center gap-3 w-full">
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-600 flex items-center justify-center shrink-0">
-                <Calendar className="w-5 h-5 animate-pulse" />
-              </div>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-600 flex items-center justify-center shrink-0">
+                  <Calendar className="w-5 h-5 animate-pulse" />
+                </div>
                 <h3 className="font-bold text-sm sm:text-base text-blue-800 dark:text-blue-400 truncate">Upcoming Dues</h3>
-                <p className="text-xs text-blue-600 dark:text-blue-500 font-medium truncate">
-                  {dues.length} dues in next {daysAhead} days
-                </p>
               </div>
+              <p className="text-xs text-blue-600 dark:text-blue-500 font-medium whitespace-nowrap">
+                {dues.length} dues in next {daysAhead} days
+              </p>
             </div>
             <div className="text-left mt-auto">
               <span className="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold tracking-wider block">Total Amount: </span>

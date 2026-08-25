@@ -132,32 +132,32 @@ export function DashboardAdvancedFilter() {
         />
       )}
 
-      {isMonthYear && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <AntSelect
-            mode="multiple"
-            allowClear
-            placeholder="Select Months"
-            value={selectedMonths}
-            onChange={handleMonthsChange}
-            options={MONTHS}
-            className="w-full sm:w-[200px]"
-            maxTagCount="responsive"
-            size="large"
-          />
-          <AntSelect
-            mode="multiple"
-            allowClear
-            placeholder="Select Years"
-            value={selectedYears}
-            onChange={handleYearsChange}
-            options={YEARS}
-            className="w-full sm:w-[140px]"
-            maxTagCount="responsive"
-            size="large"
-          />
-        </div>
-      )}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <AntSelect
+          mode="multiple"
+          allowClear
+          placeholder="Select Months"
+          value={isMonthYear ? selectedMonths : []}
+          onChange={handleMonthsChange}
+          options={MONTHS}
+          className="w-full sm:w-[200px]"
+          maxTagCount="responsive"
+          size="large"
+          disabled={!isMonthYear}
+        />
+        <AntSelect
+          mode="multiple"
+          allowClear
+          placeholder="Select Years"
+          value={isMonthYear ? selectedYears : []}
+          onChange={handleYearsChange}
+          options={YEARS}
+          className="w-full sm:w-[140px]"
+          maxTagCount="responsive"
+          size="large"
+          disabled={!isMonthYear}
+        />
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PieChart, QrCode, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target, Shield } from "lucide-react";
+import { Home, PieChart, QrCode, ScanLine, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target, Shield } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
@@ -14,8 +14,8 @@ export function BottomNav() {
   const navItems = [
     { label: "Dashboard", href: "/", icon: Home },
     { label: "Transactions", href: "/transactions", icon: Wallet },
-    { label: "Add", href: "#", icon: QrCode, isMain: true },
-    { label: "Budgets", href: "/budgets", icon: PieChart },
+    { label: "Add", href: "#", icon: ScanLine, isMain: true },
+    { label: "My UPI", href: "/my-upi", icon: QrCode },
     { label: "Menu", href: "#", icon: Menu, isMenu: true },
   ];
 
@@ -23,6 +23,7 @@ export function BottomNav() {
     { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/categories", icon: Tags, label: "Categories" },
+    { href: "/budgets", icon: PieChart, label: "Budgets" },
     { href: "/people", icon: Users, label: "People" },
     { href: "/subscriptions", icon: Repeat, label: "Subscriptions" },
     { href: "/loans", icon: Landmark, label: "Loans / EMIs" },

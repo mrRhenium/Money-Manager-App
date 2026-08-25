@@ -12,6 +12,7 @@ import { getUserProfile, updateProfile } from "@/actions/user";
 import { useToast } from "@/hooks/useToast";
 import { QRCodeSVG } from "qrcode.react";
 import Link from "next/link";
+import { MasterHeader } from "@/components/layout/MasterHeader";
 
 function MyUpiContent() {
   const { data: session } = useSession();
@@ -67,103 +68,40 @@ function MyUpiContent() {
   return (
     <div className="absolute inset-0 flex flex-col bg-slate-50/50 dark:bg-background overflow-hidden">
 
-      {/* HEADER SECTION - matches investment detail page */}
-      <div className="shrink-0 h-auto sm:h-20 z-40 dark:text-white bg-background/95 dark:bg-card/95 backdrop-blur-2xl shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] border-b py-3 sm:py-4 px-4 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-row items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="icon" className="rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200/50 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors h-8 w-8 sm:h-10 sm:w-10 shrink-0">
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-1.5 sm:gap-2">
-                <QrCode className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />My UPI & QR
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 hidden sm:block">
-                Manage your UPI IDs and share your receiving QR code.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={handleSave} disabled={isSaving} className="shadow-sm px-3 sm:px-6 h-8 sm:h-10 text-xs sm:text-sm">
-              {isSaving ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" /> Saving...</> : <><Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Save UPI IDs</>}
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* HEADER SECTION */}
+      <MasterHeader 
+        title={<><QrCode className="w-6 h-6 text-primary" /> My UPI & QR</>}
+        subtitle="Manage your UPI IDs and share your receiving QR code."
+      />
 
       {/* CONTENT SECTION */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-24 pt-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-6">
 
-          {/* Top KPI Cards */}
-          <div className="grid gap-2 sm:gap-4 grid-cols-3">
 
-            {/* Total UPI IDs */}
-            <Card className="shadow-sm bg-gradient-to-br from-card to-card hover:to-primary/5 dark:hover:to-primary/10 border border-slate-200/60 dark:border-slate-800 transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-2 sm:p-3 opacity-50 text-primary">
-                <Hash className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1">
-                <CardTitle className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">Total IDs</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 pt-1">
-                <p className="text-lg sm:text-2xl font-bold text-foreground">{activeIds.length}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">Registered IDs</p>
-              </CardContent>
-            </Card>
-
-            {/* Primary UPI */}
-            <Card className="shadow-sm bg-gradient-to-br from-card to-card hover:to-emerald-500/5 dark:hover:to-emerald-500/10 border border-slate-200/60 dark:border-slate-800 transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-2 sm:p-3 opacity-50 text-emerald-500">
-                <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1">
-                <CardTitle className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">Primary</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 pt-1">
-                <p className="text-sm sm:text-lg font-bold text-foreground font-mono truncate">{activeIds[0] || "Not set"}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">Default ID</p>
-              </CardContent>
-            </Card>
-
-            {/* QR Status */}
-            <Card className="shadow-sm bg-gradient-to-br from-card to-card hover:to-purple-500/5 dark:hover:to-purple-500/10 border border-slate-200/60 dark:border-slate-800 transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-2 sm:p-3 opacity-50 text-purple-500">
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1">
-                <CardTitle className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">QR Status</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 pt-1">
-                <p className={`text-sm sm:text-lg font-bold truncate ${activeIds.length > 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                  {activeIds.length > 0 ? "✅ Active" : "⚠️ Inactive"}
-                </p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">{activeIds.length > 0 ? "QR code ready" : "Add ID first"}</p>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Main Content - Two Column Layout */}
           <div className="grid gap-6 lg:grid-cols-5">
 
             {/* Left Column - UPI IDs Management */}
             <Card className="lg:col-span-3 shadow-sm border border-slate-200/60 dark:border-slate-800">
-              <CardHeader className="border-b border-border/50 p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base sm:text-lg font-bold text-foreground">My UPI IDs</CardTitle>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">Add your VPA/UPI IDs to generate receiving QR codes.</p>
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => {
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border/50">
+                <div>
+                  <CardTitle className="text-lg">My UPI IDs</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1 hidden sm:block">Add your VPA/UPI IDs to generate receiving QR codes.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => {
                     if (upiIds.length === 0 || upiIds[upiIds.length - 1].trim() !== "") {
                       setUpiIds([...upiIds, ""]);
                     } else {
                       toast.error("Please fill in the empty UPI ID before adding a new one.");
                     }
-                  }} className="h-8">
+                  }} variant="outline" size="sm" className="h-8">
                     <Plus className="w-4 h-4 mr-1" /> Add
+                  </Button>
+                  <Button onClick={handleSave} disabled={isSaving} size="sm" className="h-8">
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
                   </Button>
                 </div>
               </CardHeader>

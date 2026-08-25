@@ -27,7 +27,6 @@ const StockSymbolSchema: Schema<IStockSymbol> = new Schema(
 
 // Indexes for fast searching
 StockSymbolSchema.index({ companyName: "text", ticker: "text" });
-StockSymbolSchema.index({ ticker: 1 });
 
 const StockSymbol: Model<IStockSymbol> =
   mongoose.models.StockSymbol || mongoose.model<IStockSymbol>("StockSymbol", StockSymbolSchema);

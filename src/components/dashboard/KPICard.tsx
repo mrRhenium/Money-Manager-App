@@ -16,7 +16,7 @@ interface KPICardProps {
 }
 
 export function KPICard({ label, value, icon: Icon, themeColor = 'default', trend, className, action }: KPICardProps) {
-  
+
   const themeStyles = {
     primary: {
       hover: "hover:to-primary/5 dark:hover:to-primary/10",
@@ -58,16 +58,16 @@ export function KPICard({ label, value, icon: Icon, themeColor = 'default', tren
       style.hover,
       className
     )}>
-      <div className={cn("absolute top-0 right-0 p-3 opacity-50", style.text)}>
-        <Icon className="w-5 h-5" />
+      <div className={cn("absolute top-0 right-0 p-2 sm:p-3 opacity-50", style.text)}>
+        <Icon className="w-4 h-4" />
       </div>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 sm:p-3 pb-0 sm:pb-0">
         <CardTitle className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate z-10 relative">
           {label}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 z-10 relative">
-        <div className="text-lg sm:text-2xl font-bold truncate">
+      <CardContent className="p-2 sm:p-3 pt-0 sm:pt-0 z-10 relative">
+        <div className="text-base sm:text-xl font-bold truncate mt-0.5">
           {value}
         </div>
         {trend && (

@@ -219,7 +219,7 @@ export function AdvancedTimezonePicker({ initialTimezone, onSave, onCancel, isSa
                     className="cursor-pointer"
                   >
                     {isSelected && (
-                      <circle r={8} fill="hsl(var(--primary))" className="animate-ping opacity-20" />
+                      <circle r={8} fill="var(--primary)" className="animate-ping opacity-20" />
                     )}
                     <circle 
                       r={isSelected ? 5 : 2.5} 

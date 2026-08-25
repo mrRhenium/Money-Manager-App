@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Tags, Tag, TrendingDown, ArrowRight, LayoutList } from "lucide-react";
 import { CategoryForm } from "@/components/forms/CategoryForm";
 import { CategoryList } from "@/components/lists/CategoryList";
@@ -73,18 +74,8 @@ export function CategoryClient({
 
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search categories..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search categories..." />
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Type</h3>
         <AntSelect
@@ -176,26 +167,26 @@ export function CategoryClient({
                       <div className="p-4 sm:p-6 h-[400px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={chartData} layout="vertical" margin={{ top: 20, right: 30, left: 40, bottom: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="hsl(var(--muted-foreground) / 0.2)" />
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border)" />
                             <XAxis 
                               type="number"
                               tickFormatter={(val: number) => `₹${formatIndianNumber(val.toString())}`}
-                              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
+                              tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} 
                               axisLine={false} 
                               tickLine={false} 
                             />
                             <YAxis 
                               type="category"
                               dataKey="name" 
-                              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
+                              tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} 
                               axisLine={false} 
                               tickLine={false} 
                               width={100}
                             />
                             <Tooltip 
                               formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
-                              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
-                              itemStyle={{ color: 'hsl(var(--foreground))' }}
+                              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                              itemStyle={{ color: 'var(--foreground)' }}
                             />
                             <Bar dataKey="Spend" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={30} />
                           </BarChart>

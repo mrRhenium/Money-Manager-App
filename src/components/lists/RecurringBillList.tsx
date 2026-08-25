@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
-import { Repeat, Edit2, Smartphone, Wallet, CheckCircle, Search, ArrowUpDown, Loader2 } from "lucide-react";
+import { Repeat, Edit2, Smartphone, Wallet, CheckCircle, Search, ArrowUpDown, Loader2, Calendar, Clock } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { RecurringBillForm } from "@/components/forms/RecurringBillForm";
@@ -41,6 +42,7 @@ export function RecurringBillList({
   const [activeTab, setActiveTab] = useState("1");
   const [sortBy, setSortBy] = useState("date-nearest");
   const [payingId, setPayingId] = useState<string | null>(null);
+  const router = useRouter();
   
   const { toast } = useToast();
   const { format } = useCurrency();
@@ -53,7 +55,13 @@ export function RecurringBillList({
     const currentSearch = hideToolbar ? externalSearch : searchTerm;
     const currentSort = hideToolbar ? externalSort : sortBy;
 
-    let list = currentTab === "1" ? activeBills : pausedBills;
+    let list = currentTab === "1" ? activeBills : currentTab === "2" ? pausedBills : currentTab === "3" ? activeBills.filter(b => {
+      const dueDate = new Date(b.nextDueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return dueDate.getTime() < today.getTime();
+    }) : activeBills;
 
     // Filter
     if (currentSearch) {
@@ -90,6 +98,7 @@ export function RecurringBillList({
         toast.error(res.error || "Failed to mark paid");
       } else {
         toast.success("Payment recorded and due date advanced!");
+        router.refresh();
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to mark paid");
@@ -111,6 +120,7 @@ export function RecurringBillList({
       } else {
         toast.success("Payment recorded and due date advanced!");
         setVariablePayBill(null);
+        router.refresh();
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to mark paid");
@@ -239,7 +249,7 @@ export function RecurringBillList({
                         </div>
                       </div>
                       <div className="flex items-center gap-1 transition-opacity shrink-0">
-                        <SubscriptionHistoryModal bill={bill} />
+                        <RecurringBillForm accounts={accounts} categories={categories} bill={bill} viewOnly={true} />
                         <RecurringBillForm accounts={accounts} categories={categories} bill={bill} />
                         <RecurringBillDeleteModal bill={bill} />
                       </div>
@@ -247,6 +257,16 @@ export function RecurringBillList({
   
                     <div className="z-10 mt-auto">
                       <div className="space-y-3 pt-4 border-t border-border/50">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Clock className="w-3 h-3" /> STARTED</span>
+                          <span className="font-semibold truncate max-w-[120px]">{formatDateString(bill.createdAt, "MMM YYYY")}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Calendar className="w-3 h-3" /> NEXT DUE</span>
+                          <span className={`font-semibold truncate max-w-[120px] ${isOverdue ? 'text-destructive' : isToday ? 'text-primary' : ''}`}>
+                            {formatDateString(dueDate, "DD MMM YYYY")}
+                          </span>
+                        </div>
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Wallet className="w-3 h-3" /> FROM</span>
                           <span className="font-semibold truncate max-w-[120px]">{bill.accountId?.name || "Not set"}</span>
@@ -266,23 +286,29 @@ export function RecurringBillList({
                       </div>
   
                       <div className="mt-5 flex items-center justify-between">
-                        <Badge variant={!bill.isActive ? "outline" : isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-bold px-3 py-1">
-                          {!bill.isActive ? "Paused" : isOverdue ? "Overdue" : isToday ? "Due Today" : `Due: ${formatDateString(dueDate, "DD-MM-YYYY")}`}
-                        </Badge>
-                        
-                        {bill.isActive && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 text-xs font-semibold rounded-full hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-colors disabled:opacity-50" 
-                            disabled={payingId === bill._id || (!isOverdue && !isToday)}
-                            title={(!isOverdue && !isToday) ? "Cannot mark paid before due date" : "Mark as paid"}
-                            onClick={() => handleMarkPaid(bill)}
-                          >
-                            {payingId === bill._id ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />} 
-                            Mark Paid
-                          </Button>
+                        {(!bill.isActive || isOverdue || isToday) && (
+                          <Badge variant={!bill.isActive ? "outline" : isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-bold px-3 py-1">
+                            {!bill.isActive ? "Paused" : isOverdue ? "Overdue" : "Due Today"}
+                          </Badge>
                         )}
+                        {!(!bill.isActive || isOverdue || isToday) && <div />}
+                        
+                        <div className="flex items-center gap-2">
+                          <SubscriptionHistoryModal bill={bill} />
+                          {bill.isActive && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-8 text-xs font-semibold rounded-full hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-colors disabled:opacity-50" 
+                              disabled={payingId === bill._id || (!isOverdue && !isToday)}
+                              title={(!isOverdue && !isToday) ? "Cannot mark paid before due date" : "Mark as paid"}
+                              onClick={() => handleMarkPaid(bill)}
+                            >
+                              {payingId === bill._id ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />} 
+                              Mark Paid
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
   

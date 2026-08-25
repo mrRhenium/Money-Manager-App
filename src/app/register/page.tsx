@@ -105,7 +105,7 @@ export default function RegisterPage() {
           type="link" 
           icon={<ArrowLeftOutlined />} 
           onClick={() => setStep(1)}
-          style={{ position: 'absolute', top: 32, left: 32, display: 'flex', alignItems: 'center', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}
+          style={{ position: 'absolute', top: 32, left: 32, display: 'flex', alignItems: 'center', fontWeight: 500, color: 'var(--muted-foreground)' }}
         >
           Back to Registration
         </Button>
@@ -191,7 +191,7 @@ export default function RegisterPage() {
 
             <div style={{ textAlign: 'center' }}>
               <Text type="secondary">
-                Already have an account? <Link href="/login" style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>Sign in</Link>
+                Already have an account? <Link href="/login" style={{ fontWeight: 600, color: 'var(--primary)' }}>Sign in</Link>
               </Text>
             </div>
           </Form>

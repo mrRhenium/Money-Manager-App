@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { History, Loader2 } from "lucide-react";
+import { History, Loader2, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Pagination } from "antd";
 import { useCurrency } from "@/hooks/useCurrency";
 import { formatDateString } from "@/lib/dateTimeHelper";
 
@@ -17,7 +19,26 @@ export function SubscriptionHistoryModal({ bill }: SubscriptionHistoryModalProps
   const [open, setOpen] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
   const { format } = useCurrency();
+
+  
+  const filteredTransactions = transactions.filter(tx => {
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    const dateStr = formatDateString(tx.date, "DD-MM-YYYY");
+    const amountStr = tx.amount.toString();
+    return dateStr.includes(q) || amountStr.includes(q) || (tx.note || "").toLowerCase().includes(q);
+  });
+
+  const paginatedTransactions = filteredTransactions.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  // Reset page on search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (open) {
@@ -45,19 +66,31 @@ export function SubscriptionHistoryModal({ bill }: SubscriptionHistoryModalProps
             Payment History
           </DialogTitle>
         </DialogHeader>
+        
+        <div className="px-0 pt-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by date (DD-MM-YYYY) or amount..." 
+              className="pl-9 bg-background h-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
         <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
           {loading ? (
             <div className="flex justify-center items-center py-8 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin mr-2" />
               Loading history...
             </div>
-          ) : transactions.length === 0 ? (
+          ) : filteredTransactions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground text-sm">
-              No payments recorded yet.
+              {searchTerm ? "No matching payments found." : "No payments recorded yet."}
             </div>
           ) : (
             <div className="space-y-3">
-              {transactions.map((tx, i) => (
+              {paginatedTransactions.map((tx, i) => (
                 <div key={tx._id} className="flex justify-between items-center p-3 rounded-lg border bg-muted/20">
                   <div>
                     <p className="font-semibold">{formatDateString(tx.date, "DD MMM, YYYY")}</p>
@@ -68,9 +101,22 @@ export function SubscriptionHistoryModal({ bill }: SubscriptionHistoryModalProps
                   </div>
                 </div>
               ))}
+
             </div>
           )}
         </div>
+        {filteredTransactions.length > ITEMS_PER_PAGE && (
+          <div className="flex justify-center pt-2 pb-2">
+            <Pagination 
+              current={currentPage} 
+              pageSize={ITEMS_PER_PAGE} 
+              total={filteredTransactions.length} 
+              onChange={setCurrentPage} 
+              size="small" 
+            />
+          </div>
+        )}
+
       </DialogContent>
     </Dialog>
   );

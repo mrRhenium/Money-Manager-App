@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, CreditCard, Banknote, ShieldAlert, CreditCard as CardIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreditCardForm } from "@/components/forms/CreditCardForm";
@@ -23,6 +24,8 @@ export function CreditCardClient({ initialCards }: { initialCards: any[] }) {
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [networkFilters, setNetworkFilters] = useState<string[]>(searchParams.get("networks") ? searchParams.get("networks")!.split(",") : []);
+  const [rewardFilters, setRewardFilters] = useState<string[]>(searchParams.get("rewards") ? searchParams.get("rewards")!.split(",") : []);
+  const [utilizationFilter, setUtilizationFilter] = useState<string[]>(searchParams.get("utilization") ? searchParams.get("utilization")!.split(",") : []);
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "used-high");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -32,18 +35,22 @@ export function CreditCardClient({ initialCards }: { initialCards: any[] }) {
     if (activeTab !== "data") current.set("tab", activeTab);
     if (searchQuery) current.set("q", searchQuery);
     if (networkFilters.length > 0) current.set("networks", networkFilters.join(","));
+    if (rewardFilters.length > 0) current.set("rewards", rewardFilters.join(","));
+    if (utilizationFilter.length > 0) current.set("utilization", utilizationFilter.join(","));
     if (sortBy !== "used-high") current.set("sort", sortBy);
 
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
-  }, [activeTab, searchQuery, networkFilters, sortBy, pathname]);
+  }, [activeTab, searchQuery, networkFilters, rewardFilters, utilizationFilter, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || networkFilters.length > 0 || sortBy !== "used-high";
+  const isFilterActive = searchQuery !== "" || networkFilters.length > 0 || rewardFilters.length > 0 || utilizationFilter.length > 0 || sortBy !== "used-high";
 
   const clearFilters = () => {
     setSearchQuery("");
     setNetworkFilters([]);
+    setRewardFilters([]);
+    setUtilizationFilter([]);
     setSortBy("used-high");
   };
 
@@ -53,6 +60,20 @@ export function CreditCardClient({ initialCards }: { initialCards: any[] }) {
 
     if (networkFilters.length > 0) {
       result = result.filter(c => networkFilters.includes((c.cardNetwork || "").toLowerCase()));
+    }
+
+    if (rewardFilters.length > 0) {
+      result = result.filter(c => rewardFilters.includes(c.rewardType || "none"));
+    }
+
+    if (utilizationFilter.length > 0) {
+      result = result.filter(c => {
+        const util = c.creditLimit > 0 ? ((c.currentOutstanding || 0) / c.creditLimit) * 100 : 0;
+        if (utilizationFilter.includes("low") && util < 30) return true;
+        if (utilizationFilter.includes("medium") && util >= 30 && util < 70) return true;
+        if (utilizationFilter.includes("high") && util >= 70) return true;
+        return false;
+      });
     }
 
     if (searchQuery) {
@@ -86,18 +107,8 @@ export function CreditCardClient({ initialCards }: { initialCards: any[] }) {
   // Filter Panel Component
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search by bank or name..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search by bank or name..." />
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Network</h3>
         <AntSelect
@@ -112,6 +123,43 @@ export function CreditCardClient({ initialCards }: { initialCards: any[] }) {
             { label: "Amex", value: "amex" },
             { label: "Discover", value: "discover" },
             { label: "RuPay", value: "rupay" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Reward Type</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Rewards"
+          value={rewardFilters}
+          onChange={setRewardFilters}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Cashback", value: "cashback" },
+            { label: "Miles", value: "miles" },
+            { label: "Reward Points", value: "points" },
+            { label: "None", value: "none" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Utilization</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="Any Utilization"
+          value={utilizationFilter}
+          onChange={setUtilizationFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Low (< 30%)", value: "low" },
+            { label: "Medium (30-70%)", value: "medium" },
+            { label: "High (>= 70%)", value: "high" },
           ]}
         />
       </div>

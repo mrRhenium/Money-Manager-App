@@ -132,19 +132,27 @@ export function MasterFilterSidebar({ isFilterActive, onClearFilters, children }
       "shadow-sm bg-card border-slate-200/60 dark:border-slate-800 transition-colors",
       isFilterActive ? "border-primary/50 ring-1 ring-primary/20" : ""
     )}>
-      <CardHeader className="pb-4 border-b border-border/50">
-        <CardTitle className="flex items-center justify-between text-base">
-          <div className="flex items-center gap-2">
-            <FilterIcon className="w-4 h-4 text-primary" /> Filters & Sort
+      <CardHeader className="pb-3 border-b border-border/40 bg-gradient-to-b from-muted/30 to-transparent">
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5 font-semibold text-lg tracking-tight text-foreground">
+            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+              <FilterIcon className="w-4 h-4" />
+            </div>
+            Filters & Sort
           </div>
           {isFilterActive && (
-            <Button variant="ghost" size="sm" onClick={onClearFilters} className="h-8 px-2 text-muted-foreground hover:text-foreground">
-              <XCircle className="w-4 h-4 mr-1" /> Clear
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={onClearFilters} 
+              className="h-7 text-xs px-2.5 rounded-full font-medium shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-transparent transition-all"
+            >
+              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear All
             </Button>
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent className="pt-5 flex flex-col gap-5">
         {children}
       </CardContent>
     </Card>
@@ -166,10 +174,20 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
     <Drawer
       title={
         <div className="flex items-center justify-between w-full">
-          <span className="text-foreground">Filters & Sort</span>
+          <div className="flex items-center gap-2.5 font-semibold text-lg tracking-tight text-foreground">
+            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+              <FilterIcon className="w-4 h-4" />
+            </div>
+            Filters & Sort
+          </div>
           {isFilterActive && (
-            <Button variant="ghost" size="sm" onClick={onClearFilters} className="text-muted-foreground hover:text-foreground">
-              <XCircle className="w-4 h-4 mr-1" /> Clear
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={onClearFilters} 
+              className="h-7 text-xs px-2.5 rounded-full font-medium shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-transparent transition-all"
+            >
+              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear
             </Button>
           )}
         </div>
@@ -183,10 +201,38 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
         header: "bg-card text-foreground border-b dark:border-slate-800",
         content: "bg-card text-foreground border-l dark:border-slate-800"
       }}
+      styles={{ 
+        header: { padding: '16px 20px', borderBottom: '1px solid hsl(var(--border-hsl) / 0.4)', background: 'linear-gradient(to bottom, hsl(var(--muted-hsl) / 0.3), transparent)' },
+        body: { padding: '20px' } 
+      }}
     >
-      <div className="pt-2">
+      <div className="flex flex-col gap-5">
         {children}
       </div>
     </Drawer>
+  );
+}
+
+// --- SEARCH FIELD (Common UI for Advanced Filters) --- //
+
+interface MasterSearchFieldProps {
+  searchQuery: string;
+  onSearchChange: (val: string) => void;
+  placeholder?: string;
+}
+
+export function MasterSearchField({ searchQuery, onSearchChange, placeholder = "Search..." }: MasterSearchFieldProps) {
+  return (
+    <div className="space-y-2">
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder={placeholder}
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="w-full pl-9 h-10 bg-background text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-sm transition-all"
+        />
+      </div>
+    </div>
   );
 }

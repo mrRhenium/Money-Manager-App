@@ -83,12 +83,12 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8 relative">
-      <Link href="/login" style={{ position: 'absolute', top: 32, left: 32, display: 'flex', alignItems: 'center', fontWeight: 500, color: 'hsl(var(--muted-foreground))', textDecoration: 'none' }}>
+      <Link href="/login" style={{ position: 'absolute', top: 32, left: 32, display: 'flex', alignItems: 'center', fontWeight: 500, color: 'var(--muted-foreground)', textDecoration: 'none' }}>
         <ArrowLeftOutlined style={{ marginRight: 8 }} /> Back to Login
       </Link>
       
       <div className="mb-8 text-center">
-        <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', boxShadow: '0 10px 15px -3px hsla(var(--primary), 0.2)' }}>
+        <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)', boxShadow: '0 10px 15px -3px var(--primary)' }}>
           <KeyOutlined style={{ fontSize: '32px' }} />
         </div>
         <Title level={2} style={{ margin: 0 }}>Reset Password</Title>

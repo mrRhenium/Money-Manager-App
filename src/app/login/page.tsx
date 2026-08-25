@@ -83,7 +83,7 @@ export default function LoginPage() {
           </Form.Item>
           
           <div style={{ textAlign: 'right', marginBottom: 24 }}>
-            <Link href="/forgot-password" style={{ fontSize: '14px', fontWeight: 500, color: 'hsl(var(--primary))' }} tabIndex={-1}>
+            <Link href="/forgot-password" style={{ fontSize: '14px', fontWeight: 500, color: 'var(--primary)' }} tabIndex={-1}>
               Forgot password?
             </Link>
           </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
 
           <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
-              Don&apos;t have an account? <Link href="/register" style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>Sign up</Link>
+              Don&apos;t have an account? <Link href="/register" style={{ fontWeight: 600, color: 'var(--primary)' }}>Sign up</Link>
             </Text>
           </div>
         </Form>

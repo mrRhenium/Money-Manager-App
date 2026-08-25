@@ -57,7 +57,7 @@ export function InvestmentHistoryChart({ history }: { history: any[] }) {
           <Line 
             type="monotone" 
             dataKey="value" 
-            stroke="hsl(var(--primary))" 
+            stroke="var(--primary)" 
             strokeWidth={2}
             dot={{ r: 4, strokeWidth: 2 }}
             activeDot={{ r: 6, strokeWidth: 0 }}

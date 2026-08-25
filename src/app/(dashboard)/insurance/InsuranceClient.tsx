@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Shield, Activity, ShieldAlert, CalendarDays } from "lucide-react";
 import { InsuranceForm } from "@/components/forms/InsuranceForm";
 import { InsuranceTable } from "@/components/tables/InsuranceTable";
@@ -31,7 +32,8 @@ export function InsuranceClient({
   // State
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [filterType, setFilterType] = useState(searchParams.get("type") || "all");
+  const [typeFilters, setTypeFilters] = useState<string[]>(searchParams.get("types") ? searchParams.get("types")!.split(",") : []);
+  const [renewalFilter, setRenewalFilter] = useState<string[]>(searchParams.get("renewal") ? searchParams.get("renewal")!.split(",") : []);
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -44,8 +46,11 @@ export function InsuranceClient({
     if (searchQuery) current.set("q", searchQuery);
     else current.delete("q");
     
-    if (filterType !== "all") current.set("type", filterType);
-    else current.delete("type");
+    if (typeFilters.length > 0) current.set("types", typeFilters.join(","));
+    else current.delete("types");
+
+    if (renewalFilter.length > 0) current.set("renewal", renewalFilter.join(","));
+    else current.delete("renewal");
 
     if (sortBy !== "newest") current.set("sort", sortBy);
     else current.delete("sort");
@@ -53,18 +58,53 @@ export function InsuranceClient({
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
-  }, [activeTab, searchQuery, filterType, sortBy, pathname]);
+  }, [activeTab, searchQuery, typeFilters, renewalFilter, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || filterType !== "all" || sortBy !== "newest";
+  const isFilterActive = searchQuery !== "" || typeFilters.length > 0 || renewalFilter.length > 0 || sortBy !== "newest";
 
   const clearFilters = () => {
     setSearchQuery("");
-    setFilterType("all");
+    setTypeFilters([]);
+    setRenewalFilter([]);
     setSortBy("newest");
   };
 
   // Derived Data (KPIs)
-  const activePolicies = initialPolicies.filter((p: any) => p.status !== 'mistake');
+  const filteredPolicies = useMemo(() => {
+    let result = [...initialPolicies];
+    
+    result = result.filter((p: any) => p.status !== 'mistake');
+
+    if (typeFilters.length > 0) {
+      result = result.filter((p: any) => typeFilters.includes(p.type));
+    }
+
+    if (renewalFilter.length > 0) {
+      const now = new Date();
+      result = result.filter((p: any) => {
+        if (!p.renewalDate) return false;
+        const renewalDate = new Date(p.renewalDate);
+        const days = (renewalDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
+        if (renewalFilter.includes("overdue") && days < 0) return true;
+        if (renewalFilter.includes("upcoming") && days >= 0 && days <= 30) return true;
+        if (renewalFilter.includes("future") && days > 30) return true;
+        return false;
+      });
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((p: any) => 
+        (p.provider || "").toLowerCase().includes(q) || 
+        (p.policyNumber || "").toLowerCase().includes(q) ||
+        (p.name || "").toLowerCase().includes(q)
+      );
+    }
+    
+    return result;
+  }, [initialPolicies, searchQuery, typeFilters, renewalFilter]);
+
+  const activePolicies = filteredPolicies;
   const totalCoverage = activePolicies.reduce((sum: number, p: any) => sum + (p.coverageAmount || 0), 0);
   const totalPremium = activePolicies.reduce((sum: number, p: any) => sum + (p.premiumAmount || 0), 0);
 
@@ -97,33 +137,44 @@ export function InsuranceClient({
 
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search policies..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search policies..." />
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Type</h3>
         <AntSelect
-          value={filterType}
-          onChange={setFilterType}
-          className="w-full h-10"
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Types"
+          value={typeFilters}
+          onChange={setTypeFilters}
+          className="w-full min-h-10"
           popupMatchSelectWidth={false}
           options={[
-            { label: "All Types", value: "all" },
             { label: "Life", value: "Life" },
             { label: "Health", value: "Health" },
             { label: "Vehicle", value: "Vehicle" },
             { label: "Home", value: "Home" },
             { label: "Travel", value: "Travel" },
             { label: "Other", value: "Other" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Renewal Timeline</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="Any Timeline"
+          value={renewalFilter}
+          onChange={setRenewalFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Overdue", value: "overdue" },
+            { label: "Upcoming (Next 30 days)", value: "upcoming" },
+            { label: "Future (> 30 days)", value: "future" },
           ]}
         />
       </div>
@@ -179,12 +230,11 @@ export function InsuranceClient({
             <TabsContent value="data" className="h-full m-0">
               <div className="pb-24">
                 <InsuranceTable 
-                  policies={initialPolicies} 
+                  policies={filteredPolicies} 
                   accounts={accounts} 
                   hideToolbar={true}
                   externalSearch={searchQuery}
                   externalSort={sortBy}
-                  externalType={filterType}
                 />
               </div>
             </TabsContent>
@@ -242,8 +292,8 @@ export function InsuranceClient({
                               </Pie>
                               <Tooltip 
                                 formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
-                                itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                                itemStyle={{ color: 'var(--foreground)' }}
                               />
                               <Legend verticalAlign="bottom" height={36} />
                             </PieChart>

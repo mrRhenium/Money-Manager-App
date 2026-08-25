@@ -7,15 +7,44 @@ import { Button as UiButton } from "@/components/ui/button";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatDate } from "@/lib/helpers";
 import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search, Filter } from "lucide-react";
-import { MasterToolbar, MasterViewLayout, MasterFilterDrawer } from "@/components/layout/MasterView";
+import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer, MasterSearchField } from "@/components/layout/MasterView";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezone: string }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState("All");
-  const [actionFilter, setActionFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [typeFilter, setTypeFilter] = useState<string[]>(searchParams.get("types") ? searchParams.get("types")!.split(",") : []);
+  const [actionFilter, setActionFilter] = useState<string[]>(searchParams.get("actions") ? searchParams.get("actions")!.split(",") : []);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const isFilterActive = searchQuery !== "" || typeFilter !== "All" || actionFilter !== "All";
+
+  useEffect(() => {
+    const current = new URLSearchParams(window.location.search);
+    
+    if (searchQuery) current.set("q", searchQuery);
+    else current.delete("q");
+
+    if (typeFilter.length > 0) current.set("types", typeFilter.join(","));
+    else current.delete("types");
+
+    if (actionFilter.length > 0) current.set("actions", actionFilter.join(","));
+    else current.delete("actions");
+
+    const search = current.toString();
+    const query = search ? `?${search}` : "";
+    window.history.replaceState(null, '', `${pathname}${query}`);
+  }, [searchQuery, typeFilter, actionFilter, pathname]);
+
+  const isFilterActive = searchQuery !== "" || typeFilter.length > 0 || actionFilter.length > 0;
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setTypeFilter([]);
+    setActionFilter([]);
+  };
 
   const getFriendlyEntityName = (log: any) => {
     if (log.entityName) return log.entityName;
@@ -183,8 +212,8 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       const entityName = getFriendlyEntityName(log).toLowerCase();
       
       const matchesSearch = entityName.includes(q);
-      const matchesType = typeFilter === "All" || log.entityType === typeFilter;
-      const matchesAction = actionFilter === "All" || log.action === actionFilter;
+      const matchesType = typeFilter.length === 0 || typeFilter.includes(log.entityType);
+      const matchesAction = actionFilter.length === 0 || actionFilter.includes(log.action);
       
       return matchesSearch && matchesType && matchesAction;
     });
@@ -197,34 +226,34 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
 
   const filterContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search by entity name..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search by entity name..." />
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Type</h3>
         <Select 
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Types"
           value={typeFilter} 
           onChange={setTypeFilter} 
-          className="w-full h-10" 
-          options={[{label: "All Types", value: "All"}, {label: "Transaction", value: "Transaction"}, {label: "Category", value: "Category"}, {label: "Account", value: "Account"}, {label: "Person", value: "Person"}, {label: "CreditCard", value: "CreditCard"}, {label: "Budget", value: "Budget"}]} 
+          className="w-full min-h-10" 
+          popupMatchSelectWidth={false}
+          options={[{label: "Transaction", value: "Transaction"}, {label: "Category", value: "Category"}, {label: "Account", value: "Account"}, {label: "Person", value: "Person"}, {label: "CreditCard", value: "CreditCard"}, {label: "Budget", value: "Budget"}]} 
         />
       </div>
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Action</h3>
         <Select 
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Actions"
           value={actionFilter} 
           onChange={setActionFilter} 
-          className="w-full h-10" 
-          options={[{label: "All Actions", value: "All"}, {label: "Create", value: "CREATE"}, {label: "Update", value: "UPDATE"}, {label: "Delete", value: "DELETE"}]} 
+          className="w-full min-h-10" 
+          popupMatchSelectWidth={false}
+          options={[{label: "Create", value: "CREATE"}, {label: "Update", value: "UPDATE"}, {label: "Delete", value: "DELETE"}]} 
         />
       </div>
     </div>
@@ -245,7 +274,14 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       
 
 
-      <MasterViewLayout sidebar={undefined}>
+      <MasterViewLayout sidebar={
+        <MasterFilterSidebar 
+          isFilterActive={isFilterActive} 
+          onClearFilters={clearFilters}
+        >
+          {filterContent}
+        </MasterFilterSidebar>
+      }>
 
       {/* Desktop Table */}
       <div className="hidden md:block bg-card rounded-2xl overflow-hidden">
@@ -441,7 +477,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
         isOpen={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
         isFilterActive={isFilterActive}
-        onClearFilters={() => { setSearchQuery(""); setTypeFilter("All"); setActionFilter("All"); }}
+        onClearFilters={clearFilters}
       >
         {filterContent}
       </MasterFilterDrawer>

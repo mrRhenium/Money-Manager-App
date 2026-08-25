@@ -43,11 +43,11 @@ export function GoalList({
   const getUrgencyInfo = (deadline: string | undefined) => {
     if (!deadline) return null;
     const days = getDaysLeft(deadline);
-    if (days < 0) return { label: "Overdue", color: "bg-red-500", textColor: "text-red-600", days: Math.abs(days) };
-    if (days <= 7) return { label: `${days}d left`, color: "bg-red-500", textColor: "text-red-600", days };
-    if (days <= 30) return { label: `${days}d left`, color: "bg-amber-500", textColor: "text-amber-600", days };
-    if (days <= 90) return { label: `${Math.floor(days / 30)}mo left`, color: "bg-blue-500", textColor: "text-blue-600", days };
-    return { label: `${Math.floor(days / 30)}mo left`, color: "bg-emerald-500", textColor: "text-emerald-600", days };
+    if (days < 0) return { label: "Overdue", color: "bg-red-500/10 text-red-600 dark:text-red-400", days: Math.abs(days) };
+    if (days <= 7) return { label: `${days}d left`, color: "bg-red-500/10 text-red-600 dark:text-red-400", days };
+    if (days <= 30) return { label: `${days}d left`, color: "bg-amber-500/10 text-amber-600 dark:text-amber-400", days };
+    if (days <= 90) return { label: `${Math.floor(days / 30)}mo left`, color: "bg-blue-500/10 text-blue-600 dark:text-blue-400", days };
+    return { label: `${Math.floor(days / 30)}mo left`, color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", days };
   };
 
   const sortGoals = (goals: any[]) => {
@@ -130,7 +130,7 @@ export function GoalList({
                           const urgency = getUrgencyInfo(goal.deadline);
                           if (!urgency || isCompleted) return null;
                           return (
-                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-white ${urgency.color}`}>
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${urgency.color}`}>
                               {urgency.days <= 7 && <AlertTriangle className="w-2.5 h-2.5" />}
                               {urgency.label}
                             </span>

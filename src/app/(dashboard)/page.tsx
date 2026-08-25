@@ -350,7 +350,7 @@ export default async function DashboardPage() {
               View All <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
           </CardHeader>
-          <CardContent className="flex-1 overflow-auto max-h-[320px] pr-2 custom-scrollbar">
+          <CardContent className="flex-1 overflow-y-auto overflow-x-hidden max-h-[320px] pr-2 custom-scrollbar">
             <div className="space-y-4">
               {transactions.slice(0, 5).map((t: any) => (
                 <div key={t._id} className="flex items-center justify-between group cursor-pointer hover:bg-secondary/40 p-2 -mx-2 rounded-lg transition-colors">
@@ -365,7 +365,7 @@ export default async function DashboardPage() {
                         getFallbackTransactionIcon(t.type)
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 pr-2">
                       <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">{t.categoryId?.name || t.type}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">{formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}</p>
                     </div>

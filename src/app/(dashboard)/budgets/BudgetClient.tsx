@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, PieChart as PieChartIcon, Target, TrendingUp, TrendingDown, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BudgetForm } from "@/components/forms/BudgetForm";
@@ -39,6 +40,8 @@ export function BudgetClient({
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "spent-high");
+  const [statusFilter, setStatusFilter] = useState<string[]>(searchParams.get("status") ? searchParams.get("status")!.split(",") : []);
+  const [rolloverFilter, setRolloverFilter] = useState(searchParams.get("rollover") || "all");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Time params are handled by BudgetList, we just read them from props/url but for syncing other states:
@@ -53,16 +56,24 @@ export function BudgetClient({
     if (sortBy !== "spent-high") current.set("sort", sortBy);
     else current.delete("sort");
 
+    if (statusFilter.length > 0) current.set("status", statusFilter.join(","));
+    else current.delete("status");
+
+    if (rolloverFilter !== "all") current.set("rollover", rolloverFilter);
+    else current.delete("rollover");
+
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
   }, [activeTab, searchQuery, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || sortBy !== "spent-high";
+  const isFilterActive = searchQuery !== "" || sortBy !== "spent-high" || statusFilter.length > 0 || rolloverFilter !== "all";
 
   const clearFilters = () => {
     setSearchQuery("");
     setSortBy("spent-high");
+    setStatusFilter([]);
+    setRolloverFilter("all");
   };
 
   // Derived Data
@@ -72,6 +83,20 @@ export function BudgetClient({
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter((b) => (b.categoryId?.name || "").toLowerCase().includes(q));
+    }
+
+    if (statusFilter.length > 0) {
+      result = result.filter(b => {
+        const utilization = b.amount > 0 ? (b.totalSpent || 0) / b.amount : 0;
+        if (statusFilter.includes("under") && utilization < 0.8) return true;
+        if (statusFilter.includes("track") && utilization >= 0.8 && utilization < 1) return true;
+        if (statusFilter.includes("exhausted") && utilization >= 1) return true;
+        return false;
+      });
+    }
+
+    if (rolloverFilter !== "all") {
+      result = result.filter(b => rolloverFilter === "yes" ? b.rollover : !b.rollover);
     }
 
     if (sortBy === "spent-high") {
@@ -102,18 +127,42 @@ export function BudgetClient({
 
   const filterPanelContent = (
     <div className="space-y-6">
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search categories..." />
+
       <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search budgets..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Budget Status</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Statuses"
+          value={statusFilter}
+          onChange={setStatusFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Under Budget (< 80%)", value: "under" },
+            { label: "On Track (80-100%)", value: "track" },
+            { label: "Exhausted (>= 100%)", value: "exhausted" },
+          ]}
+        />
       </div>
+
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Rollover Policy</h3>
+        <AntSelect
+          value={rolloverFilter}
+          onChange={setRolloverFilter}
+          className="w-full h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "All Budgets", value: "all" },
+            { label: "Rollover Enabled", value: "yes" },
+            { label: "Rollover Disabled", value: "no" },
+          ]}
+        />
+      </div>
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Sort By</h3>
         <AntSelect
@@ -209,25 +258,25 @@ export function BudgetClient({
                       <div className="p-4 sm:p-6 h-[400px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground) / 0.2)" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                             <XAxis 
                               dataKey="name" 
-                              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
+                              tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} 
                               axisLine={false} 
                               tickLine={false} 
                               dy={10} 
                             />
                             <YAxis 
                               tickFormatter={(val: number) => `₹${formatIndianNumber(val.toString())}`}
-                              tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
+                              tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} 
                               axisLine={false} 
                               tickLine={false} 
                               dx={-10}
                             />
                             <Tooltip 
                               formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
-                              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
-                              itemStyle={{ color: 'hsl(var(--foreground))' }}
+                              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                              itemStyle={{ color: 'var(--foreground)' }}
                             />
                             <Legend wrapperStyle={{ paddingTop: '20px' }} />
                             <Bar dataKey="Budget" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={40} />

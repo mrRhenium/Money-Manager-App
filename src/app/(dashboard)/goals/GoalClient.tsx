@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Target, CheckCircle2, TrendingUp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoalForm } from "@/components/forms/GoalForm";
@@ -22,7 +23,9 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
   // State
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "active");
+  const [statusFilter, setStatusFilter] = useState<string[]>(searchParams.get("status") ? searchParams.get("status")!.split(",") : ["active"]);
+  const [progressFilter, setProgressFilter] = useState<string[]>(searchParams.get("progress") ? searchParams.get("progress")!.split(",") : []);
+  const [deadlineFilter, setDeadlineFilter] = useState<string[]>(searchParams.get("deadline") ? searchParams.get("deadline")!.split(",") : []);
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "deadline-nearest");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -31,19 +34,35 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
     const current = new URLSearchParams();
     if (activeTab !== "data") current.set("tab", activeTab);
     if (searchQuery) current.set("q", searchQuery);
-    if (statusFilter !== "active") current.set("status", statusFilter);
+    
+    // We only set status if it's not just ["active"] which is default, or we can just set it
+    if (statusFilter.length > 0 && !(statusFilter.length === 1 && statusFilter[0] === "active")) {
+      current.set("status", statusFilter.join(","));
+    } else if (statusFilter.length === 1 && statusFilter[0] === "active") {
+      current.delete("status");
+    }
+
+    if (progressFilter.length > 0) current.set("progress", progressFilter.join(","));
+    else current.delete("progress");
+
+    if (deadlineFilter.length > 0) current.set("deadline", deadlineFilter.join(","));
+    else current.delete("deadline");
+
     if (sortBy !== "deadline-nearest") current.set("sort", sortBy);
+    else current.delete("sort");
 
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
-  }, [activeTab, searchQuery, statusFilter, sortBy, pathname]);
+  }, [activeTab, searchQuery, statusFilter, progressFilter, deadlineFilter, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || statusFilter !== "active" || sortBy !== "deadline-nearest";
+  const isFilterActive = searchQuery !== "" || (statusFilter.length > 0 && !(statusFilter.length === 1 && statusFilter[0] === "active")) || progressFilter.length > 0 || deadlineFilter.length > 0 || sortBy !== "deadline-nearest";
 
   const clearFilters = () => {
     setSearchQuery("");
-    setStatusFilter("active");
+    setStatusFilter(["active"]);
+    setProgressFilter([]);
+    setDeadlineFilter([]);
     setSortBy("deadline-nearest");
   };
 
@@ -51,16 +70,41 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
   const filteredGoals = useMemo(() => {
     let result = [...initialGoals];
 
-    if (statusFilter === "active") result = result.filter(g => g.status === "active");
-    else if (statusFilter === "completed") result = result.filter(g => g.status === "completed");
+    if (statusFilter.length > 0) {
+      result = result.filter(g => statusFilter.includes(g.status));
+    }
+
+    if (progressFilter.length > 0) {
+      result = result.filter(g => {
+        const p = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount) * 100 : 0;
+        if (progressFilter.includes("low") && p < 25) return true;
+        if (progressFilter.includes("medium") && p >= 25 && p < 75) return true;
+        if (progressFilter.includes("high") && p >= 75 && p < 100) return true;
+        if (progressFilter.includes("completed") && p >= 100) return true;
+        return false;
+      });
+    }
+
+    if (deadlineFilter.length > 0) {
+      const now = new Date();
+      result = result.filter(g => {
+        if (!g.deadline) return deadlineFilter.includes("none");
+        const deadline = new Date(g.deadline);
+        const days = (deadline.getTime() - now.getTime()) / (1000 * 3600 * 24);
+        if (deadlineFilter.includes("overdue") && days < 0) return true;
+        if (deadlineFilter.includes("upcoming") && days >= 0 && days <= 30) return true;
+        if (deadlineFilter.includes("future") && days > 30) return true;
+        return false;
+      });
+    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter((g) => (g.name || "").toLowerCase().includes(q));
     }
 
-    return result; // We pass sorting down to GoalList or do it here. For now, GoalList expects arrays.
-  }, [initialGoals, searchQuery, statusFilter]);
+    return result; 
+  }, [initialGoals, searchQuery, statusFilter, progressFilter, deadlineFilter]);
 
   const activeGoals = filteredGoals.filter(g => g.status === "active");
   const completedGoals = filteredGoals.filter(g => g.status === "completed");
@@ -72,29 +116,60 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
   // Filter Panel Component
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search goals..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search goals..." />
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Status</h3>
         <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Statuses"
           value={statusFilter}
           onChange={setStatusFilter}
-          className="w-full h-10"
+          className="w-full min-h-10"
           popupMatchSelectWidth={false}
           options={[
             { label: "Active", value: "active" },
             { label: "Completed", value: "completed" },
-            { label: "All", value: "all" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Progress</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="Any Progress"
+          value={progressFilter}
+          onChange={setProgressFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Just Started (< 25%)", value: "low" },
+            { label: "Making Progress (25-75%)", value: "medium" },
+            { label: "Almost There (75-99%)", value: "high" },
+            { label: "Completed (100%)", value: "completed" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Deadline Timeline</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="Any Timeline"
+          value={deadlineFilter}
+          onChange={setDeadlineFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Overdue", value: "overdue" },
+            { label: "Upcoming (Next 30 days)", value: "upcoming" },
+            { label: "Future (> 30 days)", value: "future" },
+            { label: "No Deadline", value: "none" },
           ]}
         />
       </div>

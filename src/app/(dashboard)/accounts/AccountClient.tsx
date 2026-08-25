@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Wallet, Landmark, TrendingUp, TrendingDown, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountForm } from "@/components/forms/AccountForm";
@@ -25,6 +26,7 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [typeFilters, setTypeFilters] = useState<string[]>(searchParams.get("types") ? searchParams.get("types")!.split(",") : []);
+  const [liabilityFilter, setLiabilityFilter] = useState(searchParams.get("liability") || "all");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "balance-high");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -34,6 +36,7 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
     if (activeTab !== "data") current.set("tab", activeTab);
     if (searchQuery) current.set("q", searchQuery);
     if (typeFilters.length > 0) current.set("types", typeFilters.join(","));
+    if (liabilityFilter !== "all") current.set("liability", liabilityFilter);
     if (sortBy !== "balance-high") current.set("sort", sortBy);
 
     const search = current.toString();
@@ -41,11 +44,12 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
     window.history.replaceState(null, '', `${pathname}${query}`);
   }, [activeTab, searchQuery, typeFilters, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || typeFilters.length > 0 || sortBy !== "balance-high";
+  const isFilterActive = searchQuery !== "" || typeFilters.length > 0 || liabilityFilter !== "all" || sortBy !== "balance-high";
 
   const clearFilters = () => {
     setSearchQuery("");
     setTypeFilters([]);
+    setLiabilityFilter("all");
     setSortBy("balance-high");
   };
 
@@ -55,6 +59,10 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
 
     if (typeFilters.length > 0) {
       result = result.filter(a => typeFilters.includes(a.type));
+    }
+
+    if (liabilityFilter !== "all") {
+      result = result.filter(a => liabilityFilter === "liability" ? a.isLiability : !a.isLiability);
     }
 
     if (searchQuery) {
@@ -74,18 +82,8 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
   // Filter Panel Component
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search accounts..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search accounts..." />
+      
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Account Type</h3>
         <AntSelect
@@ -102,6 +100,20 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
             { label: "Wallet", value: "wallet" },
             { label: "Investment", value: "investment" },
             { label: "Other", value: "other" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Asset Class</h3>
+        <AntSelect
+          value={liabilityFilter}
+          onChange={setLiabilityFilter}
+          className="w-full h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "All Accounts", value: "all" },
+            { label: "Assets (Positive)", value: "asset" },
+            { label: "Liabilities (Debt)", value: "liability" },
           ]}
         />
       </div>

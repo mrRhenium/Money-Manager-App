@@ -18,6 +18,7 @@ export interface ICreditCard extends Document {
   interestRatePerMonth?: number;
   currentOutstanding: number;
   status: "active" | "blocked" | "expired" | "closed";
+  rewardType?: "Cashback" | "Miles" | "Reward Points" | "None";
   color?: string;
   notes?: string;
   reminderEnabled: boolean;
@@ -55,6 +56,11 @@ const CreditCardSchema: Schema<ICreditCard> = new Schema(
       type: String,
       enum: ["active", "blocked", "expired", "closed"],
       default: "active",
+    },
+    rewardType: {
+      type: String,
+      enum: ["Cashback", "Miles", "Reward Points", "None"],
+      default: "None",
     },
     color: { type: String, default: "#0ea5e9" },
     notes: { type: String },

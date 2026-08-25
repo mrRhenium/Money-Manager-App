@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { MasterLayout } from "@/components/layout/MasterLayout";
@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Landmark, ArrowDownLeft, ArrowUpRight, CheckCircle2, AlertTriangle, LayoutList } from "lucide-react";
 import { LoanForm } from "@/components/forms/LoanForm";
 import { LoanList } from "@/components/lists/LoanList";
@@ -29,6 +30,7 @@ export function LoanClient({
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [listTab, setListTab] = useState(searchParams.get("status") || "active");
+  const [typeFilter, setTypeFilter] = useState<string[]>(searchParams.get("type") ? searchParams.get("type")!.split(",") : []);
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "date-nearest");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -44,54 +46,63 @@ export function LoanClient({
     if (listTab !== "active") current.set("status", listTab);
     else current.delete("status");
 
+    if (typeFilter.length > 0) current.set("type", typeFilter.join(","));
+    else current.delete("type");
+
     if (sortBy !== "date-nearest") current.set("sort", sortBy);
     else current.delete("sort");
 
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
-  }, [activeTab, searchQuery, listTab, sortBy, pathname]);
+  }, [activeTab, searchQuery, listTab, typeFilter, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || listTab !== "active" || sortBy !== "date-nearest";
+  const isFilterActive = searchQuery !== "" || listTab !== "active" || typeFilter.length > 0 || sortBy !== "date-nearest";
 
   const clearFilters = () => {
     setSearchQuery("");
     setListTab("active");
+    setTypeFilter([]);
     setSortBy("date-nearest");
   };
 
   // Derived Data (KPIs)
-  const activeLoans = initialLoans.filter(l => l.status === "active");
-  const totalOutstanding = activeLoans.reduce((sum, l) => sum + (l.outstandingBalance || 0), 0);
-  const totalBorrowed = activeLoans.reduce((sum, l) => sum + (l.totalAmount || 0), 0);
+  const filteredLoans = useMemo(() => {
+    let result = [...initialLoans];
+
+    if (typeFilter.length > 0) {
+      result = result.filter((l: any) => typeFilter.includes(l.type));
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((l: any) => (l.name || "").toLowerCase().includes(q));
+    }
+
+    return result;
+  }, [initialLoans, searchQuery, typeFilter]);
+
+  const activeLoans = filteredLoans.filter((l: any) => l.status === "active");
+  const totalOutstanding = activeLoans.reduce((sum: number, l: any) => sum + (l.outstandingBalance || 0), 0);
+  const totalBorrowed = activeLoans.reduce((sum: number, l: any) => sum + (l.totalAmount || 0), 0);
   const totalEmiPaid = totalBorrowed - totalOutstanding;
   
   // Liabilities vs Assets (for reference)
-  const totalLiabilities = activeLoans.filter(l => l.type === "taken").reduce((sum, l) => sum + (l.outstandingBalance || 0), 0);
-  const totalAssets = activeLoans.filter(l => l.type === "given").reduce((sum, l) => sum + (l.outstandingBalance || 0), 0);
+  const totalLiabilities = activeLoans.filter((l: any) => l.type === "taken").reduce((sum: number, l: any) => sum + (l.outstandingBalance || 0), 0);
+  const totalAssets = activeLoans.filter((l: any) => l.type === "given").reduce((sum: number, l: any) => sum + (l.outstandingBalance || 0), 0);
 
   // Chart data
-  const chartData = activeLoans.map(l => ({
+  const chartData = activeLoans.map((l: any) => ({
     name: l.name,
     "Repaid": (l.totalAmount || 0) - (l.outstandingBalance || 0),
     "Outstanding": l.outstandingBalance || 0,
     total: l.totalAmount || 0
-  })).sort((a, b) => b.total - a.total).slice(0, 10);
+  })).sort((a: any, b: any) => b.total - a.total).slice(0, 10);
 
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search loans..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search loans..." />
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Status</h3>
         <AntSelect
@@ -102,6 +113,23 @@ export function LoanClient({
           options={[
             { label: "Active", value: "active" },
             { label: "Completed", value: "completed" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Loan Type</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Types"
+          value={typeFilter}
+          onChange={setTypeFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Taken (Liabilities) 📉", value: "taken" },
+            { label: "Given (Assets) 📈", value: "given" },
           ]}
         />
       </div>
@@ -159,7 +187,7 @@ export function LoanClient({
             <TabsContent value="data" className="h-full m-0">
               <div className="pb-24">
                 <LoanList 
-                  loans={initialLoans} 
+                  loans={filteredLoans} 
                   accounts={accounts} 
                   hideToolbar={true}
                   externalSearch={searchQuery}
@@ -207,25 +235,25 @@ export function LoanClient({
                         {chartData.length > 0 ? (
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground) / 0.2)" />
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                               <XAxis 
                                 dataKey="name" 
-                                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
+                                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} 
                                 axisLine={false} 
                                 tickLine={false} 
                                 dy={10} 
                               />
                               <YAxis 
                                 tickFormatter={(val: number) => `₹${formatIndianNumber(val.toString())}`}
-                                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} 
+                                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} 
                                 axisLine={false} 
                                 tickLine={false} 
                                 dx={-10}
                               />
                               <Tooltip 
                                 formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
-                                itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--card-foreground)' }}
+                                itemStyle={{ color: 'var(--foreground)' }}
                               />
                               <Legend wrapperStyle={{ paddingTop: '20px' }} />
                               <Bar dataKey="Repaid" stackId="a" fill="#10b981" maxBarSize={40} />

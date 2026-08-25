@@ -4,7 +4,7 @@ import { BottomNav } from "./BottomNav";
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', height: '100dvh', width: '100%', overflow: 'hidden', backgroundColor: 'hsl(var(--background))' }}>
+    <div style={{ display: 'flex', height: '100dvh', width: '100%', overflow: 'hidden', backgroundColor: 'var(--background)' }}>
       {/* Desktop Sidebar */}
       <Sidebar />
 

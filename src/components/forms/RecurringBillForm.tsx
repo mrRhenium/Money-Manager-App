@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createRecurringBill, updateRecurringBill } from "@/actions/recurringBill";
-import { Plus, PenLine, Repeat, Coins, Calendar, Wallet, Smartphone, Folder } from "lucide-react";
+import { Plus, PenLine, Repeat, Coins, Calendar, Wallet, Smartphone, Folder, Eye } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { getCurrentFormatted, formatDateString } from "@/lib/dateTimeHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
@@ -37,9 +37,10 @@ interface RecurringBillFormProps {
   categories: any[];
   triggerClassName?: string;
   bill?: any;
+  viewOnly?: boolean;
 }
 
-export function RecurringBillForm({ accounts, categories, triggerClassName, bill }: RecurringBillFormProps) {
+export function RecurringBillForm({ accounts, categories, triggerClassName, bill, viewOnly }: RecurringBillFormProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currency, setCurrency] = useState(bill?.currency || "INR");
@@ -112,7 +113,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
       <DialogTrigger>
         {bill ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
-            <PenLine className="w-4 h-4" />
+            {viewOnly ? <Eye className="w-4 h-4" /> : <PenLine className="w-4 h-4" />}
           </Button>
         ) : (
           <Button className={`w-full sm:w-auto ${triggerClassName || ""}`}>
@@ -125,7 +126,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <Repeat className="w-5 h-5" />
-            <span className="text-foreground">{bill ? "Edit Subscription" : "Add Subscription / Auto-Pay"}</span>
+            <span className="text-foreground">{bill ? (viewOnly ? "View Subscription" : "Edit Subscription") : "Add Subscription / Auto-Pay"}</span>
           </DialogTitle>
         </DialogHeader>
         
@@ -139,7 +140,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                   <FormItem>
                     <FormLabel>Name (e.g., Netflix, Rent)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Subscription Name" {...field} />
+                      <Input disabled={viewOnly} placeholder="Subscription Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +153,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Coins className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
                     <FormControl>
-                      <CurrencyInput 
+                      <CurrencyInput disabled={viewOnly} 
                         placeholder="e.g. 649"
                         currency={currency}
                         onCurrencyChange={setCurrency}
@@ -174,7 +175,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Repeat className="w-4 h-4 text-muted-foreground" /> Frequency</FormLabel>
                     <FormControl>
-                      <Select
+                      <Select disabled={viewOnly}
                         className="w-full h-10"
                         options={[
                           { label: 'Weekly', value: 'weekly' },
@@ -211,7 +212,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Folder className="w-4 h-4 text-muted-foreground" /> Category (Optional)</FormLabel>
                     <FormControl>
-                      <Select
+                      <Select disabled={viewOnly}
                         showSearch
                         allowClear
                         placeholder="Select category"
@@ -232,7 +233,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Wallet className="w-4 h-4 text-muted-foreground" /> Deduct From</FormLabel>
                     <FormControl>
-                      <Select
+                      <Select disabled={viewOnly}
                         showSearch
                         allowClear
                         placeholder="Select account"
@@ -307,7 +308,7 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
                   <FormItem>
                     <FormLabel className="flex items-center gap-2"><Smartphone className="w-4 h-4 text-muted-foreground" /> Auto-Pay Platform (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. GPay, Amazon Pay, Credit Card" {...field} />
+                      <Input disabled={viewOnly} placeholder="e.g. GPay, Amazon Pay, Credit Card" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -338,13 +339,15 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-              <ColorPicker value={color} onChange={setColor} id={`billColor-${bill?._id || 'new'}`} />
-              <IconPicker value={icon} onChange={setIcon} />
+              <ColorPicker disabled={viewOnly} value={color} onChange={setColor} id={`billColor-${bill?._id || 'new'}`} />
+              <IconPicker disabled={viewOnly} value={icon} onChange={setIcon} />
             </div>
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
-              {isLoading ? "Saving..." : (bill ? "Save Changes" : "Add Subscription")}
-            </Button>
+            {!viewOnly && (
+              <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
+                {isLoading ? "Saving..." : (bill ? "Save Changes" : "Add Subscription")}
+              </Button>
+            )}
           </form>
         </Form>
       </DialogContent>

@@ -9,6 +9,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { Select as AntSelect } from "antd";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Repeat, CalendarDays, TrendingDown, LayoutList, ArrowUpDown } from "lucide-react";
 import { RecurringBillForm } from "@/components/forms/RecurringBillForm";
 import { RecurringBillList } from "@/components/lists/RecurringBillList";
@@ -34,6 +35,8 @@ export function SubscriptionClient({
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [listTab, setListTab] = useState(searchParams.get("status") || "1");
+  const [frequencyFilter, setFrequencyFilter] = useState<string[]>(searchParams.get("freq") ? searchParams.get("freq")!.split(",") : []);
+  const [autoPayFilter, setAutoPayFilter] = useState(searchParams.get("autopay") || "all");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "date-nearest");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -49,24 +52,51 @@ export function SubscriptionClient({
     if (listTab !== "1") current.set("status", listTab);
     else current.delete("status");
 
+    if (frequencyFilter.length > 0) current.set("freq", frequencyFilter.join(","));
+    else current.delete("freq");
+
+    if (autoPayFilter !== "all") current.set("autopay", autoPayFilter);
+    else current.delete("autopay");
+
     if (sortBy !== "date-nearest") current.set("sort", sortBy);
     else current.delete("sort");
 
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
-  }, [activeTab, searchQuery, listTab, sortBy, pathname]);
+  }, [activeTab, searchQuery, listTab, frequencyFilter, autoPayFilter, sortBy, pathname]);
 
-  const isFilterActive = searchQuery !== "" || listTab !== "1" || sortBy !== "date-nearest";
+  const isFilterActive = searchQuery !== "" || listTab !== "1" || frequencyFilter.length > 0 || autoPayFilter !== "all" || sortBy !== "date-nearest";
 
   const clearFilters = () => {
     setSearchQuery("");
     setListTab("1");
+    setFrequencyFilter([]);
+    setAutoPayFilter("all");
     setSortBy("date-nearest");
   };
 
   // Derived Data (KPIs)
-  const activeBills = initialBills.filter(b => b.isActive);
+  const filteredBills = useMemo(() => {
+    let result = [...initialBills];
+
+    if (frequencyFilter.length > 0) {
+      result = result.filter(b => frequencyFilter.includes(b.frequency));
+    }
+
+    if (autoPayFilter !== "all") {
+      result = result.filter(b => autoPayFilter === "yes" ? b.autoPay : !b.autoPay);
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(b => (b.name || "").toLowerCase().includes(q));
+    }
+
+    return result;
+  }, [initialBills, searchQuery, frequencyFilter, autoPayFilter]);
+
+  const activeBills = filteredBills.filter(b => b.isActive);
   
   let totalMonthly = 0;
   let totalAnnual = 0;
@@ -127,18 +157,8 @@ export function SubscriptionClient({
 
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search subscriptions..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search subscriptions..." />
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Status</h3>
         <AntSelect
@@ -149,6 +169,41 @@ export function SubscriptionClient({
           options={[
             { label: "Active", value: "1" },
             { label: "Paused", value: "2" },
+            { label: "Overdue", value: "3" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Frequency</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Frequencies"
+          value={frequencyFilter}
+          onChange={setFrequencyFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "Weekly", value: "weekly" },
+            { label: "Bi-Weekly", value: "bi-weekly" },
+            { label: "Monthly", value: "monthly" },
+            { label: "Quarterly", value: "quarterly" },
+            { label: "Yearly", value: "yearly" },
+          ]}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Auto-Pay</h3>
+        <AntSelect
+          value={autoPayFilter}
+          onChange={setAutoPayFilter}
+          className="w-full h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "All", value: "all" },
+            { label: "Enabled", value: "yes" },
+            { label: "Disabled", value: "no" },
           ]}
         />
       </div>
@@ -204,7 +259,7 @@ export function SubscriptionClient({
             <TabsContent value="data" className="h-full m-0">
               <div className="pb-24">
                 <RecurringBillList 
-                  bills={initialBills} 
+                  bills={filteredBills} 
                   accounts={accounts} 
                   categories={categories}
                   hideToolbar={true}
@@ -268,8 +323,8 @@ export function SubscriptionClient({
                               </Pie>
                               <Tooltip 
                                 formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
-                                itemStyle={{ color: 'hsl(var(--foreground))' }}
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                                itemStyle={{ color: 'var(--foreground)' }}
                               />
                               <Legend verticalAlign="bottom" height={36} />
                             </PieChart>

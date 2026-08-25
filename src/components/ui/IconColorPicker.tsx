@@ -42,15 +42,17 @@ interface IconPickerProps {
   value: string;
   onChange: (value: string) => void;
   color?: string;
+  disabled?: boolean;
 }
 
-export function IconPicker({ value, onChange, color }: IconPickerProps) {
+export function IconPicker({ value, onChange, color, disabled }: IconPickerProps) {
   return (
     <div className="space-y-1.5 flex flex-col justify-end">
       <label className="text-sm font-medium flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-muted-foreground" /> Icon
       </label>
       <Select
+        disabled={disabled}
         className="w-full h-[40px]"
         value={value}
         onChange={onChange}
@@ -76,9 +78,10 @@ interface ColorPickerProps {
   value: string;
   onChange: (value: string) => void;
   id?: string;
+  disabled?: boolean;
 }
 
-export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
+export function ColorPicker({ value, onChange, id, disabled }: ColorPickerProps) {
   const inputId = id || "colorPickerInput";
   return (
     <div className="space-y-1.5">
@@ -88,11 +91,13 @@ export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
       <div className="flex gap-2 items-center">
         <Input 
           type="color" 
+          disabled={disabled}
           id={inputId} 
-          className="w-10 h-10 p-1 shrink-0 cursor-pointer" 
+          className={`w-10 h-10 p-1 shrink-0 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} 
           value={value} 
           onChange={(e) => onChange(e.target.value)} 
           onClick={(e) => {
+            if (disabled) return;
             try {
               (e.target as HTMLInputElement).showPicker?.();
             } catch (err) {}

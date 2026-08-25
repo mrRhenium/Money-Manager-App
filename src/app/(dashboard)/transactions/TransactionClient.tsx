@@ -12,6 +12,7 @@ import { Select as AntSelect } from "antd";
 import { TransactionForm } from "@/components/forms/TransactionForm";
 import { TransactionTable } from "@/components/tables/TransactionTable";
 import { ExportButton } from "@/components/transactions/ExportButton";
+import { MasterSearchField } from "@/components/layout/MasterView";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,8 @@ export function TransactionClient({
   const [typeFilter, setTypeFilter] = useState(searchParams.get("type") || "all");
   const [categoryFilter, setCategoryFilter] = useState<string[]>(searchParams.get("category") ? searchParams.get("category")!.split(",") : []);
   const [accountFilter, setAccountFilter] = useState<string[]>(searchParams.get("account") ? searchParams.get("account")!.split(",") : []);
+  const [personFilter, setPersonFilter] = useState<string[]>(searchParams.get("person") ? searchParams.get("person")!.split(",") : []);
+  const [statusFilter, setStatusFilter] = useState<string[]>(searchParams.get("status") ? searchParams.get("status")!.split(",") : []);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Sync state to URL
@@ -62,18 +65,26 @@ export function TransactionClient({
     if (accountFilter.length > 0) current.set("account", accountFilter.join(","));
     else current.delete("account");
 
+    if (personFilter.length > 0) current.set("person", personFilter.join(","));
+    else current.delete("person");
+
+    if (statusFilter.length > 0) current.set("status", statusFilter.join(","));
+    else current.delete("status");
+
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
   }, [activeTab, searchQuery, typeFilter, categoryFilter, accountFilter, pathname]);
 
-  const isFilterActive = searchQuery !== "" || typeFilter !== "all" || categoryFilter.length > 0 || accountFilter.length > 0;
+  const isFilterActive = searchQuery !== "" || typeFilter !== "all" || categoryFilter.length > 0 || accountFilter.length > 0 || personFilter.length > 0 || statusFilter.length > 0;
 
   const clearFilters = () => {
     setSearchQuery("");
     setTypeFilter("all");
     setCategoryFilter([]);
     setAccountFilter([]);
+    setPersonFilter([]);
+    setStatusFilter([]);
   };
 
   // Filter transactions for KPI and Chart
@@ -83,6 +94,8 @@ export function TransactionClient({
     if (typeFilter !== "all") result = result.filter(t => t.type === typeFilter);
     if (categoryFilter.length > 0) result = result.filter(t => t.categoryId && categoryFilter.includes(t.categoryId._id));
     if (accountFilter.length > 0) result = result.filter(t => (t.accountId && accountFilter.includes(t.accountId._id)) || (t.toAccountId && accountFilter.includes(t.toAccountId._id)));
+    if (personFilter.length > 0) result = result.filter(t => t.personId && personFilter.includes(t.personId._id));
+    if (statusFilter.length > 0) result = result.filter(t => statusFilter.includes(t.status || "cleared"));
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -123,21 +136,12 @@ export function TransactionClient({
 
   const categoryOptions = categories.map(c => ({ label: c.name, value: c._id }));
   const accountOptions = accounts.map(a => ({ label: a.name, value: a._id }));
+  const personOptions = people.map(p => ({ label: p.name, value: p._id }));
 
   const filterPanelContent = (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Search</h3>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="Search notes, payee..."
-            className="w-full pl-9 h-10 rounded-md border border-slate-200 dark:border-slate-800 bg-card text-foreground px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search notes, payee..." />
+      
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Type</h3>
         <AntSelect
@@ -181,6 +185,39 @@ export function TransactionClient({
           value={accountFilter}
           onChange={setAccountFilter}
           options={accountOptions}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">People</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Parties/People"
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          value={personFilter}
+          onChange={setPersonFilter}
+          options={personOptions}
+        />
+      </div>
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Status</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Statuses"
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { label: "Cleared", value: "cleared" },
+            { label: "Pending", value: "pending" },
+            { label: "Reconciled", value: "reconciled" },
+            { label: "Failed", value: "failed" },
+          ]}
         />
       </div>
     </div>
@@ -299,25 +336,25 @@ export function TransactionClient({
                               <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                             </linearGradient>
                           </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
                           <XAxis
                             dataKey="date"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                            tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
                             dy={10}
                           />
                           <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                            tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
                             tickFormatter={(value) => `₹${(value / 1000)}k`}
                             width={60}
                           />
                           <RechartsTooltip
                             formatter={(value: any) => `₹${Number(value).toLocaleString("en-IN")}`}
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))' }}
-                            itemStyle={{ color: 'hsl(var(--foreground))' }}
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
+                            itemStyle={{ color: 'var(--foreground)' }}
                           />
                           <Legend verticalAlign="top" height={36} iconType="circle" />
                           <Area type="monotone" dataKey="income" name="Income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />

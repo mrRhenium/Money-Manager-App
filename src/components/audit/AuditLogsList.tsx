@@ -423,7 +423,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                                 <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">None</span>
                               ) : (
                                 <div className="p-2.5 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 text-xs font-mono break-all line-through decoration-rose-500/40 flex-1">
-                                  {typeof c.prev === "object" ? JSON.stringify(c.prev) : String(c.prev)}
+                                  {c.prev === "" ? <span className="opacity-50 italic">Empty</span> : (typeof c.prev === "object" ? JSON.stringify(c.prev) : String(c.prev))}
                                 </div>
                               )}
                             </div>
@@ -438,7 +438,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                                 <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">None</span>
                               ) : (
                                 <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-mono break-all flex-1">
-                                  {typeof c.curr === "object" ? JSON.stringify(c.curr) : String(c.curr)}
+                                  {c.curr === "" ? <span className="opacity-50 italic">Empty</span> : (typeof c.curr === "object" ? JSON.stringify(c.curr) : String(c.curr))}
                                 </div>
                               )}
                             </div>

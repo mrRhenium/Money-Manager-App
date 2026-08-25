@@ -365,7 +365,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
               </DialogTitle>
             </DialogHeader>
           {selectedLog && (
-            <div className="space-y-6 pt-4">
+            <div className="space-y-6 pt-4 px-6 pb-6">
               {/* Metadata Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 sm:p-5 bg-secondary/30 rounded-2xl border text-sm">
                 <div className="flex gap-2.5 items-start">

@@ -498,7 +498,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                     value={amount}
                     onChange={e => setAmount(formatIndianNumber(e.target.value))}
                     disabled={isAmountReadOnly}
-                    className="pl-7 font-bold text-lg"
+                    className="pl-12 font-bold text-lg"
                   />
                 </div>
                 {isAmountReadOnly && (

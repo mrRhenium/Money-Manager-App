@@ -28,7 +28,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { formatDate } from "@/lib/helpers";
 import { isSameMonthAndYear, getCurrentDate, parseToDate, getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { PendingConfirmationsWidget } from "@/components/upi/PendingConfirmationsWidget";
@@ -214,9 +214,9 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <DashboardScanTrigger />
-          <Link href="/my-upi" className="flex items-center gap-2 bg-background border border-border/50 text-foreground px-4 py-2.5 rounded-xl hover:bg-secondary/50 hover:border-primary/30 transition-all font-medium text-sm shadow-sm md:w-auto flex-1 justify-center whitespace-nowrap">
-            <QrCode className="w-4 h-4 text-primary" />
-            My UPI
+          <Link href="/my-upi" className={`${buttonVariants({ variant: "outline" })} flex-1 md:w-auto h-10 rounded-xl bg-background/50 border-border/50 shadow-sm hover:bg-secondary/50 hover:border-primary/30 transition-all text-foreground bg-card`}>
+            <QrCode className="w-4 h-4 mr-2 text-primary" />
+            <span className="font-medium text-foreground">My UPI</span>
           </Link>
         </div>
       </div>

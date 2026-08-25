@@ -78,10 +78,10 @@ function MyUpiContent() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold">My UPI IDs</h3>
+              <h3 className="text-lg font-bold text-foreground dark:text-white">My UPI IDs</h3>
               <p className="text-sm text-muted-foreground">Add your VPA/UPI IDs to generate receiving QR codes.</p>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ""])} className="h-8">
+            <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ""])} className="h-8 dark:text-white">
               <Plus className="w-4 h-4 mr-1" /> Add
             </Button>
           </div>
@@ -120,7 +120,7 @@ function MyUpiContent() {
         {/* QR Code Generation Section */}
         <div className="space-y-4 pt-6 border-t">
           <div>
-            <h3 className="text-lg font-bold">My Receiving QR Code</h3>
+            <h3 className="text-lg font-bold text-foreground dark:text-white">My Receiving QR Code</h3>
             <p className="text-sm text-muted-foreground">Share this with friends or customers to receive payments.</p>
           </div>
 

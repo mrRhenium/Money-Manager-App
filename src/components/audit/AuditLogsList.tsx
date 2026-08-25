@@ -367,34 +367,34 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           {selectedLog && (
             <div className="space-y-6 pt-4">
               {/* Metadata Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-5 bg-secondary/30 rounded-2xl border text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 sm:p-5 bg-secondary/30 rounded-2xl border text-sm">
                 <div className="flex gap-2.5 items-start">
                   <Calendar className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Timestamp</p>
-                    <p className="font-semibold text-foreground mt-0.5">{formatDate(selectedLog.createdAt, "standard", userTimezone)}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Timestamp</p>
+                    <p className="font-semibold text-xs sm:text-sm text-foreground mt-0.5 break-words">{formatDate(selectedLog.createdAt, "standard", userTimezone)}</p>
                   </div>
                 </div>
                 <div className="flex gap-2.5 items-start">
                   <Hash className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Entity ID</p>
-                    <p className="font-mono text-xs text-foreground mt-1 break-all">{selectedLog.entityId}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Entity ID</p>
+                    <p className="font-mono text-[10px] sm:text-xs text-foreground mt-1 break-all">{selectedLog.entityId}</p>
                   </div>
                 </div>
                 <div className="flex gap-2.5 items-start">
                   <Layers className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Type</p>
-                    <p className="font-semibold text-foreground mt-1">{selectedLog.entityType}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Type</p>
+                    <p className="font-semibold text-xs sm:text-sm text-foreground mt-1 break-words">{selectedLog.entityType}</p>
                   </div>
                 </div>
                 <div className="flex gap-2.5 items-start">
                   <Activity className="w-4 h-4 text-muted-foreground/75 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Action</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Action</p>
                     <p className="mt-1">
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold border ${getActionStyle(selectedLog.action)}`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] sm:text-xs font-bold border ${getActionStyle(selectedLog.action)}`}>
                         {selectedLog.action}
                       </span>
                     </p>
@@ -415,27 +415,29 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                     <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                       {changes.map((c) => (
                         <div key={c.key} className="flex flex-col bg-card border border-border/60 rounded-xl p-4 shadow-sm">
-                          <div className="font-bold text-sm text-foreground capitalize mb-2 pb-2 border-b border-border/40">{c.key}</div>
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1 block">Previous</span>
+                          <div className="font-bold text-sm text-foreground mb-3 pb-2 border-b border-border/40">{c.key}</div>
+                          <div className="flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-4">
+                            <div className="flex-1 flex flex-col min-w-0">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5 block">Previous</span>
                               {c.prev === undefined || c.prev === null ? (
-                                <span className="text-muted-foreground/50 italic text-xs">None</span>
+                                <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">None</span>
                               ) : (
-                                <div className="p-2 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 text-xs font-mono break-all line-through decoration-rose-500/40">
+                                <div className="p-2.5 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 text-xs font-mono break-all line-through decoration-rose-500/40 flex-1">
                                   {typeof c.prev === "object" ? JSON.stringify(c.prev) : String(c.prev)}
                                 </div>
                               )}
                             </div>
-                            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-muted-foreground mt-4">
-                              <ArrowRight className="w-4 h-4" />
+                            <div className="shrink-0 flex items-center justify-center py-2 sm:py-0 sm:pt-6">
+                              <div className="w-8 h-8 rounded-full bg-secondary text-muted-foreground flex items-center justify-center rotate-90 sm:rotate-0">
+                                <ArrowRight className="w-4 h-4" />
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1 block">Current</span>
+                            <div className="flex-1 flex flex-col min-w-0">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5 block">Current</span>
                               {c.curr === undefined || c.curr === null ? (
-                                <span className="text-muted-foreground/50 italic text-xs">None</span>
+                                <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">None</span>
                               ) : (
-                                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-mono break-all">
+                                <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-mono break-all flex-1">
                                   {typeof c.curr === "object" ? JSON.stringify(c.curr) : String(c.curr)}
                                 </div>
                               )}

@@ -84,30 +84,30 @@ function MyUpiContent() {
 
             {/* Left Column - UPI IDs Management */}
             <Card className="lg:col-span-3 shadow-sm border border-slate-200/60 dark:border-slate-800">
-              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border/50">
+              <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/50">
                 <div>
-                  <CardTitle className="text-lg">My UPI IDs</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1 hidden sm:block">Add your VPA/UPI IDs to generate receiving QR codes.</p>
+                  <CardTitle className="text-base sm:text-lg">My UPI IDs</CardTitle>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">Add your VPA/UPI IDs to generate receiving QR codes.</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <Button onClick={() => {
                     if (upiIds.length === 0 || upiIds[upiIds.length - 1].trim() !== "") {
                       setUpiIds([...upiIds, ""]);
                     } else {
                       toast.error("Please fill in the empty UPI ID before adding a new one.");
                     }
-                  }} variant="outline" size="sm" className="h-8">
-                    <Plus className="w-4 h-4 mr-1" /> Add
+                  }} variant="outline" size="sm" className="h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm">
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Add
                   </Button>
-                  <Button onClick={handleSave} disabled={isSaving} size="sm" className="h-8">
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+                  <Button onClick={handleSave} disabled={isSaving} size="sm" className="h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm">
+                    {isSaving ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> : "Save"}
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-4 md:p-6 space-y-3">
+              <CardContent className="p-3 sm:p-4 md:p-6 space-y-2.5 sm:space-y-3">
                 {upiIds.map((vpa, idx) => (
-                  <div key={idx} className="flex gap-2 items-center">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary text-xs font-bold">
+                  <div key={idx} className="flex gap-1.5 sm:gap-2 items-center">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary text-[10px] sm:text-xs font-bold">
                       {idx + 1}
                     </div>
                     <Input
@@ -118,15 +118,15 @@ function MyUpiContent() {
                         newIds[idx] = e.target.value;
                         setUpiIds(newIds);
                       }}
-                      className="flex-1"
+                      className="flex-1 h-8 sm:h-10 text-xs sm:text-sm"
                     />
-                    <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(vpa, "UPI ID")} disabled={!vpa}>
-                      <Copy className="w-4 h-4" />
+                    <Button type="button" variant="outline" size="icon" className="shrink-0 w-8 h-8 sm:w-10 sm:h-10" onClick={() => copyToClipboard(vpa, "UPI ID")} disabled={!vpa}>
+                      <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
-                    <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => {
+                    <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive w-8 h-8 sm:w-10 sm:h-10" onClick={() => {
                       setUpiIds(upiIds.filter((_, i) => i !== idx));
                     }}>
-                      <Trash className="w-4 h-4" />
+                      <Trash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
                   </div>
                 ))}
@@ -140,17 +140,17 @@ function MyUpiContent() {
 
             {/* Right Column - QR Code */}
             <Card className="lg:col-span-2 shadow-sm border border-slate-200/60 dark:border-slate-800">
-              <CardHeader className="border-b border-border/50">
-                <CardTitle className="text-lg font-bold text-foreground">My Receiving QR Code</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">Share this to receive payments.</p>
+              <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/50">
+                <CardTitle className="text-base sm:text-lg font-bold text-foreground">My Receiving QR Code</CardTitle>
+                <p className="text-[10px] sm:text-sm text-muted-foreground mt-1">Share this to receive payments.</p>
               </CardHeader>
-              <CardContent className="p-4 md:p-6 flex flex-col items-center gap-6">
+              <CardContent className="p-4 md:p-6 flex flex-col items-center gap-4 sm:gap-6">
                 {activeIds.length > 0 ? (
                   <>
                     <div className="w-full">
-                      <Label className="text-xs text-muted-foreground mb-2 block">Select UPI ID for QR Code</Label>
+                      <Label className="text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2 block">Select UPI ID for QR Code</Label>
                       <select
-                        className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="flex h-8 sm:h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 py-1 sm:py-2 text-xs sm:text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         value={selectedUpiForQr}
                         onChange={(e) => setSelectedUpiForQr(e.target.value)}
                       >
@@ -165,24 +165,24 @@ function MyUpiContent() {
                         <button
                           type="button"
                           onClick={() => setQrModalOpen(true)}
-                          className="p-6 bg-white rounded-3xl shadow-sm border hover:shadow-md transition-all cursor-pointer relative group flex flex-col items-center gap-3"
+                          className="p-4 sm:p-6 bg-white rounded-2xl sm:rounded-3xl shadow-sm border hover:shadow-md transition-all cursor-pointer relative group flex flex-col items-center gap-2 sm:gap-3 w-[180px] sm:w-[250px]"
                         >
                           <QRCodeSVG
                             value={generatedUpiUrl}
-                            size={200}
+                            style={{ width: "100%", height: "auto" }}
                             level="M"
                             imageSettings={{
                               src: "/icon-512x512.png",
                               x: undefined,
                               y: undefined,
-                              height: 40,
-                              width: 40,
+                              height: 30,
+                              width: 30,
                               excavate: true,
                             }}
                           />
-                          <span className="text-sm font-semibold text-primary font-mono">{selectedUpiForQr}</span>
-                          <div className="absolute inset-0 bg-black/5 rounded-3xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                            <span className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">Click to Enlarge</span>
+                          <span className="text-xs sm:text-sm font-semibold text-primary font-mono truncate w-full text-center">{selectedUpiForQr}</span>
+                          <div className="absolute inset-0 bg-black/5 rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <span className="bg-black/60 text-white text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-full font-medium shadow-sm">Click to Enlarge</span>
                           </div>
                         </button>
 

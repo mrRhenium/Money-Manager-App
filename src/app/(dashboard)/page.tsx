@@ -259,13 +259,13 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <TrendingUp className="w-24 h-24 text-primary" />
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
               <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Net Worth</CardTitle>
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Wallet className="w-4 h-4 text-primary" />
               </div>
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10">
+            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10">
               <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
               <p className={`text-[10px] sm:text-xs mt-1 flex items-center gap-1 ${nwGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                 {nwGrowth >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
@@ -281,13 +281,13 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <Briefcase className="w-24 h-24 text-purple-500" />
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
               <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Investments</CardTitle>
               <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
                 <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               </div>
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10">
+            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10">
               <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalInvestmentValue} /></div>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Across SIPs & FDs</p>
             </CardContent>
@@ -300,13 +300,13 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <AlertCircle className="w-24 h-24 text-red-500" />
             </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
               <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Debt</CardTitle>
               <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
                 <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
               </div>
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10">
+            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10">
               <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalDebtOwed} /></div>
               <p className="text-[10px] sm:text-xs text-red-500 mt-1 flex items-center gap-1">
                 Cards & Loans
@@ -318,13 +318,13 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
         {/* Cashflow Summary */}
         <div className="block">
           <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm h-full relative overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-6 pb-1 sm:pb-2 relative z-10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
               <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Period Cashflow</CardTitle>
               <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
                 <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 relative z-10 flex flex-col gap-1.5 mt-1">
+            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10 flex flex-col gap-1.5 mt-1">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center"><ArrowDownLeft className="w-3 h-3 text-emerald-500 mr-1" /> IN</span>
                 <CurrencyDisplay amount={timeframeIncome} className="text-sm font-semibold text-emerald-600 dark:text-emerald-400" />

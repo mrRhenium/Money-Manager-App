@@ -392,3 +392,88 @@ a:hover {
 .dark .ant-drawer-close:hover {
   color: var(--foreground) !important;
 }
+
+
+/* Ant Design Dark Mode Overrides */
+html.dark .ant-select .ant-select-selector,
+html.dark .ant-select-selector,
+html.dark .ant-select-selection-search-input,
+html.dark .ant-pagination-item-link,
+html.dark .ant-pagination-item {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+html.dark .ant-select-selection-item {
+  color: var(--foreground) !important;
+}
+
+html.dark .ant-select-dropdown {
+  background-color: var(--popover) !important;
+  border: 1px solid var(--border) !important;
+}
+
+html.dark .ant-select-item {
+  color: var(--foreground) !important;
+}
+
+html.dark .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: var(--muted) !important;
+}
+
+html.dark .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+html.dark .ant-select-multiple .ant-select-selection-item {
+  background: var(--muted) !important;
+  background-color: var(--muted) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+html.dark .ant-select-multiple .ant-select-selection-item-remove {
+  color: var(--muted-foreground) !important;
+}
+
+html.dark .ant-select-selection-placeholder {
+  color: var(--muted-foreground) !important;
+}
+
+html.dark .ant-select-arrow,
+html.dark .ant-select-clear {
+  color: var(--muted-foreground) !important;
+}
+
+html.dark .ant-pagination-item-active {
+  background: var(--primary) !important;
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+html.dark .ant-pagination-item-active a {
+  color: var(--primary-foreground) !important;
+}
+html.dark .ant-pagination-item a {
+  color: var(--foreground) !important;
+}
+
+html.dark .ant-table-filter-dropdown {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+}
+html.dark .ant-table-filter-dropdown input {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+html.dark .ant-table-filter-dropdown button {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+}
+html.dark .ant-table-filter-dropdown button:nth-of-type(2) {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}

@@ -186,8 +186,8 @@ export function InsuranceClient({
           className="w-full h-10"
           popupMatchSelectWidth={false}
           options={[
-            { label: "Newest First", value: "newest" },
-            { label: "Oldest First", value: "oldest" },
+            { label: "🆕 Newest First", value: "newest" },
+            { label: "📅 Oldest First", value: "oldest" },
             { label: "Highest Coverage", value: "highest_coverage" },
             { label: "Highest Premium", value: "highest_premium" },
           ]}

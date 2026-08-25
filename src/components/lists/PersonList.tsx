@@ -64,7 +64,14 @@ export function PersonList({
 
   const renderPersonItem = (person: any, index: number) => (
     <List.Item>
-      <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group">
+      <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group relative overflow-hidden">
+        
+        {/* Decorative background circle */}
+        <div 
+          className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
+          style={{ backgroundColor: person.color || '#0ea5e9' }}
+        />
+
         <div className="flex items-start justify-between mb-4 gap-2">
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>

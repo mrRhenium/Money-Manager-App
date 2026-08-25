@@ -171,9 +171,9 @@ export function BudgetClient({
           className="w-full h-10"
           popupMatchSelectWidth={false}
           options={[
-            { label: "Highest Spent", value: "spent-high" },
-            { label: "Lowest Spent", value: "spent-low" },
-            { label: "Largest Budget", value: "budget-high" },
+            { label: "🔥 Highest Spent", value: "spent-high" },
+            { label: "🧊 Lowest Spent", value: "spent-low" },
+            { label: "💎 Largest Budget", value: "budget-high" },
           ]}
         />
       </div>

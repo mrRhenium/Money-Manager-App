@@ -215,10 +215,10 @@ export function SubscriptionClient({
           className="w-full h-10"
           popupMatchSelectWidth={false}
           options={[
-            { label: "Due: Nearest First", value: "date-nearest" },
-            { label: "Due: Farthest First", value: "date-farthest" },
-            { label: "Amount: High to Low", value: "amount-high" },
-            { label: "Amount: Low to High", value: "amount-low" },
+            { label: "⏳ Due: Nearest First", value: "date-nearest" },
+            { label: "📆 Due: Farthest First", value: "date-farthest" },
+            { label: "💰 Amount: High to Low", value: "amount-high" },
+            { label: "💵 Amount: Low to High", value: "amount-low" },
           ]}
         />
       </div>

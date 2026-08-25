@@ -247,8 +247,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/my-upi" className={buttonVariants({ variant: "outline" }) + " bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold text-foreground"}>
-            <QrCode className="w-4 h-4 mr-2 text-foreground" />My UPI
+          <Link href="/my-upi" className={buttonVariants({ variant: "outline" }) + " bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold text-foreground h-12 px-8 rounded-full text-sm"}>
+            <QrCode className="w-5 h-5 mr-2 text-foreground" />My UPI
           </Link>
           <DashboardScanTrigger />
         </div>

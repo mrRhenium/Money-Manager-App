@@ -1,15 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateString, parseToDate, getCurrentDate } from "@/lib/dateTimeHelper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2, CalendarDays, ChevronLeft, ChevronRight, Landmark } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
+  loan_emi: { label: "🏦 Loans (EMIs)", icon: Landmark, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-500/10" },
+  loan_emi_receive: { label: "🏦 Loans (EMI Receivable)", icon: Landmark, color: "text-emerald-600 dark:text-emerald-400", bgColor: "bg-emerald-500/10" },
+  credit_card: { label: "💳 Credit Cards", icon: CreditCard, color: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-500/10" },
+  sip: { label: "📈 SIP Investments", icon: TrendingUp, color: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-500/10" },
+  insurance: { label: "🛡️ Insurance Premiums", icon: Shield, color: "text-emerald-600 dark:text-emerald-400", bgColor: "bg-emerald-500/10" },
+  subscription: { label: "🔄 Subscriptions", icon: RefreshCw, color: "text-amber-600 dark:text-amber-400", bgColor: "bg-amber-500/10" },
+};
 
 export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], daysAhead?: number }) {
   const { format } = useCurrency();
@@ -20,7 +29,6 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
 
   if (!dues || dues.length === 0) return null;
 
-  
   const filteredDues = dues.filter(due => {
     if (!searchQuery) return true;
     const s = searchQuery.toLowerCase();
@@ -35,6 +43,22 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
   const totalAmount = filteredDues.reduce((acc, curr) => acc + curr.amount, 0);
   const totalPages = Math.ceil(filteredDues.length / itemsPerPage);
   const paginatedDues = filteredDues.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Group paginatedDues by type for categorized display
+  const groupedDues = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    paginatedDues.forEach(due => {
+      const key = due.type || "other";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(due);
+    });
+    // Sort groups by predefined order
+    const order = ["loan_emi", "loan_emi_receive", "credit_card", "sip", "insurance", "subscription"];
+    const sorted: [string, any[]][] = [];
+    order.forEach(key => { if (groups[key]) sorted.push([key, groups[key]]); });
+    Object.keys(groups).forEach(key => { if (!order.includes(key)) sorted.push([key, groups[key]]); });
+    return sorted;
+  }, [paginatedDues]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -84,46 +108,67 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
             />
           </div>
         </DialogHeader>
-        <div className="divide-y divide-border/50">
-          {paginatedDues.map((due: any, idx: number) => {
-            const isOverdue = parseToDate(due.dueDate) < getCurrentDate();
-            let Icon = Calendar;
-            let iconColor = "text-muted-foreground";
 
-            if (due.type === "credit_card") { Icon = CreditCard; iconColor = "text-blue-500"; }
-            if (due.type === "insurance") { Icon = Shield; iconColor = "text-emerald-500"; }
-            if (due.type === "sip") { Icon = TrendingUp; iconColor = "text-purple-500"; }
-            if (due.type === "subscription") { Icon = RefreshCw; iconColor = "text-amber-500"; }
+        {/* Grouped by category */}
+        <div className="space-y-6 mt-4">
+          {groupedDues.map(([type, items]) => {
+            const config = CATEGORY_CONFIG[type] || { label: type, icon: Calendar, color: "text-muted-foreground", bgColor: "bg-secondary" };
+            const CategoryIcon = config.icon;
+            const groupTotal = items.reduce((acc: number, d: any) => acc + d.amount, 0);
 
             return (
-              <div key={idx} className="flex items-center justify-between py-4 hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-secondary shrink-0 ${iconColor}`}>
-                    <Icon className="w-5 h-5" />
+              <div key={type}>
+                {/* Category Header */}
+                <div className={`flex items-center justify-between px-4 py-2.5 rounded-xl ${config.bgColor} mb-2`}>
+                  <div className="flex items-center gap-2">
+                    <CategoryIcon className={`w-4 h-4 ${config.color}`} />
+                    <span className={`text-sm font-bold ${config.color}`}>{config.label}</span>
+                    <Badge variant="outline" className="text-[10px] h-5 ml-1">{items.length}</Badge>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-sm">{due.title}</h4>
-                    <div className="flex items-center gap-1 text-[10px] sm:text-xs">
-                      <CalendarDays className="w-3 h-3 text-muted-foreground" />
-                      <span className={isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}>
-                        Due: {formatDateString(due.dueDate, "DD-MM-YYYY")}
-                      </span>
-                      {isOverdue && <AlertCircle className="w-3 h-3 text-destructive" />}
-                    </div>
-                  </div>
+                  <span className={`text-sm font-bold ${config.color}`}>{format(groupTotal)}</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="font-bold text-sm">{format(due.amount)}</div>
-                    <div className="text-xs text-muted-foreground uppercase">{due.type}</div>
-                  </div>
-                  <Button size="sm" variant={isOverdue ? "destructive" : "secondary"} className="h-8 shadow-sm">
-                    <CheckCircle2 className="w-4 h-4 mr-1" /> Pay
-                  </Button>
+
+                {/* Items */}
+                <div className="divide-y divide-border/50">
+                  {items.map((due: any, idx: number) => {
+                    const isOverdue = parseToDate(due.dueDate) < getCurrentDate();
+
+                    return (
+                      <div key={idx} className="flex items-center justify-between py-3 px-2 hover:bg-muted/50 transition-colors rounded-lg">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${config.bgColor} ${config.color}`}>
+                            <CategoryIcon className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold text-sm truncate">{due.title}</h4>
+                            <div className="flex items-center gap-1 text-[10px] sm:text-xs">
+                              <CalendarDays className="w-3 h-3 text-muted-foreground" />
+                              <span className={isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}>
+                                Due: {formatDateString(due.dueDate, "DD-MM-YYYY")}
+                              </span>
+                              {isOverdue && <AlertCircle className="w-3 h-3 text-destructive" />}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-right">
+                            <div className="font-bold text-sm">{format(due.amount)}</div>
+                          </div>
+                          <Button size="sm" variant={isOverdue ? "destructive" : "secondary"} className="h-8 shadow-sm">
+                            <CheckCircle2 className="w-4 h-4 mr-1" /> Pay
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
           })}
+
+          {filteredDues.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground text-sm">No dues match your search.</div>
+          )}
         </div>
         
         {/* Pagination */}

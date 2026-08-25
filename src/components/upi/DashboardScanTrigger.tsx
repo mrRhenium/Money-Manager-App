@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { QrCode } from "lucide-react";
+import { ScanLine } from "lucide-react";
 import { ScanAndPayModal } from "./ScanAndPayModal";
 
 export function DashboardScanTrigger() {
@@ -12,10 +12,10 @@ export function DashboardScanTrigger() {
     <>
       <Button 
         onClick={() => setOpen(true)}
-        className="hidden md:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6 shadow-md hover:shadow-lg transition-all h-10 gap-1.5 font-semibold"
+        className="hidden md:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 shadow-md hover:shadow-lg transition-all h-12 gap-2 font-semibold text-sm"
       >
-        <QrCode className="w-4 h-4 mr-1" />
-        Scan QR
+        <ScanLine className="w-5 h-5" />
+        Scan & Pay
       </Button>
 
       <ScanAndPayModal open={open} onOpenChange={setOpen} />

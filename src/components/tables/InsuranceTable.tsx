@@ -122,13 +122,13 @@ export function InsuranceTable({
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex items-center gap-3 min-w-0">
                     <div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner" 
+                      className="p-2 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner" 
                       style={{ backgroundColor: record.color || '#10b981' }}
                     >
                       <CategoryIcon name={record.icon} className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-base leading-tight truncate text-foreground">{record.policyName}</h3>
+                      <h3 className="font-semibold leading-none mb-1 truncate text-foreground">{record.policyName}</h3>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{record.provider} ({record.type})</p>
                     </div>
                   </div>

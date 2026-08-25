@@ -569,57 +569,67 @@ function SettingsContent() {
             <div className="w-full shrink-0 flex flex-col gap-2">
               <button
                 onClick={() => handleTabChange("profile")}
-                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
                   activeTab === "profile" && !isMobile
                     ? "bg-primary text-white border-primary shadow-sm"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                 }`}
               >
-                <User className="w-4 h-4" />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "profile" && !isMobile ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>
+                  <User className="w-4 h-4" />
+                </div>
                 Profile Information
               </button>
               <button
                 onClick={() => handleTabChange("preferences")}
-                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
                   activeTab === "preferences" && !isMobile
                     ? "bg-primary text-white border-primary shadow-sm"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                 }`}
               >
-                <Palette className="w-4 h-4" />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "preferences" && !isMobile ? "bg-white/20 text-white" : "bg-indigo-500/10 text-indigo-500"}`}>
+                  <Palette className="w-4 h-4" />
+                </div>
                 Preferences
               </button>
               <button
                 onClick={() => handleTabChange("timezone")}
-                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
                   activeTab === "timezone" && !isMobile
                     ? "bg-primary text-white border-primary shadow-sm"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                 }`}
               >
-                <Globe className="w-4 h-4" />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "timezone" && !isMobile ? "bg-white/20 text-white" : "bg-emerald-500/10 text-emerald-500"}`}>
+                  <Globe className="w-4 h-4" />
+                </div>
                 Global Timezone
               </button>
               <button
                 onClick={() => handleTabChange("notifications")}
-                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
                   activeTab === "notifications" && !isMobile
                     ? "bg-primary text-white border-primary shadow-sm"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                 }`}
               >
-                <Bell className="w-4 h-4" />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "notifications" && !isMobile ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-500"}`}>
+                  <Bell className="w-4 h-4" />
+                </div>
                 Notifications
               </button>
               <button
                 onClick={() => handleTabChange("logout")}
-                className={`flex items-center gap-2.5 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
+                className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${
                   activeTab === "logout" && !isMobile
                     ? "bg-primary text-white border-primary shadow-sm"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                 }`}
               >
-                <LogOut className="w-4 h-4" />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "logout" && !isMobile ? "bg-white/20 text-white" : "bg-red-500/10 text-red-500"}`}>
+                  <LogOut className="w-4 h-4" />
+                </div>
                 Sign Out
               </button>
             </div>

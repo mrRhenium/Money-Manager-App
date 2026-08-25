@@ -407,64 +407,57 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                 <h4 className="font-bold text-sm text-foreground mb-3 uppercase tracking-wider">
                   {selectedLog.action === "CREATE" ? "Created Record Values" :
                    selectedLog.action === "DELETE" ? "Deleted Record Values" :
-                   "Modified Fields comparison"}
+                   "Modified Fields Comparison"}
                 </h4>
 
                 {selectedLog.action === "UPDATE" ? (
                   changes.length > 0 ? (
-                    <div className="border border-border/50 rounded-2xl overflow-hidden shadow-inner">
-                      <div className="grid grid-cols-3 bg-muted/50 p-3.5 text-xs font-bold text-muted-foreground border-b uppercase tracking-wider">
-                        <div>Property</div>
-                        <div>Previous Value</div>
-                        <div>Current Value</div>
-                      </div>
-                      <div className="divide-y divide-border/40 max-h-[350px] overflow-y-auto bg-card">
-                        {changes.map((c) => (
-                          <div key={c.key} className="grid grid-cols-3 p-3.5 items-center text-sm gap-2 hover:bg-secondary/10 transition-colors">
-                            <div className="font-semibold text-foreground capitalize">{c.key}</div>
-                            <div className="break-all pr-2">
+                    <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {changes.map((c) => (
+                        <div key={c.key} className="flex flex-col bg-card border border-border/60 rounded-xl p-4 shadow-sm">
+                          <div className="font-bold text-sm text-foreground capitalize mb-2 pb-2 border-b border-border/40">{c.key}</div>
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1 block">Previous</span>
                               {c.prev === undefined || c.prev === null ? (
                                 <span className="text-muted-foreground/50 italic text-xs">None</span>
                               ) : (
-                                <span className="inline-block px-2.5 py-1.5 rounded-xl text-xs font-mono bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-medium line-through decoration-rose-500/30">
+                                <div className="p-2 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 text-xs font-mono break-all line-through decoration-rose-500/40">
                                   {typeof c.prev === "object" ? JSON.stringify(c.prev) : String(c.prev)}
-                                </span>
+                                </div>
                               )}
                             </div>
-                            <div className="break-all flex items-center gap-1.5">
-                              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
+                            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-muted-foreground mt-4">
+                              <ArrowRight className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1 block">Current</span>
                               {c.curr === undefined || c.curr === null ? (
                                 <span className="text-muted-foreground/50 italic text-xs">None</span>
                               ) : (
-                                <span className="inline-block px-2.5 py-1.5 rounded-xl text-xs font-mono bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-medium">
+                                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-mono break-all">
                                   {typeof c.curr === "object" ? JSON.stringify(c.curr) : String(c.curr)}
-                                </span>
+                                </div>
                               )}
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic text-center py-6">No properties were modified.</p>
+                    <div className="text-sm text-muted-foreground italic text-center p-8 border border-dashed rounded-xl">No properties were modified.</div>
                   )
                 ) : (
-                  <div className="border border-border/50 rounded-2xl overflow-hidden shadow-inner">
-                    <div className="grid grid-cols-2 bg-muted/50 p-3.5 text-xs font-bold text-muted-foreground border-b uppercase tracking-wider">
-                      <div>Property</div>
-                      <div>Value</div>
-                    </div>
-                    <div className="divide-y divide-border/40 max-h-[350px] overflow-y-auto bg-card">
-                      {Object.entries(selectedLog.currentValue || selectedLog.previousValue || {}).map(([key, val]) => {
-                        if (["_id", "userId", "createdAt", "updatedAt", "__v", "id"].includes(key)) return null;
-                        return (
-                          <div key={key} className="grid grid-cols-2 p-3.5 items-center text-sm gap-2 hover:bg-secondary/10 transition-colors">
-                            <div className="font-semibold text-foreground capitalize">{key}</div>
-                            <div className="break-all">{renderValue(val)}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {Object.entries(selectedLog.currentValue || selectedLog.previousValue || {}).map(([key, val]) => {
+                      if (["_id", "userId", "createdAt", "updatedAt", "__v", "id"].includes(key)) return null;
+                      return (
+                        <div key={key} className="bg-card border border-border/60 p-3.5 rounded-xl shadow-sm flex flex-col gap-1">
+                          <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{key}</div>
+                          <div className="text-sm font-medium text-foreground break-all">{renderValue(val)}</div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

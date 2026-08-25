@@ -119,15 +119,15 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
         </Card>
       } />
       <DialogContent className="sm:max-w-2xl md:max-w-3xl max-h-[80vh] overflow-y-auto p-6 rounded-2xl">
-        <DialogHeader className="pb-4 border-b">
-          <DialogTitle className="text-lg font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
-            <Smartphone className="w-5 h-5 animate-pulse" />
+        <DialogHeader className="pb-3 border-b text-left">
+          <DialogTitle className="text-base sm:text-lg font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+            <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
             Resolve Pending UPI Payments
           </DialogTitle>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
             Confirm whether these UPI payments were successful or cancelled to keep your balances aligned.
           </p>
-          <div className="relative mt-4">
+          <div className="relative mt-3 sm:mt-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
@@ -150,7 +150,7 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
             const isLoading = loadingId === txn._id;
             
             return (
-              <div key={txn._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-background rounded-xl border border-amber-500/20 gap-3 shadow-inner">
+              <div key={txn._id} className="flex flex-col p-3 sm:p-4 bg-background rounded-xl border border-amber-500/20 gap-3 shadow-inner">
                 <div>
                   <p className="font-bold text-sm text-foreground">{payeeName}</p>
                   {upiId && <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{upiId}</p>}
@@ -165,10 +165,10 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
                     "{noteText}"
                   </p>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="grid grid-cols-3 sm:flex sm:flex-row gap-2 shrink-0 mt-2 sm:mt-0 w-full sm:w-auto">
                   <Button 
                     size="sm" 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 px-3"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 px-2 sm:px-3"
                     onClick={() => handleResolve(txn._id, "completed")}
                     disabled={isLoading}
                   >
@@ -178,7 +178,7 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
                   <Button 
                     size="sm" 
                     variant="destructive"
-                    className="font-semibold text-xs h-8 px-3"
+                    className="font-semibold text-xs h-8 px-2 sm:px-3"
                     onClick={() => handleResolve(txn._id, "cancelled")}
                     disabled={isLoading}
                   >
@@ -188,7 +188,7 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
                   <Button 
                     size="sm" 
                     variant="secondary"
-                    className="font-semibold text-xs h-8 px-3 border border-amber-500/20 text-amber-700 bg-amber-50"
+                    className="font-semibold text-xs h-8 px-2 sm:px-3 border border-amber-500/20 text-amber-700 bg-amber-50"
                     onClick={() => handleResolve(txn._id, "pending")}
                     disabled={isLoading}
                   >

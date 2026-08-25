@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { DashboardAdvancedFilter } from "@/components/dashboard/DashboardAdvancedFilter";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MasterFilterDrawer } from "@/components/layout/MasterView";
 import { Suspense } from "react";
 
 export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomingDues: any[], daysAhead: number, user: any }) {
@@ -44,30 +44,24 @@ export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomin
             <DashboardScanTrigger />
 
             {/* Mobile Filter Button */}
-            <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
-              <DialogTrigger render={
-                <Button variant="outline" size="icon" className="md:hidden rounded-full shadow-sm bg-background/80 backdrop-blur text-foreground border-border/50 hover:bg-muted h-9 w-9 transition-all">
-                  <Filter className="w-4 h-4" />
-                </Button>
-              } />
-              <DialogContent className="!fixed !top-0 !right-0 !bottom-0 !left-auto !translate-x-0 !translate-y-0 w-[85vw] max-w-[340px] rounded-none shadow-2xl p-6 overflow-y-auto flex flex-col gap-6 !data-[state=closed]:slide-out-to-right !data-[state=open]:slide-in-from-right duration-300">
-                <DialogHeader className="text-left shrink-0">
-                  <DialogTitle className="text-xl flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-primary" /> Filter Options
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 overflow-y-auto pb-8 custom-scrollbar">
-                  <Suspense fallback={<div className="h-10 w-full animate-pulse bg-muted rounded-full"></div>}>
-                    <DashboardAdvancedFilter />
-                  </Suspense>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)} className="md:hidden rounded-full shadow-sm bg-background/80 backdrop-blur text-foreground border-border/50 hover:bg-muted h-9 w-9 transition-all">
+              <Filter className="w-4 h-4" />
+            </Button>
+            <MasterFilterDrawer
+              isOpen={filterOpen}
+              onClose={() => setFilterOpen(false)}
+            >
+              <div className="flex-1 overflow-y-auto pb-8 custom-scrollbar">
+                <Suspense fallback={<div className="h-10 w-full animate-pulse bg-muted rounded-full"></div>}>
+                  <DashboardAdvancedFilter />
+                </Suspense>
+              </div>
+            </MasterFilterDrawer>
 
             {/* Action Center Button (Icon + Badge only) */}
             {totalActions > 0 && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="icon"
                 onClick={() => setIsOpen(!isOpen)}
                 className="rounded-full relative shadow-sm bg-background/80 backdrop-blur border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 h-9 w-9 sm:h-11 sm:w-11 transition-all"

@@ -137,10 +137,10 @@ export function InvestmentList({
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex items-center gap-3 min-w-0">
                         <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${isClosed ? "grayscale" : ""}`}
+                          className={`p-2 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${isClosed ? "grayscale" : ""}`}
                           style={{ backgroundColor: record.color || '#8b5cf6' }}
                         >
-                          <CategoryIcon name={record.icon} className="w-6 h-6" />
+                          <CategoryIcon name={record.icon} className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
                           <h3 className="font-semibold leading-none mb-1 flex items-center gap-2">

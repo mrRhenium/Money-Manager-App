@@ -89,7 +89,7 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
                     <div className="flex items-start gap-2 min-w-0">
                       <span className="text-white/70 font-bold shrink-0 text-sm mt-1">{index + 1}.</span>
                       <div className="min-w-0">
-                        <h3 className="font-bold text-lg opacity-90 truncate" title={card.bankName}>{card.bankName}</h3>
+                        <h3 className="font-semibold leading-none mb-1 opacity-90 truncate" title={card.bankName}>{card.bankName}</h3>
                         <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
                       </div>
                     </div>

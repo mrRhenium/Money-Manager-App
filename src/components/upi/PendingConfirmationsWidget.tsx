@@ -96,21 +96,23 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
       <DialogTrigger render={
         <Card className="cursor-pointer border border-amber-500/20 bg-amber-500/5 shadow-sm hover:bg-amber-500/10 transition-all duration-200 h-full">
           <CardContent className="p-4 sm:p-5 flex flex-col justify-between gap-4 h-full">
-            <div className="flex items-center justify-between w-full">
+            <div className="flex items-center justify-between w-full h-full">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
                   <Smartphone className="w-5 h-5 animate-pulse" />
                 </div>
-                <h3 className="font-bold text-sm sm:text-base text-amber-800 dark:text-amber-400 truncate">Pending UPI</h3>
+                <div className="flex flex-col">
+                  <h3 className="font-bold text-sm sm:text-base text-amber-800 dark:text-amber-400 truncate">Pending UPI</h3>
+                  <p className="text-xs text-amber-600 dark:text-amber-500 font-medium mt-0.5">
+                    {pendingTxns.length} payment{pendingTxns.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-amber-600 dark:text-amber-500 font-medium whitespace-nowrap">
-                {pendingTxns.length} payment{pendingTxns.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-            <div className="text-left mt-auto">
-              <span className="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold tracking-wider block">Total Pending: </span>
-              <div className="font-bold text-base sm:text-lg text-amber-700 dark:text-amber-400">
-                {format(totalAmount)}
+              <div className="text-right">
+                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold tracking-wider block">Total Pending:</span>
+                <div className="font-bold text-base sm:text-lg text-amber-700 dark:text-amber-400">
+                  {format(totalAmount)}
+                </div>
               </div>
             </div>
           </CardContent>

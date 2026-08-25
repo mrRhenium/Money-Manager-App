@@ -143,7 +143,7 @@ export function InvestmentList({
                           <CategoryIcon name={record.icon} className="w-6 h-6" />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="font-bold text-lg leading-tight flex items-center gap-2">
+                          <h3 className="font-semibold leading-none mb-1 flex items-center gap-2">
                             <span className="truncate min-w-0">{record.name}</span>
                           </h3>
                           <p className="text-sm text-muted-foreground truncate mt-0.5">

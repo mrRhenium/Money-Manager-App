@@ -111,14 +111,14 @@ export function GoalList({
               <div className="relative group block rounded-2xl p-5 border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
                 <div className="flex justify-between items-start gap-4 z-10">
                   <div className="flex items-center gap-3">
-                    <div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
-                      style={{ backgroundColor: goal.color }}
-                    >
-                      <CategoryIcon name={goal.icon} className="w-5 h-5" />
-                    </div>
+                      <div 
+                        className="p-2 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
+                        style={{ backgroundColor: goal.color || "#10b981" }}
+                      >
+                        <Target className="w-5 h-5 text-white" />
+                      </div>
                     <div>
-                      <h3 className="font-bold text-lg leading-tight line-clamp-1" title={goal.name}>{goal.name}</h3>
+                      <h3 className="font-semibold leading-none mb-1 truncate" title={goal.name}>{goal.name}</h3>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {goal.deadline && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1">

@@ -136,13 +136,13 @@ export function AccountList({ accounts, hideToolbar = false, externalSort }: { a
                 <div className="flex justify-between items-start gap-4 z-10">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
+                      className="p-2 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner"
                       style={{ backgroundColor: account.color || getAccountColor(account.type) }}
                     >
                       {account.icon ? <CategoryIcon name={account.icon} className="w-5 h-5 text-white" /> : getAccountIcon(account.type)}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-lg leading-tight line-clamp-1 capitalize" title={account.name}>{account.name}</h3>
+                      <h3 className="font-semibold leading-none mb-1 truncate capitalize" title={account.name}>{account.name}</h3>
                       <p className="text-[10px] text-muted-foreground uppercase font-semibold mt-1 tracking-wider">
                         {account.type}
                       </p>

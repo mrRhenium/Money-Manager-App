@@ -137,14 +137,11 @@ export function LoanList({
           <CardContent className="p-5 flex flex-col h-full z-10">
           <div className="flex justify-between items-start mb-4 gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner shrink-0 text-white"
-                style={{ backgroundColor: loan.color }}
-              >
+              <div className="p-2 rounded-xl shrink-0 flex items-center justify-center shadow-inner text-white" style={{ backgroundColor: loan.color || '#f59e0b' }}>
                 <CategoryIcon name={loan.icon} className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-lg leading-tight truncate">{loan.name}</h3>
+                <h3 className="font-semibold leading-none mb-1 truncate">{loan.name}</h3>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   {isTaken ? (
                     <span className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-0.5 rounded text-[10px] font-bold uppercase">

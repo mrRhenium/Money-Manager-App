@@ -226,7 +226,7 @@ export function TransactionClient({
   return (
     <MasterLayout>
       <MasterHeader
-        title="Transactions"
+        title={<><Wallet className="w-6 h-6 text-primary" /> Transactions</>}
         subtitle="Track all your incomes and expenses."
       />
 

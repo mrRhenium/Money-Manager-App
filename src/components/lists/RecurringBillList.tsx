@@ -235,14 +235,14 @@ export function RecurringBillList({
                     <div className="flex justify-between items-start gap-4 z-10">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
-                        <div 
-                          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${!bill.isActive ? 'grayscale opacity-60' : ''}`}
+                        <div
+                          className={`p-2 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${!bill.isActive ? 'grayscale opacity-50' : ''}`}
                           style={{ backgroundColor: bill.color || '#6366f1' }}
                         >
                           <CategoryIcon name={bill.icon} className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <h3 className={`font-bold text-lg leading-tight line-clamp-1 ${!bill.isActive ? 'text-muted-foreground' : ''}`} title={bill.name}>{bill.name}</h3>
+                          <h3 className={`font-semibold leading-none mb-1 truncate ${!bill.isActive ? 'text-muted-foreground' : ''}`} title={bill.name}>{bill.name}</h3>
                           <p className={`text-sm font-semibold mt-1 ${!bill.isActive ? 'text-muted-foreground' : ''}`}>
                             {format(bill.amount)} <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground font-normal">/ {bill.frequency}</span>
                           </p>

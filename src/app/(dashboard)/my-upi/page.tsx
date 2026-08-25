@@ -58,9 +58,8 @@ function MyUpiContent() {
     }
   };
 
-  if (isLoading) {
-    return <div className="p-12 text-center text-muted-foreground"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>;
-  }
+  // Remove local loader to avoid double spinner (since global loading.tsx handles it)
+  // if (isLoading) return ...
 
   const generatedUpiUrl = selectedUpiForQr ? `upi://pay?pa=${selectedUpiForQr}&pn=${encodeURIComponent(name || "User")}` : "";
   const activeIds = upiIds.filter(v => v.trim() !== "");

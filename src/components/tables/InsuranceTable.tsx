@@ -128,7 +128,7 @@ export function InsuranceTable({
                       <CategoryIcon name={record.icon} className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-base leading-tight truncate">{record.policyName}</h3>
+                      <h3 className="font-bold text-base leading-tight truncate text-foreground">{record.policyName}</h3>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{record.provider} ({record.type})</p>
                     </div>
                   </div>

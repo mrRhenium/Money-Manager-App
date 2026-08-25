@@ -261,9 +261,9 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/my-upi"
-            className="flex items-center justify-center h-9 sm:h-11 px-4 sm:px-6 rounded-full bg-secondary/60 hover:bg-secondary border border-border/50 text-foreground dark:text-gray-100 font-medium text-xs sm:text-sm transition-all shadow-sm"
+            className="flex items-center justify-center h-9 sm:h-11 px-4 sm:px-6 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 transition-all shadow-sm font-medium text-xs sm:text-sm"
           >
-            <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary" />
+            <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary dark:text-blue-400" />
             My UPI
           </Link>
           <DashboardScanTrigger />

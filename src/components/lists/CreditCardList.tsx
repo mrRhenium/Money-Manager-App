@@ -139,7 +139,7 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Used / Limit</p>
-                      <p className="text-sm font-semibold">{format(card.currentOutstanding)} <span className="text-muted-foreground font-normal">/ {format(card.creditLimit)}</span></p>
+                      <p className="text-sm font-semibold text-foreground">{format(card.currentOutstanding)} <span className="text-muted-foreground font-normal">/ {format(card.creditLimit)}</span></p>
                     </div>
                     <div className="text-right">
                       <span className={isHighUtilization ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>

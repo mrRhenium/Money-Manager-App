@@ -219,11 +219,11 @@ export function AdvancedTimezonePicker({ initialTimezone, onSave, onCancel, isSa
                     className="cursor-pointer"
                   >
                     {isSelected && (
-                      <circle r={8} fill="var(--primary)" className="animate-ping opacity-20" />
+                      <circle r={8} fill="var(--color-primary)" className="animate-ping opacity-20" />
                     )}
                     <circle 
                       r={isSelected ? 5 : 2.5} 
-                      fill={isSelected ? "hsl(var(--primary))" : "var(--color-slate-400)"} 
+                      fill={isSelected ? "var(--color-primary)" : "var(--color-slate-400)"} 
                       stroke={isSelected ? "#fff" : "transparent"} 
                       strokeWidth={1.5} 
                       className={cn(

@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Table, Button, Modal, Badge, Select } from "antd";
+import { Table, Badge, Select } from "antd";
 import { Input } from "@/components/ui/input";
 import { Button as UiButton } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatDate } from "@/lib/helpers";
 import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search, Filter } from "lucide-react";
@@ -146,7 +147,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
         return (
           <Badge 
             status={color as any} 
-            text={<span className="font-semibold text-xs tracking-wide">{action}</span>} 
+            text={<span className="font-semibold text-xs tracking-wide text-foreground dark:text-white">{action}</span>} 
           />
         );
       },
@@ -190,12 +191,14 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <Button 
-          type="text" 
-          size="small" 
+        <UiButton 
+          variant="ghost" 
+          size="icon"
+          className="h-8 w-8 rounded-full"
           onClick={() => setSelectedLog(record)}
-          icon={<Eye className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />} 
-        />
+        >
+          <Eye className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
+        </UiButton>
       ),
     }
   ];
@@ -348,20 +351,19 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       {(() => {
         const changes = selectedLog ? getChangedProperties(selectedLog.previousValue, selectedLog.currentValue) : [];
         return (
-        <Modal
-          title={
-            <div className="flex items-center gap-2 border-b pb-3 pr-6">
-              <History className="w-5 h-5 text-primary" />
-              <span className="font-bold text-lg">Audit Log Details</span>
-            </div>
-          }
+        <Dialog
           open={!!selectedLog}
-          onCancel={() => setSelectedLog(null)}
-          footer={null}
-          width={700}
-          className="audit-modal"
-          classNames={{ body: 'p-0 overflow-hidden' }}
+          onOpenChange={(open) => {
+            if (!open) setSelectedLog(null);
+          }}
         >
+          <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-background">
+            <DialogHeader className="p-6 pb-0">
+              <DialogTitle className="flex items-center gap-2 border-b border-border pb-3">
+                <History className="w-5 h-5 text-primary" />
+                <span className="font-bold text-lg text-foreground">Audit Log Details</span>
+              </DialogTitle>
+            </DialogHeader>
           {selectedLog && (
             <div className="space-y-6 pt-4">
               {/* Metadata Grid */}
@@ -468,7 +470,8 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
               </div>
             </div>
           )}
-        </Modal>
+          </DialogContent>
+        </Dialog>
         );
       })()}
       

@@ -164,15 +164,15 @@ export function InsuranceTable({
                 <div className="grid grid-cols-2 gap-y-4 gap-x-2 pt-4 border-t border-border/50 mt-auto">
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Coverage</p>
-                    <p className="font-semibold text-sm">{format(record.coverageAmount)}</p>
+                    <p className="font-semibold text-sm text-foreground">{format(record.coverageAmount)}</p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Premium</p>
-                    <p className="font-semibold text-sm">{format(record.premiumAmount)} <span className="text-xs text-muted-foreground font-normal">/ {record.premiumFrequency}</span></p>
+                    <p className="font-semibold text-sm text-foreground">{format(record.premiumAmount)} <span className="text-xs text-muted-foreground font-normal">/ {record.premiumFrequency}</span></p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Next Renewal</p>
-                    <p className="font-medium text-sm">{record.renewalDate ? formatDateString(record.renewalDate, "DD-MM-YYYY") : "-"}</p>
+                    <p className="font-medium text-sm text-foreground">{record.renewalDate ? formatDateString(record.renewalDate, "DD-MM-YYYY") : "-"}</p>
                   </div>
                 </div>
   

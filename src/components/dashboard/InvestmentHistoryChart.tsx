@@ -26,14 +26,16 @@ export function InvestmentHistoryChart({ history }: { history: any[] }) {
         <LineChart data={data}>
           <XAxis 
             dataKey="date" 
-            stroke="#888888" 
+            stroke="var(--color-muted-foreground)" 
+            tick={{ fill: 'var(--color-muted-foreground)' }}
             fontSize={12} 
             tickLine={false} 
             axisLine={false} 
             minTickGap={30}
           />
           <YAxis 
-            stroke="#888888" 
+            stroke="var(--color-muted-foreground)" 
+            tick={{ fill: 'var(--color-muted-foreground)' }}
             fontSize={12} 
             tickLine={false} 
             axisLine={false}

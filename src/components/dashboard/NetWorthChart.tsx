@@ -44,8 +44,8 @@ export function NetWorthChart({ data }: { data: any[] }) {
               <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis dataKey="date" hide={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} dy={10} />
-          <YAxis hide={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(val) => `${val / 1000}k`} width={60} />
+          <XAxis dataKey="date" hide={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }} dy={10} />
+          <YAxis hide={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }} tickFormatter={(val) => `${val / 1000}k`} width={60} />
           <Tooltip 
             content={({ active, payload }) => {
               if (active && payload && payload.length) {

@@ -267,13 +267,13 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
                           dataKey="name" 
                           axisLine={false} 
                           tickLine={false} 
-                          tick={{ fontSize: 12, fill: "currentColor", opacity: 0.7 }}
+                          tick={{ fontSize: 12, fill: "var(--color-muted-foreground)", opacity: 0.7 }}
                           tickFormatter={(value) => value.length > 10 ? value.substring(0, 10) + '...' : value}
                         />
                         <YAxis 
                           axisLine={false} 
                           tickLine={false} 
-                          tick={{ fontSize: 12, fill: "currentColor", opacity: 0.7 }}
+                          tick={{ fontSize: 12, fill: "var(--color-muted-foreground)", opacity: 0.7 }}
                           tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
                         />
                         <Tooltip 

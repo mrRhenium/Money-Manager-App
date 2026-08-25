@@ -25,7 +25,18 @@ const MONTHS = [
 ];
 
 const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth();
 const YEARS = Array.from({ length: 10 }, (_, i) => ({ value: String(currentYear - i), label: String(currentYear - i) }));
+
+const TIMEFRAME_LABELS: Record<string, string> = {
+  "7": "Last 7 Days",
+  "15": "Last 15 Days",
+  "30": "Last 30 Days",
+  "90": "Last 3 Months",
+  "180": "Last 6 Months",
+  "custom": "Custom Date",
+  "month_year": "By Month/Year"
+};
 
 export function DashboardAdvancedFilter() {
   const router = useRouter();
@@ -34,11 +45,11 @@ export function DashboardAdvancedFilter() {
   const fromDate = searchParams.get("from");
   const toDate = searchParams.get("to");
   
-  const selectedMonths = searchParams.get("months") ? searchParams.get("months")?.split(",") : [];
-  const selectedYears = searchParams.get("years") ? searchParams.get("years")?.split(",") : [String(currentYear)];
-
   const isCustom = currentDays === "custom";
   const isMonthYear = currentDays === "month_year";
+
+  const selectedMonths = searchParams.get("months") ? searchParams.get("months")?.split(",") : (isMonthYear ? [String(currentMonth)] : []);
+  const selectedYears = searchParams.get("years") ? searchParams.get("years")?.split(",") : (isMonthYear ? [String(currentYear)] : []);
 
   const handleMonthsChange = (values: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -77,14 +88,17 @@ export function DashboardAdvancedFilter() {
               params.delete("years");
             } else {
               if (!params.get("years")) params.set("years", String(currentYear));
+              if (!params.get("months")) params.set("months", String(currentMonth));
             }
             router.push(`/?${params.toString()}`);
           }}
         >
           <SelectTrigger className="w-full sm:w-[180px] h-10 rounded-full bg-secondary/50 hover:bg-secondary border-border/50 text-foreground font-medium shadow-sm transition-all focus:ring-1 focus:ring-primary/30">
-            <div className="flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-primary" />
-              <SelectValue placeholder="Select timeframe" />
+            <div className="flex items-center gap-2 truncate">
+              <CalendarDays className="w-4 h-4 text-primary shrink-0" />
+              <SelectValue placeholder="Select timeframe">
+                <span className="truncate">{TIMEFRAME_LABELS[currentDays] || currentDays}</span>
+              </SelectValue>
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl">

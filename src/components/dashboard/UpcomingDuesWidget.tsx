@@ -10,6 +10,7 @@ import { Search } from "lucide-react";
 import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2, CalendarDays, ChevronLeft, ChevronRight, Landmark } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
   loan_emi: { label: "🏦 Loans (EMIs)", icon: Landmark, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-500/10" },
@@ -25,11 +26,13 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
   const [isOpen, setIsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const itemsPerPage = 10;
 
   if (!dues || dues.length === 0) return null;
 
   const filteredDues = dues.filter(due => {
+    if (selectedCategory !== "all" && due.type !== selectedCategory) return false;
     if (!searchQuery) return true;
     const s = searchQuery.toLowerCase();
     const dateStr = formatDateString(due.dueDate, "DD-MM-YYYY");
@@ -64,21 +67,21 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger render={
         <Card className="cursor-pointer border border-blue-500/20 bg-blue-500/5 shadow-sm hover:bg-blue-500/10 transition-all duration-200 h-full">
-          <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 h-full">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-600 flex items-center justify-center shrink-0">
-                <Calendar className="w-6 h-6 animate-pulse" />
+          <CardContent className="p-3 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 h-full">
+            <div className="flex items-center sm:items-start gap-2 sm:gap-4 w-full">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-blue-500/20 text-blue-600 flex items-center justify-center shrink-0">
+                <Calendar className="w-4 h-4 sm:w-6 sm:h-6 animate-pulse" />
               </div>
-              <div>
-                <h3 className="font-bold text-base text-blue-800 dark:text-blue-400">Upcoming Dues</h3>
-                <p className="text-sm text-blue-600 dark:text-blue-500 font-medium">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-xs sm:text-base text-blue-800 dark:text-blue-400 truncate">Upcoming Dues</h3>
+                <p className="text-[10px] sm:text-sm text-blue-600 dark:text-blue-500 font-medium truncate sm:whitespace-normal">
                   {dues.length} dues in next {daysAhead} days
                 </p>
               </div>
             </div>
-            <div className="text-left sm:text-right shrink-0 mt-2 sm:mt-0">
-              <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider block sm:inline">Total Amount: </span>
-              <div className="font-bold text-base text-blue-700 dark:text-blue-400 flex items-center justify-start sm:justify-end">
+            <div className="text-left sm:text-right shrink-0 w-full sm:w-auto mt-1 sm:mt-0">
+              <span className="text-[9px] sm:text-xs text-muted-foreground uppercase font-semibold tracking-wider hidden sm:block">Total Amount: </span>
+              <div className="font-bold text-sm sm:text-base text-blue-700 dark:text-blue-400">
                 {format(totalAmount)}
               </div>
             </div>
@@ -94,18 +97,37 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
               Upcoming Dues
             </DialogTitle>
           </div>
-          <div className="relative mt-4">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search by name, amount, date, or type..."
-              className="pl-9 bg-background w-full"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
+          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search by name, amount, date, or type..."
+                className="pl-9 bg-background w-full h-9"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+            <Select
+              value={selectedCategory}
+              onValueChange={(val) => {
+                setSelectedCategory(val || "all");
                 setCurrentPage(1);
               }}
-            />
+            >
+              <SelectTrigger className="w-full sm:w-[220px] h-9 shrink-0 bg-background text-foreground">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
+                  <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </DialogHeader>
 

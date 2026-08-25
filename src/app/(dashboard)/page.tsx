@@ -119,6 +119,13 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     return curr.isLiability ? acc - baseBalance : acc + baseBalance;
   }, 0) - totalLoansTaken + totalLoansGiven + totalInvestmentValue - totalCardOutstanding;
 
+  const sp = await props.searchParams;
+  const rawMonths = typeof sp?.months === 'string' ? sp.months : (sp?.months?.[0] || undefined);
+  const rawYears = typeof sp?.years === 'string' ? sp.years : (sp?.years?.[0] || undefined);
+  const selectedMonths = rawMonths ? rawMonths.split(",").map(Number) : [];
+  const selectedYears = rawYears ? rawYears.split(",").map(Number) : [];
+  const isMonthYear = (sp?.days === "month_year") || (sp?.days?.[0] === "month_year");
+
   // Calculate timeframe-based income and expenses
   const now = getCurrentDate();
   let pastDate = new Date(now);
@@ -127,12 +134,17 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   if (isCustom && customStartDate && customEndDate) {
     pastDate = customStartDate;
     effectiveNow = customEndDate;
-  } else {
+  } else if (!isMonthYear) {
     pastDate.setDate(now.getDate() - daysFilter);
   }
 
   const timeframeTxns = transactions.filter((t: any) => {
     const txDate = parseToDate(t.date);
+    if (isMonthYear) {
+      if (selectedYears.length > 0 && !selectedYears.includes(txDate.getFullYear())) return false;
+      if (selectedMonths.length > 0 && !selectedMonths.includes(txDate.getMonth())) return false;
+      return true;
+    }
     return txDate >= pastDate && txDate <= effectiveNow;
   });
 
@@ -228,34 +240,38 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   return (
     <div className="space-y-8 px-4 md:px-6 lg:px-8 pt-4 md:pt-6 lg:pt-8 pb-24">
       {/* Greeting & Filter Area */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-2xl border border-primary/10">
-        <div className="flex items-center gap-4">
-          <Link href="/settings" className="w-14 h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex md:hidden items-center justify-center hover:opacity-80 transition-opacity">
+      <div className="flex flex-row justify-between items-center gap-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 sm:p-6 rounded-2xl border border-primary/10">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Link href="/settings" className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex md:hidden items-center justify-center hover:opacity-80 transition-opacity">
             {session.user.image ? (
               <img src={session.user.image} alt={session.user.name || "User"} className="w-full h-full object-cover" />
             ) : (
-              <Users className="w-6 h-6 text-primary" />
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             )}
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Welcome back, {session.user.name?.split(" ")[0] || "User"}! 👋
+            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground truncate max-w-[150px] sm:max-w-none">
+              Welcome, {session.user.name?.split(" ")[0] || "User"}!
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm md:text-base">
+            <p className="text-muted-foreground mt-0.5 text-xs sm:text-base hidden sm:block">
               Here's your actionable financial overview.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/my-upi" className={buttonVariants({ variant: "outline" }) + " bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold text-foreground h-12 px-8 rounded-full text-sm"}>
-            <QrCode className="w-5 h-5 mr-2 text-foreground" />My UPI
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <Link
+            href="/my-upi"
+            className="flex items-center justify-center h-9 sm:h-11 px-4 sm:px-6 rounded-full bg-secondary/60 hover:bg-secondary border border-border/50 text-foreground dark:text-gray-100 font-medium text-xs sm:text-sm transition-all shadow-sm"
+          >
+            <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-primary" />
+            My UPI
           </Link>
           <DashboardScanTrigger />
         </div>
       </div>
 
       {/* ZONE 1: ACTION CENTER */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6">
         <PendingConfirmationsWidget />
         <UpcomingDuesWidget dues={upcomingDues} daysAhead={daysFilter} />
       </div>
@@ -265,7 +281,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       </div>
 
       {/* ZONE 2: MACRO OVERVIEW (KPIs) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Net Worth */}
         <Link href="/accounts" className="block">
           <Card className="hover:shadow-md transition-all border-none bg-gradient-to-br from-card to-card shadow-sm cursor-pointer hover:-translate-y-1 h-full relative overflow-hidden group">

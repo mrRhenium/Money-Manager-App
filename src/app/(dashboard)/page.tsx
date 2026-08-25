@@ -123,7 +123,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   const now = getCurrentDate();
   let pastDate = new Date(now);
   let effectiveNow = new Date(now);
-  
+
   if (isCustom && customStartDate && customEndDate) {
     pastDate = customStartDate;
     effectiveNow = customEndDate;
@@ -166,7 +166,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   const upcomingDues: any[] = [];
   const nextXDays = getCurrentDate();
-  nextXDays.setDate(now.getDate() + daysFilter);
+  nextXDays.setDate(now.getDate() + 365);
 
   // Parse credit cards
   cards.forEach((c: any) => {
@@ -247,8 +247,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/my-upi" className={buttonVariants({ variant: "outline" })}>
-            <QrCode className="w-4 h-4 mr-2" /> My UPI
+          <Link href="/my-upi" className={buttonVariants({ variant: "outline" }) + " bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20 font-semibold text-foreground"}>
+            <QrCode className="w-4 h-4 mr-2 text-foreground" />My UPI
           </Link>
           <DashboardScanTrigger />
         </div>
@@ -291,7 +291,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
         {/* Investments */}
         <Link href="/investments" className="block">
           <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1 h-full relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <Briefcase className="w-24 h-24 text-purple-500" />
             </div>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
@@ -360,25 +360,25 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           </CardHeader>
           <CardContent>
             {chartData.length > 0 ? (
-               <OverviewChart data={chartData} />
+              <OverviewChart data={chartData} />
             ) : (
-               <div className="text-center py-20 text-muted-foreground">No expenses in this timeframe.</div>
+              <div className="text-center py-20 text-muted-foreground">No expenses in this timeframe.</div>
             )}
           </CardContent>
         </Card>
 
         {/* Recent Transactions */}
-        <Card className="lg:col-span-3 border-none shadow-sm hover:shadow-md transition-all flex flex-col">
+        <Card className="lg:col-span-3 border-none shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-lg font-semibold text-foreground">Recent Activity</CardTitle>
             <Link href="/transactions" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center">
               View All <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
           </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto overflow-x-hidden max-h-[320px] pr-2 custom-scrollbar">
+          <CardContent className="flex-1 overflow-y-auto overflow-x-hidden max-h-[320px] px-4 custom-scrollbar">
             <div className="space-y-4">
               {transactions.slice(0, 5).map((t: any) => (
-                <div key={t._id} className="flex items-center justify-between group cursor-pointer hover:bg-secondary/40 p-2 -mx-2 rounded-lg transition-colors">
+                <div key={t._id} className="flex items-center justify-between group cursor-pointer hover:bg-secondary/40 p-2 rounded-lg transition-colors">
                   <div className="flex items-center gap-4 min-w-0 flex-1">
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
@@ -415,11 +415,11 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Net Worth Chart Footer */}
       <Card className="border-none shadow-sm hover:shadow-md transition-all">
         <CardHeader>
-           <CardTitle className="text-lg font-semibold text-foreground">Net Worth Trend ({daysFilter} Days)</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Net Worth Trend ({daysFilter} Days)</CardTitle>
         </CardHeader>
         <CardContent className="h-[250px]">
           <NetWorthChart data={nwHistory} />

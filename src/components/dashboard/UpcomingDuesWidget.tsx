@@ -69,7 +69,6 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
               <Calendar className="w-5 h-5 text-primary" />
               Upcoming Dues
             </DialogTitle>
-            <Badge variant="outline" className="text-xs font-normal">Next {daysAhead} Days</Badge>
           </div>
           <div className="relative mt-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

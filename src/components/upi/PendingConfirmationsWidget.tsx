@@ -75,10 +75,12 @@ export function PendingConfirmationsWidget() {
   const filteredTxns = pendingTxns.filter(txn => {
     if (!searchQuery) return true;
     const s = searchQuery.toLowerCase();
-    const receiver = (txn.note || txn.partyName || "UPI Recipient").toLowerCase();
+    const receiver = (txn.upiPayeeName || txn.personId?.name || txn.note || "UPI Recipient").toLowerCase();
+    const upiVpa = (txn.upiPayeeVpa || "").toLowerCase();
     const dateStr = formatDateString(txn.date, "DD-MM-YYYY");
     return (
       receiver.includes(s) ||
+      upiVpa.includes(s) ||
       txn.amount.toString().includes(s) ||
       dateStr.includes(s)
     );
@@ -138,7 +140,9 @@ export function PendingConfirmationsWidget() {
         </DialogHeader>
         <div className="space-y-3 mt-4">
           {paginatedTxns.map((txn) => {
-            const payeeName = txn.partyName || txn.note?.replace("UPI Payment to ", "") || "UPI Recipient";
+            const payeeName = txn.upiPayeeName || txn.personId?.name || txn.note?.replace("UPI Payment to ", "") || "UPI Recipient";
+            const upiId = txn.upiPayeeVpa || "";
+            const personName = txn.personId?.name || "";
             const noteText = txn.note || "No note attached";
             const isLoading = loadingId === txn._id;
             
@@ -146,9 +150,13 @@ export function PendingConfirmationsWidget() {
               <div key={txn._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-background rounded-xl border border-amber-500/20 gap-3 shadow-inner">
                 <div>
                   <p className="font-bold text-sm text-foreground">{payeeName}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    <span className="font-semibold text-foreground bg-primary/10 px-1.5 py-0.5 rounded mr-2">{format(txn.amount)}</span>
-                    {formatDateString(txn.date, "DD-MM-YYYY hh:mm A")}
+                  {upiId && <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{upiId}</p>}
+                  {personName && personName !== payeeName && <p className="text-[11px] text-primary/80 mt-0.5">👤 {personName}</p>}
+                  <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-foreground bg-primary/10 px-1.5 py-0.5 rounded">{format(txn.amount)}</span>
+                    <span>•</span>
+                    <span>{formatDateString(txn.date, "DD-MM-YYYY hh:mm A")}</span>
+                    {txn.accountId?.name && <><span>•</span><span>{txn.accountId.name}</span></>}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 italic opacity-80">
                     "{noteText}"

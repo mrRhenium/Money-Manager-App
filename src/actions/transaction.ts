@@ -622,6 +622,7 @@ export async function getAwaitingTransactions() {
   .populate("categoryId", "name icon color type")
   .populate("accountId", "name type")
   .populate("toAccountId", "name type")
+  .populate("personId", "name phone")
   .lean();
 
   return JSON.parse(JSON.stringify(transactions));

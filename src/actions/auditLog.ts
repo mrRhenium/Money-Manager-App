@@ -95,7 +95,7 @@ export async function logAuditEvent(
 
 export async function getAuditLogs() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   const logs = await AuditLog.find({ userId: session.user.id }).sort({ createdAt: -1 }).limit(100).lean();

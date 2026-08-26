@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 
 export async function getPeople() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -51,7 +51,7 @@ import { logAuditEvent } from "@/actions/auditLog";
 
 export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -111,7 +111,7 @@ export async function deletePerson(id: string, reason?: string, notes?: string) 
 
 export async function savePersonVpa(name: string, vpa: string, relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other" = "Merchant") {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -146,7 +146,7 @@ export async function savePersonVpa(name: string, vpa: string, relation: "Friend
 
 export async function updatePerson(id: string, data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 

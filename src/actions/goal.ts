@@ -10,7 +10,7 @@ import { createTransaction } from "./transaction";
 
 export async function getGoals() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -26,7 +26,7 @@ export async function createGoal(data: {
   icon: string;
 }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -53,7 +53,7 @@ export async function updateGoal(
   }
 ) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -63,7 +63,7 @@ export async function updateGoal(
     { returnDocument: 'after' }
   );
 
-  if (!goal) throw new Error("Goal not found");
+  if (!goal) throw new Error("We couldn't find the requested goal. It may have been deleted.");
 
   revalidatePath("/goals");
   revalidatePath("/");
@@ -77,20 +77,20 @@ export async function addFundsToGoal(
   destinationAccountId?: string
 ) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const goal = await Goal.findOne({ _id: id, userId: session.user.id });
-  if (!goal) throw new Error("Goal not found");
+  if (!goal) throw new Error("We couldn't find the requested goal. It may have been deleted.");
 
   // Handle transfer if both accounts are provided
   if (sourceAccountId && destinationAccountId && sourceAccountId !== destinationAccountId) {
     const sourceAcc = await Account.findOne({ _id: sourceAccountId, userId: session.user.id });
     const destAcc = await Account.findOne({ _id: destinationAccountId, userId: session.user.id });
     
-    if (!sourceAcc || !destAcc) throw new Error("Account not found");
-    if (sourceAcc.balance < amountToAdd) throw new Error("Insufficient balance in source account");
+    if (!sourceAcc || !destAcc) throw new Error("We couldn't find the requested account.");
+    if (sourceAcc.balance < amountToAdd) throw new Error("Your selected account doesn't have enough funds for this transfer.");
 
     await createTransaction({
       type: "transfer",
@@ -118,12 +118,12 @@ export async function addFundsToGoal(
 
 export async function deleteGoal(id: string, reason?: string, notes?: string, returnAccountId?: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
   const goal = await Goal.findOne({ _id: id, userId: session.user.id });
-  if (!goal) throw new Error("Goal not found");
+  if (!goal) throw new Error("We couldn't find the requested goal. It may have been deleted.");
 
   if (goal.status === "completed") {
     throw new Error("Completed goals cannot be deleted.");
@@ -160,12 +160,12 @@ export async function withdrawFundsFromGoal(
   note: string
 ) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const goal = await Goal.findOne({ _id: id, userId: session.user.id });
-  if (!goal) throw new Error("Goal not found");
+  if (!goal) throw new Error("We couldn't find the requested goal. It may have been deleted.");
 
   if (goal.currentAmount < amountToWithdraw) {
     throw new Error("Insufficient funds in goal");
@@ -175,8 +175,8 @@ export async function withdrawFundsFromGoal(
     const sourceAcc = await Account.findOne({ _id: sourceAccountId, userId: session.user.id });
     const destAcc = await Account.findOne({ _id: destinationAccountId, userId: session.user.id });
     
-    if (!sourceAcc || !destAcc) throw new Error("Account not found");
-    if (sourceAcc.balance < amountToWithdraw) throw new Error("Insufficient balance in source account");
+    if (!sourceAcc || !destAcc) throw new Error("We couldn't find the requested account.");
+    if (sourceAcc.balance < amountToWithdraw) throw new Error("Your selected account doesn't have enough funds for this transfer.");
 
     sourceAcc.balance -= amountToWithdraw;
     destAcc.balance += amountToWithdraw;

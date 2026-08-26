@@ -98,7 +98,7 @@ export async function snapshotNetWorth() {
 
 export async function getNetWorthHistory(days: number = 30) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 

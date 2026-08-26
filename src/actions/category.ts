@@ -8,7 +8,7 @@ import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getCategories() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -22,7 +22,7 @@ export async function getCategories() {
 
 export async function createCategory(data: { name: string; type: "expense" | "income"; icon?: string; color?: string }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -108,7 +108,7 @@ export async function deleteCategory(id: string) {
 
 export async function updateCategory(id: string, data: { name: string; type: "expense" | "income"; color: string; icon?: string }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 

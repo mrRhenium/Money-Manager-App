@@ -12,7 +12,7 @@ import { getCurrentDate } from "@/lib/dateTimeHelper";
 
 export async function getInsurancePolicies() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -25,7 +25,7 @@ export async function getInsurancePolicies() {
 
 export async function getInsurancePolicyById(id: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -49,7 +49,7 @@ export async function getInsurancePolicyById(id: string) {
 
 export async function createInsurancePolicy(data: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -82,7 +82,7 @@ export async function createInsurancePolicy(data: any) {
 
 export async function updateInsurancePolicy(id: string, data: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -148,7 +148,7 @@ export async function deleteInsurancePolicy(id: string, reason?: string, notes?:
 
 export async function logPremiumPayment(policyId: string, paymentData: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -181,7 +181,7 @@ export async function logPremiumPayment(policyId: string, paymentData: any) {
 
 export async function fileClaim(policyId: string, claimData: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 

@@ -21,7 +21,7 @@ import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getTransactions(limit = 50) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -38,7 +38,7 @@ export async function getTransactions(limit = 50) {
 
 export async function getTransactionsForSubscription(recurringBillId: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -71,7 +71,7 @@ export async function createTransaction(data: {
   upiPayeeVpa?: string;
 }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -263,12 +263,12 @@ export async function createTransaction(data: {
 
 export async function deleteTransaction(id: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
   const transaction = await Transaction.findOne({ _id: id, userId: session.user.id });
-  if (!transaction) throw new Error("Transaction not found");
+  if (!transaction) throw new Error("We couldn't find the requested transaction. It may have been deleted.");
 
   // Revert balance ONLY if status is completed
   if (transaction.status === "completed") {
@@ -355,12 +355,12 @@ export async function deleteTransaction(id: string) {
 
 export async function confirmTransaction(id: string, status: "completed" | "cancelled" | "pending") {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const transaction = await Transaction.findOne({ _id: id, userId: session.user.id });
-  if (!transaction) throw new Error("Transaction not found");
+  if (!transaction) throw new Error("We couldn't find the requested transaction. It may have been deleted.");
 
   if (transaction.status === status) return JSON.parse(JSON.stringify(transaction));
 
@@ -478,12 +478,12 @@ export async function updateTransaction(
   }
 ) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const oldTxn = await Transaction.findOne({ _id: id, userId: session.user.id });
-  if (!oldTxn) throw new Error("Transaction not found");
+  if (!oldTxn) throw new Error("We couldn't find the requested transaction. It may have been deleted.");
 
   const oldTxnSnapshot = JSON.parse(JSON.stringify(oldTxn));
 
@@ -712,7 +712,7 @@ export async function updateTransaction(
 
 export async function getAwaitingTransactions() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -731,7 +731,7 @@ export async function getAwaitingTransactions() {
 
 export async function getPendingTransactions() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 

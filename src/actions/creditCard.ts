@@ -13,7 +13,7 @@ import { createTransaction } from "./transaction";
 
 export async function getCreditCards() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -31,7 +31,7 @@ export async function getCreditCards() {
 
 export async function getCreditCardById(id: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -56,7 +56,7 @@ export async function getCreditCardById(id: string) {
 
 export async function createCreditCard(data: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -130,7 +130,7 @@ export async function deleteCreditCard(id: string, reason?: string, notes?: stri
 
 export async function payCreditCardStatement(statementId: string, sourceAccountId: string, amountToPay: number) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -138,7 +138,7 @@ export async function payCreditCardStatement(statementId: string, sourceAccountI
   if (!statement) throw new Error("Statement not found");
 
   const card = await CreditCard.findOne({ _id: statement.cardId, userId: session.user.id });
-  if (!card) throw new Error("Credit Card not found");
+  if (!card) throw new Error("We couldn't find this credit card in your account.");
 
   const sourceAccount = await Account.findOne({ _id: sourceAccountId, userId: session.user.id });
   if (!sourceAccount) throw new Error("Source account not found");
@@ -189,12 +189,12 @@ export async function updateCreditCard(
   }
 ) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
-  if (!card) throw new Error("Credit Card not found");
+  if (!card) throw new Error("We couldn't find this credit card in your account.");
 
   const oldCard = JSON.parse(JSON.stringify(card));
 

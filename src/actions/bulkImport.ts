@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 export async function bulkInsertTransactions(transactions: any[]) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   

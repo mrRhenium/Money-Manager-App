@@ -12,7 +12,7 @@ import { createAuditLog } from "./auditLog";
 
 export async function getLoans() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -26,7 +26,7 @@ export async function getLoans() {
 
 export async function upsertLoan(data: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -56,12 +56,12 @@ export async function upsertLoan(data: any) {
 
 export async function deleteLoan(id: string, reason?: string, notes?: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
   const loan = await Loan.findOne({ _id: id, userId: session.user.id });
-  if (!loan) throw new Error("Loan not found");
+  if (!loan) throw new Error("We couldn't find the requested loan. It may have been deleted.");
 
   if (loan.status === "completed") {
     throw new Error("Completed loans cannot be deleted.");
@@ -157,12 +157,12 @@ export async function deleteLoan(id: string, reason?: string, notes?: string) {
 
 export async function payEMI(loanId: string, amountOverride?: number) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const loan = await Loan.findOne({ _id: loanId, userId: session.user.id });
-  if (!loan || loan.status === "completed") throw new Error("Loan not found or already completed");
+  if (!loan || loan.status === "completed") throw new Error("We couldn't process this payment. The loan may have been deleted, or it is already fully paid off.");
 
   const amountToPay = amountOverride || loan.emiAmount;
 
@@ -170,7 +170,7 @@ export async function payEMI(loanId: string, amountOverride?: number) {
   const actualPayment = Math.min(amountToPay, loan.outstandingBalance);
 
   if (actualPayment <= 0) {
-    throw new Error("No outstanding balance left");
+    throw new Error("Great news! This loan is already fully paid off.");
   }
 
   // Create a transaction
@@ -216,12 +216,12 @@ export async function payEMI(loanId: string, amountOverride?: number) {
 
 export async function undoLastEMI(loanId: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const loan = await Loan.findOne({ _id: loanId, userId: session.user.id });
-  if (!loan) throw new Error("Loan not found");
+  if (!loan) throw new Error("We couldn't find the requested loan. It may have been deleted.");
 
   // Find the most recent EMI transaction
   const txn = await Transaction.findOne({
@@ -236,7 +236,7 @@ export async function undoLastEMI(loanId: string) {
   // Check if it's within 24 hours
   const hoursSince = (new Date().getTime() - new Date(txn.createdAt).getTime()) / (1000 * 60 * 60);
   if (hoursSince > 24) {
-    throw new Error("Can only undo EMIs paid within the last 24 hours.");
+    throw new Error("For security reasons, EMI payments can only be undone within 24 hours of payment.");
   }
 
   // Call deleteTransaction which will now automatically handle reverting the loan balance and account balance

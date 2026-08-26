@@ -8,7 +8,7 @@ import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getAccounts() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -21,7 +21,7 @@ export async function getAccounts() {
 
 export async function createAccount(data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; creditLimit?: number; color?: string; icon?: string; isLiability?: boolean; currency?: string }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -104,7 +104,7 @@ export async function deleteAccount(id: string) {
 
 export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; color?: string; icon?: string; isLiability?: boolean; currency?: string }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 

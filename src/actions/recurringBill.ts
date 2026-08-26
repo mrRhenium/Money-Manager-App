@@ -12,7 +12,7 @@ import { createTransaction } from "./transaction";
 
 export async function getRecurringBills() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -43,7 +43,7 @@ export async function createRecurringBill(data: {
   isFixedAmount?: boolean;
 }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -64,7 +64,7 @@ export async function createRecurringBill(data: {
 
 export async function updateRecurringBill(id: string, data: Partial<any>) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
@@ -73,7 +73,7 @@ export async function updateRecurringBill(id: string, data: Partial<any>) {
   }
 
   const oldBill = await RecurringBill.findOne({ _id: id, userId: session.user.id });
-  if (!oldBill) throw new Error("Bill not found");
+  if (!oldBill) throw new Error("We couldn't find the requested recurring bill.");
 
   const bill = await RecurringBill.findOneAndUpdate(
     { _id: id, userId: session.user.id },

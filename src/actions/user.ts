@@ -6,19 +6,19 @@ import { auth } from "@/lib/auth";
 
 export async function getUserProfile() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
   const user = await User.findById(session.user.id).lean();
-  if (!user) throw new Error("User not found");
+  if (!user) throw new Error("We couldn't find your user profile.");
 
   return JSON.parse(JSON.stringify(user));
 }
 
 export async function updateTimezone(timezone: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -29,7 +29,7 @@ export async function updateTimezone(timezone: string) {
 
 export async function updateProfile(data: { name: string; mobile: string; image?: string; qrCode?: string; upiIds?: string[] }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -51,13 +51,13 @@ export async function updateProfile(data: { name: string; mobile: string; image?
     if (error.code === 11000 && error.keyPattern && error.keyPattern.mobile) {
       throw new Error("This mobile number is already registered to another account.");
     }
-    throw new Error(error.message || "Failed to update profile");
+    throw new Error("We encountered an issue updating your profile. Please try again later.");
   }
 }
 
 export async function deleteProfilePicture(imageUrl: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -107,13 +107,13 @@ export async function deleteProfilePicture(imageUrl: string) {
 
     return { success: true };
   } catch (error: any) {
-    throw new Error(error.message || "Failed to delete profile picture");
+    throw new Error("We encountered an issue deleting your profile picture. Please try again later.");
   }
 }
 
 export async function updateThemeColor(color: string | null) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -128,7 +128,7 @@ export async function updateThemeColor(color: string | null) {
 
 export async function updateCurrency(currency: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   

@@ -8,7 +8,7 @@ import yahooFinance from "yahoo-finance2";
 
 export async function searchMutualFunds(query: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   if (!query || query.length < 3) return [];
 
@@ -35,7 +35,7 @@ export async function searchMutualFunds(query: string) {
 
 export async function searchStocks(query: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   if (!query || query.length < 2) return [];
 

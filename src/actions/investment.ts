@@ -10,7 +10,7 @@ import { logAuditEvent } from "@/actions/auditLog";
 
 export async function getInvestments() {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -23,7 +23,7 @@ export async function getInvestments() {
 
 export async function getInvestmentById(id: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -42,7 +42,7 @@ export async function getInvestmentById(id: string) {
 
 export async function createInvestment(data: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
   
@@ -93,12 +93,12 @@ export async function createInvestment(data: any) {
 
 export async function updateInvestment(id: string, data: any) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const oldInvestment = await Investment.findOne({ _id: id, userId: session.user.id });
-  if (!oldInvestment) throw new Error("Investment not found");
+  if (!oldInvestment) throw new Error("We couldn't find the requested investment.");
 
   const investment = await Investment.findOneAndUpdate(
     { _id: id, userId: session.user.id },
@@ -118,12 +118,12 @@ export async function updateInvestment(id: string, data: any) {
 
 export async function updateInvestmentValue(id: string, newValue: number, note?: string) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
   await dbConnect();
 
   const oldInvestment = await Investment.findOne({ _id: id, userId: session.user.id });
-  if (!oldInvestment) throw new Error("Investment not found");
+  if (!oldInvestment) throw new Error("We couldn't find the requested investment.");
 
   const investment = await Investment.findOneAndUpdate(
     { _id: id, userId: session.user.id },

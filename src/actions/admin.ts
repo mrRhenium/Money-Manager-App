@@ -1,6 +1,7 @@
 "use server";
 
 import dbConnect from "@/lib/db";
+import mongoose from "mongoose";
 import User from "@/models/User";
 import Category from "@/models/Category";
 import Account from "@/models/Account";
@@ -94,4 +95,68 @@ export async function deleteSystemCategory(id: string) {
   await Category.findOneAndDelete({ _id: id, isSystem: true });
 
   revalidatePath("/admin/categories");
+}
+
+export async function getDatabaseAnalytics() {
+  await requireAdmin();
+  await dbConnect();
+
+  try {
+    const db = mongoose.connection.db;
+    if (!db) throw new Error("Database connection not established");
+
+    // 1. Get Global Database Stats
+    const stats = await db.stats();
+    
+    // 2. Iterate through registered models to get collection stats
+    const models = mongoose.modelNames();
+    const collectionsData = [];
+
+    for (const modelName of models) {
+      const Model = mongoose.model(modelName);
+      const collectionName = Model.collection.collectionName;
+      
+      try {
+        const collStats = await db.command({ collStats: collectionName });
+        collectionsData.push({
+          modelName,
+          collectionName,
+          count: collStats.count,
+          size: collStats.size,
+          storageSize: collStats.storageSize,
+          avgObjSize: collStats.avgObjSize || 0
+        });
+      } catch (err) {
+        // Fallback for restricted environments
+        const count = await Model.countDocuments();
+        collectionsData.push({
+          modelName,
+          collectionName,
+          count,
+          size: 0,
+          storageSize: 0,
+          avgObjSize: 0,
+          error: "collStats restricted"
+        });
+      }
+    }
+
+    return JSON.parse(JSON.stringify({
+      global: {
+        dbName: stats.db,
+        collectionsCount: stats.collections,
+        objectsCount: stats.objects,
+        avgObjSize: stats.avgObjSize,
+        dataSize: stats.dataSize,
+        storageSize: stats.storageSize,
+        indexesCount: stats.indexes,
+        indexSize: stats.indexSize
+      },
+      collections: collectionsData.sort((a, b) => b.storageSize - a.storageSize)
+    }));
+
+  } catch (error: any) {
+    console.error("Database analytics error:", error);
+    throw new Error("Failed to retrieve database analytics.");
+  }
 }

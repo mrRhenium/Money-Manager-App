@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Users, Grid, LayoutDashboard, ArrowLeft, Banknote } from "lucide-react";
+import { Users, Grid, LayoutDashboard, ArrowLeft, Banknote, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function AdminLayout({
@@ -19,6 +19,7 @@ export default async function AdminLayout({
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Manage Users", href: "/admin/users", icon: Users },
     { name: "Currencies", href: "/admin/currencies", icon: Banknote },
+    { name: "Database Analytics", href: "/admin/database", icon: Database },
   ];
 
   return (

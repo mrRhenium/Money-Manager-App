@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { 
+import {
   PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from "recharts";
@@ -39,7 +39,7 @@ interface AnalyticsData {
 }
 
 const COLORS = [
-  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", 
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
   "#8b5cf6", "#ec4899", "#14b8a6", "#f97316",
   "#6366f1", "#06b6d4"
 ];
@@ -61,7 +61,7 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
   const filteredCollections = useMemo(() => {
     if (!searchQuery) return collections;
     const q = searchQuery.toLowerCase();
-    return collections.filter(c => 
+    return collections.filter(c =>
       c.modelName.toLowerCase().includes(q) || c.collectionName.toLowerCase().includes(q)
     );
   }, [collections, searchQuery]);
@@ -120,6 +120,12 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
 
   const columns = [
     {
+      title: "Sr. No.",
+      key: "sno",
+      width: 70,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
+    {
       title: "Model Name",
       dataIndex: "modelName",
       key: "modelName",
@@ -170,45 +176,53 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
 
   return (
     <MasterLayout>
-      <MasterHeader 
+      <MasterHeader
         title={<><Database className="w-6 h-6 text-primary" /> Database Analytics</>}
         subtitle="Monitor MongoDB storage allocation, sizes, and documents."
       />
 
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 shrink-0">
-          <KPICard 
-            label="Total Storage Size"
-            value={formatBytes(global.storageSize)}
-            icon={HardDrive}
-            themeColor="primary"
-            trend={<span className="text-xs text-muted-foreground">Data: {formatBytes(global.dataSize)} | Index: {formatBytes(global.indexSize)}</span>}
-          />
-          <KPICard 
-            label="Total Documents"
-            value={global.objectsCount.toLocaleString()}
-            icon={Layers}
-            themeColor="emerald"
-            trend={<span className="text-xs text-muted-foreground">Avg Obj: {formatBytes(global.avgObjSize)}</span>}
-          />
-          <KPICard 
-            label="Collections"
-            value={global.collectionsCount}
-            icon={LayoutList}
-            themeColor="indigo"
-            trend={<span className="text-xs text-muted-foreground">Models: {collections.length}</span>}
-          />
-          <KPICard 
-            label="Database Name"
-            value={<span className="truncate max-w-full block" title={global.dbName}>{global.dbName}</span>}
-            icon={Database}
-            themeColor="amber"
-            trend={<span className="text-xs text-muted-foreground">Indexes: {global.indexesCount}</span>}
-          />
+        <div className="flex overflow-x-auto snap-x md:grid md:grid-cols-4 gap-3 mb-4 pb-2 shrink-0 [&::-webkit-scrollbar]:hidden -mx-4 px-4 lg:mx-0 lg:px-0">
+          <div className="min-w-[75vw] sm:min-w-[40vw] md:min-w-0 shrink-0 snap-start">
+            <KPICard 
+              label="Database Storage (512MB Limit)"
+              value={formatBytes(global.storageSize + global.indexSize)}
+              icon={HardDrive}
+              themeColor="primary"
+              trend={<span className="text-[10px] sm:text-xs text-muted-foreground">Remaining: {formatBytes(536870912 - (global.storageSize + global.indexSize))}</span>}
+            />
+          </div>
+          <div className="min-w-[75vw] sm:min-w-[40vw] md:min-w-0 shrink-0 snap-start">
+            <KPICard
+              label="Total Documents"
+              value={global.objectsCount.toLocaleString()}
+              icon={Layers}
+              themeColor="emerald"
+              trend={<span className="text-[10px] sm:text-xs text-muted-foreground">Avg Obj: {formatBytes(global.avgObjSize)}</span>}
+            />
+          </div>
+          <div className="min-w-[75vw] sm:min-w-[40vw] md:min-w-0 shrink-0 snap-start">
+            <KPICard
+              label="Collections"
+              value={global.collectionsCount}
+              icon={LayoutList}
+              themeColor="indigo"
+              trend={<span className="text-[10px] sm:text-xs text-muted-foreground">Models: {collections.length}</span>}
+            />
+          </div>
+          <div className="min-w-[75vw] sm:min-w-[40vw] md:min-w-0 shrink-0 snap-start">
+            <KPICard
+              label="Database Name"
+              value={<span className="truncate max-w-full block" title={global.dbName}>{global.dbName}</span>}
+              icon={Database}
+              themeColor="amber"
+              trend={<span className="text-[10px] sm:text-xs text-muted-foreground">Indexes: {global.indexesCount}</span>}
+            />
+          </div>
         </div>
 
-        <MasterToolbar 
+        <MasterToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           isFilterActive={false}
@@ -238,7 +252,7 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <RechartsTooltip 
+                      <RechartsTooltip
                         formatter={(value: any) => formatBytes(Number(value))}
                         contentStyle={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--foreground)' }}
                       />
@@ -257,8 +271,8 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} horizontal={false} />
                       <XAxis type="number" />
                       <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} />
-                      <RechartsTooltip 
-                        cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                      <RechartsTooltip
+                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                         contentStyle={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--foreground)' }}
                       />
                       <Bar dataKey="count" fill="#3b82f6" radius={[0, 6, 6, 0]}>
@@ -275,9 +289,9 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
             <div className="pb-8">
               {/* Desktop Table */}
               <div className="hidden md:block rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden w-full">
-                <Table 
-                  columns={columns} 
-                  dataSource={filteredCollections} 
+                <Table
+                  columns={columns}
+                  dataSource={filteredCollections}
                   rowKey="modelName"
                   pagination={{ defaultPageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
                   scroll={{ x: 'max-content' }}
@@ -294,7 +308,7 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
                     <List.Item className="border-none px-0 py-2">
                       <div className="bg-card w-full border shadow-sm rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-                        
+
                         <div className="flex justify-between items-start pl-1">
                           <div className="flex items-center gap-3">
                             <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0 flex items-center justify-center">

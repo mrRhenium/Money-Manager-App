@@ -20,19 +20,19 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [fileData, setFileData] = useState<any[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
-  
+
   // Mapping state
   const [dateCol, setDateCol] = useState<string>("");
   const [amountCol, setAmountCol] = useState<string>("");
   const [descCol, setDescCol] = useState<string>("");
   const [typeCol, setTypeCol] = useState<string>("");
-  
+
   // Account selected for import
   const [selectedAccount, setSelectedAccount] = useState<string>("");
 
   // Processed transactions ready for preview
   const [transactions, setTransactions] = useState<any[]>([]);
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -70,11 +70,11 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
-        
+
         if (data.length > 1) {
           const fileHeaders = data[0].map(h => String(h).trim());
           setHeaders(fileHeaders);
-          
+
           // Convert rows to objects
           const rows = data.slice(1).map(row => {
             const obj: any = {};
@@ -83,20 +83,20 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
             });
             return obj;
           }).filter(row => Object.keys(row).length > 0 && row[fileHeaders[0]]); // basic empty row filter
-          
+
           setFileData(rows);
-          
+
           // Try to auto-guess columns
           const dateMatch = fileHeaders.find(h => /date/i.test(h));
           const amountMatch = fileHeaders.find(h => /amount|credit|debit|rs/i.test(h));
           const descMatch = fileHeaders.find(h => /desc|narration|particulars|details/i.test(h));
           const typeMatch = fileHeaders.find(h => /type|cr\/dr/i.test(h));
-          
+
           if (dateMatch) setDateCol(dateMatch);
           if (amountMatch) setAmountCol(amountMatch);
           if (descMatch) setDescCol(descMatch);
           if (typeMatch) setTypeCol(typeMatch);
-          
+
           setStep(2);
         } else {
           toast.error("File appears to be empty.");
@@ -117,7 +117,7 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
     const processed = fileData.map((row, index) => {
       const rawAmount = row[amountCol];
       let amount = typeof rawAmount === 'number' ? rawAmount : parseFloat(String(rawAmount).replace(/,/g, ''));
-      
+
       let type = "expense";
       if (typeCol && row[typeCol]) {
         const rawType = String(row[typeCol]).toLowerCase();
@@ -136,7 +136,7 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
       }
 
       const note = String(row[descCol] || "").substring(0, 100);
-      
+
       // Auto-categorize (Robust word boundary matching)
       let categoryId = "";
       const matchedCat = categories.find(c => {
@@ -246,15 +246,15 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
             Supports CSV or Excel files. We will help you map the columns in the next step.
           </p>
           <div className="relative">
-            <Input 
-              type="file" 
+            <Input
+              type="file"
               accept=".csv, .xlsx, .xls"
               onChange={handleFileUpload}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
             <Button>Select File</Button>
           </div>
-          
+
           <div className="mt-10 text-left max-w-2xl w-full bg-background rounded-lg border p-5 shadow-sm text-sm">
             <div className="flex justify-between items-center mb-4 border-b pb-3">
               <h4 className="font-semibold text-base flex items-center gap-2"><AlertCircle className="w-4 h-4 text-primary" /> Supported Columns</h4>
@@ -304,7 +304,7 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
                   options={accounts.map(a => ({ label: a.name, value: a._id }))}
                 />
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Date Column <span className="text-red-500">*</span></label>
                 <Select
@@ -386,6 +386,7 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
               <thead className="bg-muted/50 sticky top-0 z-10 text-xs uppercase font-semibold text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Import</th>
+                  <th className="px-4 py-3">Sr. No.</th>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Description</th>
                   <th className="px-4 py-3">Category</th>
@@ -393,16 +394,17 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {transactions.map((t) => (
+                {transactions.map((t, index) => (
                   <tr key={t.id} className={`${t.selected ? "bg-card" : "bg-muted/20 opacity-75"} hover:bg-muted/30 transition-colors`}>
                     <td className="px-4 py-3">
-                      <input 
-                        type="checkbox" 
-                        checked={t.selected} 
-                        onChange={() => handleToggleSelect(t.id)} 
+                      <input
+                        type="checkbox"
+                        checked={t.selected}
+                        onChange={() => handleToggleSelect(t.id)}
                         className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                       />
                     </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{index + 1}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{t.date}</td>
                     <td className="px-4 py-3 min-w-[200px] truncate max-w-[300px]" title={t.note}>{t.note}</td>
                     <td className="px-4 py-3 min-w-[200px]">
@@ -431,8 +433,8 @@ export function StatementImporter({ accounts, categories }: { accounts: any[]; c
 
           <div className="flex justify-between pt-4 border-t">
             <Button variant="outline" onClick={() => setStep(2)}>Back to Mapping</Button>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={isSubmitting || transactions.filter(t => t.selected).length === 0}
               className="gap-2"
             >

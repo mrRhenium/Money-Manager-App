@@ -40,12 +40,12 @@ export function BottomNav({ role }: { role?: string }) {
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Menu", href: "#", icon: Menu, isMenu: true },
     ];
-    
+
     menuItems = [
       { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
       { href: "/admin/users", icon: Users, label: "Manage Users" },
       { href: "/admin/currencies", icon: Banknote, label: "Currencies" },
-      { href: "/admin/database", icon: Database, label: "DB Analytics" },
+      { href: "/admin/analytics", icon: Database, label: "DB Analytics" },
       { href: "/settings", icon: Settings, label: "Settings" },
     ];
   }

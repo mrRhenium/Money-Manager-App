@@ -56,13 +56,25 @@ export async function getAdminStats() {
     users: reg.count
   }));
 
+  let dbSize = 0;
+  try {
+    const db = mongoose.connection.db;
+    if (db) {
+      const stats = await db.stats();
+      dbSize = (stats.storageSize || 0) + (stats.indexSize || 0);
+    }
+  } catch (err) {
+    console.warn("Could not retrieve db stats for dashboard:", err);
+  }
+
   return { 
     totalUsers, 
     activeUsers,
     inactiveUsers,
     totalCurrencies, 
     totalTransactions,
-    userRegistrationsByMonth
+    userRegistrationsByMonth,
+    dbSize
   };
 }
 

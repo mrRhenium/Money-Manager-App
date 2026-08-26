@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Table, List, Switch, Modal } from "antd";
+import { Table, List, Switch } from "antd";
 import { formatDate } from "@/lib/helpers";
 import { Search, User as UserIcon, Calendar, Mail, MapPin, DollarSign, Fingerprint } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toggleUserStatus } from "@/actions/admin";
 import { message } from "antd";
 
@@ -53,6 +54,12 @@ export function AdminUsersClient({ users, userTimezone }: { users: any[], userTi
   });
 
   const columns = [
+    {
+      title: "Sr. No.",
+      key: "sno",
+      width: 70,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
     {
       title: "Name",
       dataIndex: "name",
@@ -163,78 +170,74 @@ export function AdminUsersClient({ users, userTimezone }: { users: any[], userTi
       </div>
 
       {/* User Details Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2 text-xl font-bold">
-            <UserIcon className="text-primary w-6 h-6" />
-            User Details
-          </div>
-        }
-        open={!!selectedUser}
-        onCancel={() => setSelectedUser(null)}
-        footer={null}
-        centered
-        className="rounded-xl overflow-hidden"
-      >
-        {selectedUser && (
-          <div className="space-y-6 pt-4">
-            <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-xl border border-border/50">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl shadow-inner">
-                {selectedUser.name.charAt(0).toUpperCase()}
+      <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
+        <DialogContent className="sm:max-w-[500px] bg-background border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              <UserIcon className="text-primary w-6 h-6" />
+              User Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-6 pt-2">
+              <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-xl border border-border/50">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl shadow-inner shrink-0">
+                  {selectedUser.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold truncate">{selectedUser.name}</h3>
+                  <p className="text-muted-foreground flex items-center gap-1.5 mt-1 truncate">
+                    <Mail className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{selectedUser.email}</span>
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xl font-bold">{selectedUser.name}</h3>
-                <p className="text-muted-foreground flex items-center gap-1.5 mt-1">
-                  <Mail className="w-3.5 h-3.5" /> {selectedUser.email}
-                </p>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-card border p-4 rounded-xl shadow-sm">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" /> Joined Date
-                </p>
-                <p className="font-semibold">{formatDate(selectedUser.createdAt, "standard", userTimezone)}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-card border p-4 rounded-xl shadow-sm">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" /> Joined Date
+                  </p>
+                  <p className="font-semibold">{formatDate(selectedUser.createdAt, "standard", userTimezone)}</p>
+                </div>
+                <div className="bg-card border p-4 rounded-xl shadow-sm">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" /> Timezone
+                  </p>
+                  <p className="font-semibold truncate" title={selectedUser.timezone || "UTC"}>{selectedUser.timezone || "UTC"}</p>
+                </div>
+                <div className="bg-card border p-4 rounded-xl shadow-sm">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <DollarSign className="w-3.5 h-3.5" /> Default Currency
+                  </p>
+                  <p className="font-semibold uppercase">{selectedUser.currency || "INR"}</p>
+                </div>
+                <div className="bg-card border p-4 rounded-xl shadow-sm">
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Fingerprint className="w-3.5 h-3.5" /> Last Active
+                  </p>
+                  <p className="font-semibold">{selectedUser.lastActiveDate ? formatDate(selectedUser.lastActiveDate, "standard", userTimezone) : "N/A"}</p>
+                </div>
               </div>
-              <div className="bg-card border p-4 rounded-xl shadow-sm">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" /> Timezone
-                </p>
-                <p className="font-semibold">{selectedUser.timezone || "UTC"}</p>
-              </div>
-              <div className="bg-card border p-4 rounded-xl shadow-sm">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <DollarSign className="w-3.5 h-3.5" /> Default Currency
-                </p>
-                <p className="font-semibold uppercase">{selectedUser.currency || "INR"}</p>
-              </div>
-              <div className="bg-card border p-4 rounded-xl shadow-sm">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <Fingerprint className="w-3.5 h-3.5" /> Last Active
-                </p>
-                <p className="font-semibold">{selectedUser.lastActiveDate ? formatDate(selectedUser.lastActiveDate, "standard", userTimezone) : "N/A"}</p>
-              </div>
-            </div>
 
-            <div className="flex justify-between items-center bg-card border p-4 rounded-xl shadow-sm">
-              <span className="font-medium">Account Status</span>
-              <div className="flex items-center gap-2">
-                <span className={selectedUser.isActive !== false ? "text-emerald-500 font-bold" : "text-red-500 font-bold"}>
-                  {selectedUser.isActive !== false ? "Active" : "Inactive"}
-                </span>
-                <Switch
-                  checked={selectedUser.isActive !== false}
-                  onChange={(checked) => {
-                    handleToggle(selectedUser._id, !checked);
-                    setSelectedUser({ ...selectedUser, isActive: checked });
-                  }}
-                />
+              <div className="flex justify-between items-center bg-card border p-4 rounded-xl shadow-sm">
+                <span className="font-medium text-foreground">Account Status</span>
+                <div className="flex items-center gap-2">
+                  <span className={selectedUser.isActive !== false ? "text-emerald-500 font-bold" : "text-red-500 font-bold"}>
+                    {selectedUser.isActive !== false ? "Active" : "Inactive"}
+                  </span>
+                  <Switch
+                    checked={selectedUser.isActive !== false}
+                    onChange={(checked) => {
+                      handleToggle(selectedUser._id, !checked);
+                      setSelectedUser({ ...selectedUser, isActive: checked });
+                    }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </Modal>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -11,6 +11,12 @@ export function CreditCardTransactionTable({ transactions, userTimezone }: { tra
 
   const columns = [
     {
+      title: "Sr. No.",
+      key: "sno",
+      width: 70,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
+    {
       title: "Description",
       key: "description",
       render: (_: any, record: any) => (
@@ -72,7 +78,7 @@ export function CreditCardTransactionTable({ transactions, userTimezone }: { tra
             <List.Item className="border-none px-0 py-2">
               <div className="bg-card w-full border shadow-sm rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500" />
-                
+
                 <div className="flex justify-between items-start pl-1">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-500/10 text-red-500 shrink-0">

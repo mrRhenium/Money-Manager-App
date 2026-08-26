@@ -10,7 +10,7 @@ import { CurrencyForm } from "@/components/admin/CurrencyForm";
 import { CurrencyDeleteButton } from "@/components/admin/CurrencyDeleteButton";
 
 export function AdminCurrenciesClient({ currencies }: { currencies: any[] }) {
-  
+
   const getColumnSearchProps = (dataIndex: string, title: string) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
       <div className="p-3 w-64 bg-card border border-border shadow-md rounded-xl flex flex-col gap-3" onKeyDown={(e) => e.stopPropagation()}>
@@ -43,6 +43,12 @@ export function AdminCurrenciesClient({ currencies }: { currencies: any[] }) {
   });
 
   const columns = [
+    {
+      title: "Sr. No.",
+      key: "sno",
+      width: 70,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
     {
       title: "Currency",
       key: "code",
@@ -118,9 +124,9 @@ export function AdminCurrenciesClient({ currencies }: { currencies: any[] }) {
   return (
     <>
       <div className="hidden md:block rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
-        <Table 
-          columns={columns} 
-          dataSource={currencies} 
+        <Table
+          columns={columns}
+          dataSource={currencies}
           rowKey="_id"
           pagination={{ defaultPageSize: 10, position: ["bottomRight"], showSizeChanger: true }}
           scroll={{ x: 'max-content' }}
@@ -136,7 +142,7 @@ export function AdminCurrenciesClient({ currencies }: { currencies: any[] }) {
             <List.Item className="border-none px-0 py-2">
               <div className="bg-card w-full border shadow-sm rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${record.isActive ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                
+
                 <div className="flex justify-between items-start pl-1">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-xl bg-muted/30 shrink-0 flex items-center justify-center font-bold text-xl w-10 h-10">
@@ -161,7 +167,7 @@ export function AdminCurrenciesClient({ currencies }: { currencies: any[] }) {
                   <Badge variant={record.isActive ? "outline" : "secondary"} className={record.isActive ? "border-green-500 text-green-600 shadow-none text-[10px]" : "shadow-none text-[10px]"}>
                     {record.isActive ? "Active" : "Inactive"}
                   </Badge>
-                  
+
                   <div className="flex items-center gap-1">
                     <CurrencyForm currency={record} />
                     <CurrencyDeleteButton id={record._id} isBase={record.isBase} />

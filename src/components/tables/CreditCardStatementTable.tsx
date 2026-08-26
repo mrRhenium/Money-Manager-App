@@ -9,6 +9,12 @@ export function CreditCardStatementTable({ statements, userTimezone }: { stateme
 
   const columns = [
     {
+      title: "Sr. No.",
+      key: "sno",
+      width: 70,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
+    {
       title: "Statement",
       key: "statementMonth",
       render: (_: any, record: any) => (

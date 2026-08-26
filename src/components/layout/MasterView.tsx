@@ -42,21 +42,23 @@ export function MasterToolbar({
       
       {/* Tabs */}
       {tabs.length > 0 ? (
-        <TabsList className="w-full sm:w-[450px] h-12 bg-slate-100/80 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 p-1 flex rounded-full shadow-inner">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              onClick={() => onTabChange(tab.value)}
-              className={cn(
-                "cursor-pointer flex-1 h-full flex items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ease-out text-muted-foreground hover:text-foreground",
-                activeTab === tab.value ? "bg-white dark:bg-slate-800 text-foreground shadow-sm" : ""
-              )}
-            >
-              {tab.icon} {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={onTabChange} className="w-full sm:w-[450px]">
+          <TabsList className="w-full h-12 bg-slate-100/80 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 p-1 flex rounded-full shadow-inner">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                onClick={() => onTabChange(tab.value)}
+                className={cn(
+                  "cursor-pointer flex-1 h-full flex items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ease-out text-muted-foreground hover:text-foreground",
+                  activeTab === tab.value ? "bg-white dark:bg-slate-800 text-foreground shadow-sm" : ""
+                )}
+              >
+                {tab.icon} {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       ) : <div />}
 
       {/* Right Side: Actions & Search */}

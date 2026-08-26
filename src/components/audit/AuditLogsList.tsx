@@ -129,6 +129,12 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
 
   const columns = [
     {
+      title: "Sr. No.",
+      key: "sno",
+      width: 70,
+      render: (_: any, __: any, index: number) => index + 1,
+    },
+    {
       title: "Timestamp",
       dataIndex: "createdAt",
       key: "createdAt",

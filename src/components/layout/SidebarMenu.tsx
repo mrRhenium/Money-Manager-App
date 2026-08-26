@@ -52,7 +52,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
       { href: "/admin/dashboard", icon: LayoutDashboard, label: "Admin Dashboard" },
       { href: "/admin/users", icon: Users, label: "Manage Users" },
       { href: "/admin/currencies", icon: Banknote, label: "Currencies" },
-      { href: "/admin/database", icon: Database, label: "Database Analytics" },
+      { href: "/admin/analytics", icon: Database, label: "Database Analytics" },
       { href: "/settings", icon: Settings, label: "Settings" },
     ];
   }

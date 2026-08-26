@@ -21,6 +21,7 @@ export interface IUser extends Document {
   resetOtpExpiry?: Date;
   timezone?: string;
   themeColor?: string;
+  isActive?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +48,7 @@ const UserSchema: Schema<IUser> = new Schema(
     resetOtpExpiry: { type: Date },
     timezone: { type: String, default: "UTC" },
     themeColor: { type: String },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

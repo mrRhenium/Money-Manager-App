@@ -27,10 +27,43 @@ export async function getAdminStats() {
   await dbConnect();
 
   const totalUsers = await User.countDocuments({ role: "USER" });
-  const totalCategories = await Category.countDocuments({ isSystem: true });
+  const activeUsers = await User.countDocuments({ role: "USER", isActive: { $ne: false } });
+  const inactiveUsers = await User.countDocuments({ role: "USER", isActive: false });
   const totalCurrencies = await Currency.countDocuments({ isActive: true });
+  const totalTransactions = await Transaction.countDocuments();
 
-  return { totalUsers, totalCategories, totalCurrencies };
+  // Aggregate user registrations by month (last 6 months)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  
+  const registrations = await User.aggregate([
+    { $match: { role: "USER", createdAt: { $gte: sixMonthsAgo } } },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" }
+        },
+        count: { $sum: 1 }
+      }
+    },
+    { $sort: { "_id.year": 1, "_id.month": 1 } }
+  ]);
+
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const userRegistrationsByMonth = registrations.map(reg => ({
+    month: `${monthNames[reg._id.month - 1]} ${reg._id.year}`,
+    users: reg.count
+  }));
+
+  return { 
+    totalUsers, 
+    activeUsers,
+    inactiveUsers,
+    totalCurrencies, 
+    totalTransactions,
+    userRegistrationsByMonth
+  };
 }
 
 export async function getAllUsers() {
@@ -45,57 +78,26 @@ export async function getAllUsers() {
   return JSON.parse(JSON.stringify(users));
 }
 
-export async function deleteUser(userId: string) {
+export async function toggleUserStatus(userId: string) {
   await requireAdmin();
   await dbConnect();
 
-  // Cascade delete all user data
-  await Promise.all([
-    Account.deleteMany({ userId }),
-    Budget.deleteMany({ userId }),
-    Category.deleteMany({ userId, isSystem: false }),
-    Investment.deleteMany({ userId }),
-    Person.deleteMany({ userId }),
-    RecurringRule.deleteMany({ userId }),
-    Transaction.deleteMany({ userId }),
-    User.findByIdAndDelete(userId),
-  ]);
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
+
+  // Prevent admin from deactivating themselves
+  const session = await auth();
+  if (user._id.toString() === session?.user?.id) {
+    throw new Error("Cannot deactivate your own admin account");
+  }
+
+  user.isActive = user.isActive === undefined ? false : !user.isActive;
+  await user.save();
 
   revalidatePath("/admin/users");
+  return user.isActive;
 }
 
-export async function getSystemCategories() {
-  await requireAdmin();
-  await dbConnect();
-
-  const categories = await Category.find({ isSystem: true })
-    .sort({ type: 1, name: 1 })
-    .lean();
-
-  return JSON.parse(JSON.stringify(categories));
-}
-
-export async function createSystemCategory(data: { name: string; type: "expense" | "income"; icon?: string; color?: string }) {
-  await requireAdmin();
-  await dbConnect();
-
-  const category = await Category.create({
-    ...data,
-    isSystem: true,
-  });
-
-  revalidatePath("/admin/categories");
-  return JSON.parse(JSON.stringify(category));
-}
-
-export async function deleteSystemCategory(id: string) {
-  await requireAdmin();
-  await dbConnect();
-
-  await Category.findOneAndDelete({ _id: id, isSystem: true });
-
-  revalidatePath("/admin/categories");
-}
 
 export async function getDatabaseAnalytics() {
   await requireAdmin();
@@ -106,11 +108,18 @@ export async function getDatabaseAnalytics() {
     if (!db) throw new Error("Database connection not established");
 
     // 1. Get Global Database Stats
-    const stats = await db.stats();
+    let stats: any = {};
+    try {
+      stats = await db.stats();
+    } catch (err) {
+      console.warn("db.stats() restricted, using fallback");
+      stats = { db: db.databaseName, collections: 0, objects: 0, avgObjSize: 0, dataSize: 0, storageSize: 0, indexes: 0, indexSize: 0 };
+    }
     
     // 2. Iterate through registered models to get collection stats
     const models = mongoose.modelNames();
     const collectionsData = [];
+    let fallbackObjectsCount = 0;
 
     for (const modelName of models) {
       const Model = mongoose.model(modelName);
@@ -126,6 +135,7 @@ export async function getDatabaseAnalytics() {
           storageSize: collStats.storageSize,
           avgObjSize: collStats.avgObjSize || 0
         });
+        fallbackObjectsCount += collStats.count;
       } catch (err) {
         // Fallback for restricted environments
         const count = await Model.countDocuments();
@@ -138,19 +148,20 @@ export async function getDatabaseAnalytics() {
           avgObjSize: 0,
           error: "collStats restricted"
         });
+        fallbackObjectsCount += count;
       }
     }
 
     return JSON.parse(JSON.stringify({
       global: {
-        dbName: stats.db,
-        collectionsCount: stats.collections,
-        objectsCount: stats.objects,
-        avgObjSize: stats.avgObjSize,
-        dataSize: stats.dataSize,
-        storageSize: stats.storageSize,
-        indexesCount: stats.indexes,
-        indexSize: stats.indexSize
+        dbName: stats.db || db.databaseName,
+        collectionsCount: stats.collections || models.length,
+        objectsCount: stats.objects || fallbackObjectsCount,
+        avgObjSize: stats.avgObjSize || 0,
+        dataSize: stats.dataSize || 0,
+        storageSize: stats.storageSize || 0,
+        indexesCount: stats.indexes || 0,
+        indexSize: stats.indexSize || 0
       },
       collections: collectionsData.sort((a, b) => b.storageSize - a.storageSize)
     }));

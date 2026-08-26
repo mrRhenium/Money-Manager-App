@@ -1,21 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid
+import { useMemo, useState } from "react";
+import { 
+  PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from "recharts";
-import { Database, HardDrive, LayoutList, Layers } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Database, HardDrive, LayoutList, Layers, Search, Server } from "lucide-react";
+import { Table, List } from "antd";
+import { KPICard } from "@/components/dashboard/KPICard";
+import { MasterLayout } from "@/components/layout/MasterLayout";
+import { MasterHeader } from "@/components/layout/MasterHeader";
+import { MasterViewLayout, MasterToolbar } from "@/components/layout/MasterView";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface CollectionData {
   modelName: string;
@@ -42,7 +39,7 @@ interface AnalyticsData {
 }
 
 const COLORS = [
-  "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", 
   "#8b5cf6", "#ec4899", "#14b8a6", "#f97316",
   "#6366f1", "#06b6d4"
 ];
@@ -58,189 +55,289 @@ function formatBytes(bytes: number, decimals = 2) {
 
 export default function DatabaseDashboard({ initialData }: { initialData: AnalyticsData }) {
   const { global, collections } = initialData;
+  const [activeTab, setActiveTab] = useState("data");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCollections = useMemo(() => {
+    if (!searchQuery) return collections;
+    const q = searchQuery.toLowerCase();
+    return collections.filter(c => 
+      c.modelName.toLowerCase().includes(q) || c.collectionName.toLowerCase().includes(q)
+    );
+  }, [collections, searchQuery]);
 
   const storageChartData = useMemo(() => {
-    // Filter out empty collections to make chart cleaner
-    const active = collections.filter(c => c.storageSize > 0);
-    return active.map((c, i) => ({
-      name: c.modelName,
-      value: c.storageSize,
-      formatted: formatBytes(c.storageSize)
-    }));
+    return collections
+      .filter(c => c.storageSize > 0)
+      .map(c => ({
+        name: c.modelName,
+        value: c.storageSize,
+        formatted: formatBytes(c.storageSize)
+      }));
   }, [collections]);
 
   const countChartData = useMemo(() => {
     return collections
       .filter(c => c.count > 0)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 10) // Top 10 by count
+      .slice(0, 10)
       .map(c => ({
         name: c.modelName,
         count: c.count
       }));
   }, [collections]);
 
-  return (
-    <div className="space-y-6">
-      {/* Global Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card/50 backdrop-blur-xl border-primary/10 hover:border-primary/30 transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Storage Size
-            </CardTitle>
-            <HardDrive className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatBytes(global.storageSize)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Data: {formatBytes(global.dataSize)} | Index: {formatBytes(global.indexSize)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 backdrop-blur-xl border-primary/10 hover:border-primary/30 transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Documents
-            </CardTitle>
-            <Layers className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{global.objectsCount.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Avg Object Size: {formatBytes(global.avgObjSize)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 backdrop-blur-xl border-primary/10 hover:border-primary/30 transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Collections
-            </CardTitle>
-            <LayoutList className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{global.collectionsCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Registered Models: {collections.length}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 backdrop-blur-xl border-primary/10 hover:border-primary/30 transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Database Name
-            </CardTitle>
-            <Database className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold truncate" title={global.dbName}>{global.dbName}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Indexes: {global.indexesCount}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-card/50 backdrop-blur-xl border-primary/10">
-          <CardHeader>
-            <CardTitle>Storage Distribution</CardTitle>
-            <CardDescription>Storage size percentage by collection</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={storageChartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {storageChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: any) => formatBytes(Number(value))}
-                    contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 backdrop-blur-xl border-primary/10">
-          <CardHeader>
-            <CardTitle>Top Collections by Document Count</CardTitle>
-            <CardDescription>Most populated models in the database</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={countChartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} horizontal={false} />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}
-                  />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]}>
-                    {countChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Details Table */}
-      <Card className="bg-card/50 backdrop-blur-xl border-primary/10 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Collection Breakdown</CardTitle>
-          <CardDescription>Detailed metrics for every registered model</CardDescription>
-        </CardHeader>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs uppercase bg-muted/50 border-b border-border">
-              <tr>
-                <th className="px-6 py-4 font-medium">Model Name</th>
-                <th className="px-6 py-4 font-medium">Collection</th>
-                <th className="px-6 py-4 font-medium text-right">Documents</th>
-                <th className="px-6 py-4 font-medium text-right">Data Size</th>
-                <th className="px-6 py-4 font-medium text-right">Storage Size</th>
-                <th className="px-6 py-4 font-medium text-right">Avg Object</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {collections.map((col) => (
-                <tr key={col.modelName} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-6 py-4 font-medium text-primary">{col.modelName}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{col.collectionName}</td>
-                  <td className="px-6 py-4 text-right font-mono">{col.count.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-right">{formatBytes(col.size)}</td>
-                  <td className="px-6 py-4 text-right font-medium">{formatBytes(col.storageSize)}</td>
-                  <td className="px-6 py-4 text-right text-muted-foreground">{formatBytes(col.avgObjSize)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+  const getColumnSearchProps = (dataIndex: string, title: string) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => (
+      <div className="p-3 w-64 bg-card border border-border shadow-md rounded-xl flex flex-col gap-3" onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          placeholder={`Search ${title}...`}
+          value={selectedKeys[0] || ""}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') confirm();
+          }}
+          className="h-9"
+        />
+        <div className="flex gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={() => clearFilters && clearFilters()} className="h-8 px-3 text-xs">
+            Reset
+          </Button>
+          <Button variant="default" size="sm" onClick={() => confirm()} className="h-8 px-3 text-xs">
+            Search
+          </Button>
         </div>
-      </Card>
-    </div>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <Search className={`w-4 h-4 ${filtered ? 'text-primary' : 'text-muted-foreground'}`} />
+    ),
+    onFilter: (value: any, record: any) => {
+      const text = record[dataIndex];
+      return text ? text.toString().toLowerCase().includes((value as string).toLowerCase()) : false;
+    },
+  });
+
+  const columns = [
+    {
+      title: "Model Name",
+      dataIndex: "modelName",
+      key: "modelName",
+      ...getColumnSearchProps("modelName", "Model Name"),
+      render: (text: string) => <span className="font-semibold text-primary">{text}</span>
+    },
+    {
+      title: "Collection",
+      dataIndex: "collectionName",
+      key: "collectionName",
+      ...getColumnSearchProps("collectionName", "Collection"),
+      render: (text: string) => <span className="text-muted-foreground">{text}</span>
+    },
+    {
+      title: "Documents",
+      dataIndex: "count",
+      key: "count",
+      align: "right" as const,
+      sorter: (a: any, b: any) => a.count - b.count,
+      render: (count: number) => <span className="font-mono">{count.toLocaleString()}</span>
+    },
+    {
+      title: "Data Size",
+      dataIndex: "size",
+      key: "size",
+      align: "right" as const,
+      sorter: (a: any, b: any) => a.size - b.size,
+      render: (size: number) => <span>{formatBytes(size)}</span>
+    },
+    {
+      title: "Storage Size",
+      dataIndex: "storageSize",
+      key: "storageSize",
+      align: "right" as const,
+      sorter: (a: any, b: any) => a.storageSize - b.storageSize,
+      defaultSortOrder: 'descend' as const,
+      render: (size: number) => <span className="font-medium text-emerald-500">{formatBytes(size)}</span>
+    },
+    {
+      title: "Avg Object",
+      dataIndex: "avgObjSize",
+      key: "avgObjSize",
+      align: "right" as const,
+      sorter: (a: any, b: any) => a.avgObjSize - b.avgObjSize,
+      render: (size: number) => <span className="text-muted-foreground">{formatBytes(size)}</span>
+    }
+  ];
+
+  return (
+    <MasterLayout>
+      <MasterHeader 
+        title={<><Database className="w-6 h-6 text-primary" /> Database Analytics</>}
+        subtitle="Monitor MongoDB storage allocation, sizes, and documents."
+      />
+
+      <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
+        {/* KPI Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 shrink-0">
+          <KPICard 
+            label="Total Storage Size"
+            value={formatBytes(global.storageSize)}
+            icon={HardDrive}
+            themeColor="primary"
+            trend={<span className="text-xs text-muted-foreground">Data: {formatBytes(global.dataSize)} | Index: {formatBytes(global.indexSize)}</span>}
+          />
+          <KPICard 
+            label="Total Documents"
+            value={global.objectsCount.toLocaleString()}
+            icon={Layers}
+            themeColor="emerald"
+            trend={<span className="text-xs text-muted-foreground">Avg Obj: {formatBytes(global.avgObjSize)}</span>}
+          />
+          <KPICard 
+            label="Collections"
+            value={global.collectionsCount}
+            icon={LayoutList}
+            themeColor="indigo"
+            trend={<span className="text-xs text-muted-foreground">Models: {collections.length}</span>}
+          />
+          <KPICard 
+            label="Database Name"
+            value={<span className="truncate max-w-full block" title={global.dbName}>{global.dbName}</span>}
+            icon={Database}
+            themeColor="amber"
+            trend={<span className="text-xs text-muted-foreground">Indexes: {global.indexesCount}</span>}
+          />
+        </div>
+
+        <MasterToolbar 
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          isFilterActive={false}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+
+        <MasterViewLayout>
+          {activeTab === "insights" ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-8">
+              <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col">
+                <h3 className="font-semibold text-lg mb-1 text-foreground">Storage Distribution</h3>
+                <p className="text-sm text-muted-foreground mb-6">Percentage of storage used by collection</p>
+                <div className="h-[350px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={storageChartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={120}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {storageChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip 
+                        formatter={(value: any) => formatBytes(Number(value))}
+                        contentStyle={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--foreground)' }}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col">
+                <h3 className="font-semibold text-lg mb-1 text-foreground">Top Collections (Count)</h3>
+                <p className="text-sm text-muted-foreground mb-6">Most populated models in the database</p>
+                <div className="h-[350px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={countChartData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} horizontal={false} />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} />
+                      <RechartsTooltip 
+                        cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                        contentStyle={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'var(--card)', color: 'var(--foreground)' }}
+                      />
+                      <Bar dataKey="count" fill="#3b82f6" radius={[0, 6, 6, 0]}>
+                        {countChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="pb-8">
+              {/* Desktop Table */}
+              <div className="hidden md:block rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden w-full">
+                <Table 
+                  columns={columns} 
+                  dataSource={filteredCollections} 
+                  rowKey="modelName"
+                  pagination={{ defaultPageSize: 15, position: ["bottomRight"], showSizeChanger: true }}
+                  scroll={{ x: 'max-content' }}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Mobile List */}
+              <div className="md:hidden w-full">
+                <List
+                  dataSource={filteredCollections}
+                  pagination={{ pageSize: 15, align: "center", size: "small" }}
+                  renderItem={(record) => (
+                    <List.Item className="border-none px-0 py-2">
+                      <div className="bg-card w-full border shadow-sm rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+                        
+                        <div className="flex justify-between items-start pl-1">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0 flex items-center justify-center">
+                              <Server className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-semibold text-foreground leading-none mb-1 truncate">
+                                {record.modelName}
+                              </span>
+                              <span className="text-xs text-muted-foreground mt-0.5 font-medium">
+                                {record.collectionName}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="font-bold text-lg whitespace-nowrap text-emerald-500">
+                            {formatBytes(record.storageSize)}
+                          </div>
+                        </div>
+
+                        <div className="pl-1 text-sm flex flex-wrap gap-2 mt-2 border-t pt-3">
+                          <div className="flex flex-col gap-0.5 px-3 py-1.5 bg-muted/30 rounded-lg flex-1 min-w-[30%]">
+                            <span className="text-[10px] uppercase text-muted-foreground font-semibold">Docs</span>
+                            <span className="font-mono font-medium text-foreground">{record.count.toLocaleString()}</span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 px-3 py-1.5 bg-muted/30 rounded-lg flex-1 min-w-[30%]">
+                            <span className="text-[10px] uppercase text-muted-foreground font-semibold">Data Size</span>
+                            <span className="font-medium text-foreground">{formatBytes(record.size)}</span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 px-3 py-1.5 bg-muted/30 rounded-lg flex-1 min-w-[30%]">
+                            <span className="text-[10px] uppercase text-muted-foreground font-semibold">Avg Object</span>
+                            <span className="font-medium text-foreground">{formatBytes(record.avgObjSize)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </List.Item>
+                  )}
+                />
+              </div>
+            </div>
+          )}
+        </MasterViewLayout>
+      </div>
+    </MasterLayout>
   );
 }

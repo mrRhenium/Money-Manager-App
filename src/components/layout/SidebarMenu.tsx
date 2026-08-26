@@ -19,14 +19,17 @@ import {
   Umbrella,
   Target,
   UploadCloud,
-  QrCode
+  QrCode,
+  LayoutDashboard,
+  Banknote,
+  Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?: boolean }) {
   const pathname = usePathname();
 
-  const items = [
+  let items = [
     { href: "/", icon: Home, label: "Dashboard" },
     { href: "/my-upi", icon: QrCode, label: "My UPI" },
     { href: "/accounts", icon: Landmark, label: "Accounts" },
@@ -45,7 +48,13 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
   ];
 
   if (role === "ADMIN") {
-    items.push({ href: "/admin/dashboard", icon: ShieldCheck, label: "Admin Portal" });
+    items = [
+      { href: "/admin/dashboard", icon: LayoutDashboard, label: "Admin Dashboard" },
+      { href: "/admin/users", icon: Users, label: "Manage Users" },
+      { href: "/admin/currencies", icon: Banknote, label: "Currencies" },
+      { href: "/admin/database", icon: Database, label: "Database Analytics" },
+      { href: "/settings", icon: Settings, label: "Settings" },
+    ];
   }
 
   return (

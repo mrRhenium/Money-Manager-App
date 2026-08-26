@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PieChart, QrCode, ScanLine, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target, Shield } from "lucide-react";
+import { Home, PieChart, QrCode, ScanLine, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target, Shield, LayoutDashboard, Database, Banknote } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 
-export function BottomNav() {
+export function BottomNav({ role }: { role?: string }) {
   const pathname = usePathname();
   const [scanOpen, setScanOpen] = useState(false);
 
-  const navItems = [
+  let navItems = [
     { label: "Dashboard", href: "/", icon: Home },
     { label: "Transactions", href: "/transactions", icon: Wallet },
     { label: "Add", href: "#", icon: ScanLine, isMain: true },
@@ -19,7 +19,7 @@ export function BottomNav() {
     { label: "Menu", href: "#", icon: Menu, isMenu: true },
   ];
 
-  const menuItems = [
+  let menuItems = [
     { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
     { href: "/categories", icon: Tags, label: "Categories" },
@@ -33,6 +33,22 @@ export function BottomNav() {
     { href: "/audit-logs", icon: History, label: "Audit Logs" },
     { href: "/settings", icon: Settings, label: "Settings" },
   ];
+
+  if (role === "ADMIN") {
+    navItems = [
+      { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+      { label: "Users", href: "/admin/users", icon: Users },
+      { label: "Menu", href: "#", icon: Menu, isMenu: true },
+    ];
+    
+    menuItems = [
+      { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { href: "/admin/users", icon: Users, label: "Manage Users" },
+      { href: "/admin/currencies", icon: Banknote, label: "Currencies" },
+      { href: "/admin/database", icon: Database, label: "DB Analytics" },
+      { href: "/settings", icon: Settings, label: "Settings" },
+    ];
+  }
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/80 backdrop-blur-md border-t border-border/50 z-50 px-2 pb-safe shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)]">

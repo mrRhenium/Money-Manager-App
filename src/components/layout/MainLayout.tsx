@@ -1,8 +1,11 @@
 import React from "react";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
+import { auth } from "@/lib/auth";
 
-export function MainLayout({ children }: { children: React.ReactNode }) {
+export async function MainLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  const role = session?.user?.role;
   return (
     <div style={{ display: 'flex', height: '100dvh', width: '100%', overflow: 'hidden', backgroundColor: 'var(--background)' }}>
       {/* Desktop Sidebar */}
@@ -17,7 +20,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden">
-        <BottomNav />
+        <BottomNav role={role} />
       </div>
     </div>
   );

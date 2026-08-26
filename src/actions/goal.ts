@@ -92,30 +92,24 @@ export async function addFundsToGoal(
     if (!sourceAcc || !destAcc) throw new Error("Account not found");
     if (sourceAcc.balance < amountToAdd) throw new Error("Insufficient balance in source account");
 
-    sourceAcc.balance -= amountToAdd;
-    destAcc.balance += amountToAdd;
-
-    await sourceAcc.save();
-    await destAcc.save();
-
-    await Transaction.create({
-      userId: session.user.id,
+    await createTransaction({
       type: "transfer",
       amount: amountToAdd,
-      accountId: sourceAcc._id,
-      toAccountId: destAcc._id,
-      goalId: goal._id,
+      date: new Date().toISOString(),
+      accountId: sourceAcc._id.toString(),
+      toAccountId: destAcc._id.toString(),
+      goalId: goal._id.toString(),
       note: `Added funds to Goal: ${goal.name}`,
+      status: "completed"
     });
+  } else {
+    // If no transfer logic, just update the goal amount directly (e.g. from cash)
+    goal.currentAmount += amountToAdd;
+    if (goal.currentAmount >= goal.targetAmount) {
+      goal.status = "completed";
+    }
+    await goal.save();
   }
-
-  goal.currentAmount += amountToAdd;
-  
-  if (goal.currentAmount >= goal.targetAmount) {
-    goal.status = "completed";
-  }
-
-  await goal.save();
 
   revalidatePath("/goals");
   revalidatePath("/");

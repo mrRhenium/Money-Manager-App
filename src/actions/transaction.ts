@@ -63,6 +63,9 @@ export async function createTransaction(data: {
   paymentSource?: "manual_entry" | "upi_scan" | "upi_manual" | "payee_quickpay";
   status?: "completed" | "pending" | "cancelled" | "awaiting_confirmation";
   personId?: string;
+  loanId?: string;
+  recurringBillId?: string;
+  goalId?: string;
   upiRef?: string;
   upiPayeeName?: string;
   upiPayeeVpa?: string;
@@ -213,6 +216,18 @@ export async function createTransaction(data: {
         }
       }
     }
+    
+    if (data.goalId) {
+      const Goal = (await import("@/models/Goal")).default;
+      const goal = await Goal.findOne({ _id: data.goalId, userId: session.user.id });
+      if (goal) {
+        goal.currentAmount += finalAmount;
+        if (goal.currentAmount >= goal.targetAmount) {
+          goal.status = "completed";
+        }
+        await goal.save();
+      }
+    }
   }
 
   // Update Streak
@@ -301,6 +316,31 @@ export async function deleteTransaction(id: string) {
           acc.balance += balanceChange;
           await acc.save();
         }
+      }
+    }
+    
+    if (transaction.goalId) {
+      const Goal = (await import("@/models/Goal")).default;
+      const goal = await Goal.findOne({ _id: transaction.goalId, userId: session.user.id });
+      if (goal) {
+        // Since goal transactions are "transfers" to the goal, removing it means subtracting the amount from the goal
+        goal.currentAmount -= transaction.amount;
+        if (goal.currentAmount < goal.targetAmount) {
+          goal.status = "active";
+        }
+        await goal.save();
+      }
+    }
+
+    if (transaction.loanId) {
+      const Loan = (await import("@/models/Loan")).default;
+      const loan = await Loan.findOne({ _id: transaction.loanId, userId: session.user.id });
+      if (loan) {
+        loan.outstandingBalance += transaction.amount;
+        if (loan.outstandingBalance > 0 && loan.status === "completed") {
+          loan.status = "active";
+        }
+        await loan.save();
       }
     }
   }
@@ -397,6 +437,18 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
         }
       }
     }
+    
+    if (transaction.goalId) {
+      const Goal = (await import("@/models/Goal")).default;
+      const goal = await Goal.findOne({ _id: transaction.goalId, userId: session.user.id });
+      if (goal) {
+        goal.currentAmount += transaction.amount;
+        if (goal.currentAmount >= goal.targetAmount) {
+          goal.status = "completed";
+        }
+        await goal.save();
+      }
+    }
   }
 
   revalidatePath("/transactions");
@@ -484,6 +536,30 @@ export async function updateTransaction(
           acc.balance += balanceChange;
           await acc.save();
         }
+      }
+    }
+    
+    if (oldTxn.goalId) {
+      const Goal = (await import("@/models/Goal")).default;
+      const goal = await Goal.findOne({ _id: oldTxn.goalId, userId: session.user.id });
+      if (goal) {
+        goal.currentAmount -= oldTxn.amount;
+        if (goal.currentAmount < goal.targetAmount) {
+          goal.status = "active";
+        }
+        await goal.save();
+      }
+    }
+
+    if (oldTxn.loanId) {
+      const Loan = (await import("@/models/Loan")).default;
+      const loan = await Loan.findOne({ _id: oldTxn.loanId, userId: session.user.id });
+      if (loan) {
+        loan.outstandingBalance += oldTxn.amount;
+        if (loan.outstandingBalance > 0 && loan.status === "completed") {
+          loan.status = "active";
+        }
+        await loan.save();
       }
     }
   }
@@ -597,6 +673,31 @@ export async function updateTransaction(
           acc.balance += balanceChange;
           await acc.save();
         }
+      }
+    }
+    
+    if (oldTxn.goalId) {
+      const Goal = (await import("@/models/Goal")).default;
+      const goal = await Goal.findOne({ _id: oldTxn.goalId, userId: session.user.id });
+      if (goal) {
+        goal.currentAmount += oldTxn.amount;
+        if (goal.currentAmount >= goal.targetAmount) {
+          goal.status = "completed";
+        }
+        await goal.save();
+      }
+    }
+
+    if (oldTxn.loanId) {
+      const Loan = (await import("@/models/Loan")).default;
+      const loan = await Loan.findOne({ _id: oldTxn.loanId, userId: session.user.id });
+      if (loan) {
+        loan.outstandingBalance -= oldTxn.amount;
+        if (loan.outstandingBalance <= 0) {
+          loan.status = "completed";
+          loan.outstandingBalance = 0;
+        }
+        await loan.save();
       }
     }
   }

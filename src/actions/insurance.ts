@@ -7,6 +7,8 @@ import ClaimHistory from "@/models/ClaimHistory";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { logAuditEvent } from "@/actions/auditLog";
+import { createTransaction } from "./transaction";
+import { getCurrentDate } from "@/lib/dateTimeHelper";
 
 export async function getInsurancePolicies() {
   const session = await auth();
@@ -150,11 +152,26 @@ export async function logPremiumPayment(policyId: string, paymentData: any) {
 
   await dbConnect();
 
+  const policy = await InsurancePolicy.findOne({ _id: policyId, userId: session.user.id });
+  if (!policy) throw new Error("Policy not found");
+
   const payment = await PremiumPaymentHistory.create({
     policyId,
     ...paymentData,
     status: "paid"
   });
+
+  if (paymentData.accountId) {
+    await createTransaction({
+      type: "expense",
+      amount: paymentData.amount,
+      date: paymentData.date || getCurrentDate().toISOString(),
+      accountId: paymentData.accountId,
+      paymentMode: paymentData.paymentMode || "bank",
+      note: `Premium Payment for ${policy.policyName}`,
+      status: "completed"
+    });
+  }
 
   await logAuditEvent("InsurancePolicy", policyId, "UPDATE", undefined, { paymentLogged: payment });
 

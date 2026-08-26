@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { parseToDate, getCurrentDate, getStartOfDay } from "@/lib/dateTimeHelper";
 import { revalidatePath } from "next/cache";
 import { logAuditEvent } from "@/actions/auditLog";
+import { createTransaction } from "./transaction";
 
 export async function getRecurringBills() {
   const session = await auth();
@@ -144,22 +145,17 @@ export async function markSubscriptionPaid(id: string, amountOverride?: number) 
   }
 
   // Create Transaction
-  const tx = await Transaction.create({
-    userId: session.user.id,
+  const tx = await createTransaction({
     type: "expense",
     amount: finalAmount,
-    date: getCurrentDate(),
-    accountId: bill.accountId,
-    categoryId: bill.categoryId,
-    recurringBillId: bill._id,
+    date: getCurrentDate().toISOString(),
+    accountId: bill.accountId.toString(),
+    categoryId: bill.categoryId ? bill.categoryId.toString() : undefined,
+    recurringBillId: bill._id.toString(),
     paymentMode: "bank",
     note: `Auto-payment for ${bill.name}`,
     status: "completed"
   });
-
-  // Deduct from account
-  account.balance -= finalAmount;
-  await account.save();
 
   // Advance due date
   const previousState = { ...bill.toObject() };

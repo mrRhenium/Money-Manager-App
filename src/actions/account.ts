@@ -81,6 +81,12 @@ export async function deleteAccount(id: string) {
       return { success: false, error: `This Account cannot be deleted because it is linked to ${investmentCount} investment(s).` };
     }
 
+    const Loan = (await import("@/models/Loan")).default;
+    const loanCount = await Loan.countDocuments({ linkedAccountId: id });
+    if (loanCount > 0) {
+      return { success: false, error: `This Account cannot be deleted because it is linked to ${loanCount} loan(s).` };
+    }
+
     const account = await Account.findOne({ _id: id, userId: session.user.id });
     if (account) {
       await logAuditEvent("Account", id, "DELETE", account, undefined);

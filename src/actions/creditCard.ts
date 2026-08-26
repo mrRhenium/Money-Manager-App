@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { calculateCreditCardDueDate, parseToDate, getCurrentDate } from "@/lib/dateTimeHelper";
 import { logAuditEvent } from "@/actions/auditLog";
+import { createTransaction } from "./transaction";
 
 export async function getCreditCards() {
   const session = await auth();
@@ -143,24 +144,16 @@ export async function payCreditCardStatement(statementId: string, sourceAccountI
   if (!sourceAccount) throw new Error("Source account not found");
 
   // Create settlement transaction
-  const tx = await Transaction.create({
-    userId: session.user.id,
+  const tx = await createTransaction({
     type: "settlement",
     amount: amountToPay,
-    date: getCurrentDate(),
+    date: getCurrentDate().toISOString(),
     accountId: sourceAccountId,
     paymentMode: "bank",
     note: `Credit Card Bill Payment - ${card.bankName} ending ${card.last4Digits}`,
+    status: "completed",
+    creditCardId: card._id.toString()
   });
-
-  // Deduct from bank
-  sourceAccount.balance -= amountToPay;
-  await sourceAccount.save();
-
-  // Deduct from card outstanding
-  card.currentOutstanding = Math.max(0, card.currentOutstanding - amountToPay);
-  card.availableLimit = card.creditLimit - card.currentOutstanding;
-  await card.save();
 
   // Update statement
   statement.amountPaid += amountToPay;

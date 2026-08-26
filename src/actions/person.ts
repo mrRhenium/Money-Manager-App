@@ -95,13 +95,10 @@ export async function deletePerson(id: string, reason?: string, notes?: string) 
     if (!person) return { success: false, error: "Contact not found" };
 
     if (txCount > 0) {
-      if (!reason || !notes) {
-        return { success: false, error: "Reason and notes are mandatory for deleting a utilized contact." };
-      }
-      await logAuditEvent("Person", id, "DELETE", person, { reason, notes, transactionsRetained: txCount });
-    } else {
-      await logAuditEvent("Person", id, "DELETE", person, undefined);
+      return { success: false, error: `This Contact cannot be deleted because it is used in ${txCount} transaction(s).` };
     }
+
+    await logAuditEvent("Person", id, "DELETE", person, undefined);
     
     await Person.deleteOne({ _id: id, userId: session.user.id });
 

@@ -6,7 +6,7 @@ import Account from "@/models/Account";
 import Transaction from "@/models/Transaction";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { createTransaction } from "./transaction";
+import { createTransaction, deleteTransaction } from "./transaction";
 import { getCurrentFormatted, getCurrentDate } from "@/lib/dateTimeHelper";
 import { createAuditLog } from "./auditLog";
 
@@ -75,10 +75,10 @@ export async function deleteLoan(id: string, reason?: string, notes?: string) {
       throw new Error("Reason and notes are mandatory for deleting a utilized loan.");
     }
 
-    // Find all EMI transactions for this loan
+    // Find all EMI transactions for this loan using loanId
     const transactions = await Transaction.find({
       userId: session.user.id,
-      note: { $regex: `EMI Payment for ${loan.name}`, $options: "i" }
+      loanId: loan._id
     });
 
     let totalReversed = 0;
@@ -114,6 +114,7 @@ export async function deleteLoan(id: string, reason?: string, notes?: string) {
             paymentMode: "bank",
             status: "completed",
             paymentSource: "manual_entry",
+            loanId: loan._id.toString(),
           });
         }
       }
@@ -183,6 +184,7 @@ export async function payEMI(loanId: string, amountOverride?: number) {
     paymentMode: "bank",
     status: "completed",
     paymentSource: "manual_entry",
+    loanId: loan._id.toString(),
   });
 
   // Reduce outstanding balance
@@ -224,7 +226,7 @@ export async function undoLastEMI(loanId: string) {
   // Find the most recent EMI transaction
   const txn = await Transaction.findOne({
     userId: session.user.id,
-    note: { $regex: `EMI Payment for ${loan.name}`, $options: "i" }
+    loanId: loan._id,
   }).sort({ date: -1, createdAt: -1 });
 
   if (!txn) {
@@ -237,25 +239,8 @@ export async function undoLastEMI(loanId: string) {
     throw new Error("Can only undo EMIs paid within the last 24 hours.");
   }
 
-  // Re-add outstanding balance to loan
-  loan.outstandingBalance += txn.amount;
-  if (loan.outstandingBalance > 0 && loan.status === "completed") {
-    loan.status = "active";
-  }
-  await loan.save();
-
-  // Create a reversal transaction instead of deleting the old one
-  await createTransaction({
-    type: txn.type === "expense" ? "income" : "expense",
-    amount: txn.amount,
-    date: getCurrentDate().toISOString(),
-    accountId: txn.accountId?.toString(),
-    note: `EMI Reversal for ${loan.name}`,
-    originalCurrency: txn.originalCurrency || loan.currency || "INR",
-    paymentMode: txn.paymentMode,
-    status: "completed",
-    paymentSource: "manual_entry",
-  });
+  // Call deleteTransaction which will now automatically handle reverting the loan balance and account balance
+  await deleteTransaction(txn._id.toString());
 
   await createAuditLog({
     action: "EMI_REVERSED",

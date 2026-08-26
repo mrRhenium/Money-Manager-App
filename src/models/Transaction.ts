@@ -24,6 +24,7 @@ export interface ITransaction extends Document {
   categoryId?: mongoose.Types.ObjectId;
   recurringBillId?: mongoose.Types.ObjectId; // For subscriptions
   goalId?: mongoose.Types.ObjectId; // For goal transfers
+  loanId?: mongoose.Types.ObjectId; // For loan EMI tracking
   personId?: mongoose.Types.ObjectId; // For lend/borrow
   billImage?: string;
   note?: string;
@@ -71,6 +72,7 @@ const TransactionSchema: Schema<ITransaction> = new Schema(
     categoryId: { type: Schema.Types.ObjectId, ref: "Category" },
     recurringBillId: { type: Schema.Types.ObjectId, ref: "RecurringBill" },
     goalId: { type: Schema.Types.ObjectId, ref: "Goal" },
+    loanId: { type: Schema.Types.ObjectId, ref: "Loan" },
     personId: { type: Schema.Types.ObjectId, ref: "Person" },
     billImage: { type: String },
     note: { type: String },

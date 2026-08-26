@@ -18,6 +18,7 @@ import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 import { getCurrentFormatted, formatDateString, parseToDate } from "@/lib/dateTimeHelper";
 import { useToast } from "@/hooks/useToast";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const formSchema = z.object({
   investmentType: z.enum(["SIP", "MutualFund", "Stocks", "FD", "RD", "PPF", "EPF", "NPS", "Gold", "Crypto", "Bonds", "RealEstate", "Other"]),
@@ -45,6 +46,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
   const [icon, setIcon] = useState(investment?.icon || "TrendingUp");
   const [assetPrice, setAssetPrice] = useState<number | null>(null);
   const { toast } = useToast();
+  const { format } = useCurrency();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -253,7 +255,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                       </FormControl>
                       {assetPrice !== null && (
                         <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-                          <TrendingUp className="w-3 h-3" /> Latest {watchType === "MutualFund" ? "NAV" : "Price"}: ₹{formatIndianNumber(assetPrice.toString())}
+                          <TrendingUp className="w-3 h-3" /> Latest {watchType === "MutualFund" ? "NAV" : "Price"}: {format(assetPrice)}
                         </div>
                       )}
                       <p className="text-[10px] text-muted-foreground mt-1">If not found, type the name manually below.</p>

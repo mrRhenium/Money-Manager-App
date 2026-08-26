@@ -8,6 +8,7 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer } from "@/components/layout/MasterView";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Repeat, CalendarDays, TrendingDown, LayoutList, ArrowUpDown } from "lucide-react";
@@ -28,6 +29,7 @@ export function SubscriptionClient({
   accounts: any[];
   categories: any[];
 }) {
+  const { format } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -322,7 +324,7 @@ export function SubscriptionClient({
                                 ))}
                               </Pie>
                               <Tooltip 
-                                formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
+                                formatter={(value: any) => format(Number(value))}
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                                 itemStyle={{ color: 'var(--foreground)' }}
                               />

@@ -24,7 +24,7 @@ export default async function InsuranceDetailsPage({ params }: { params: Promise
   return (
     <div className="absolute inset-0 flex flex-col bg-slate-50/50 dark:bg-background overflow-hidden">
       {/* HEADER SECTION */}
-      <div className="shrink-0 h-20 z-40 dark:text-white bg-background/95 dark:bg-card/95 backdrop-blur-2xl shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] border-b py-4 px-4 lg:px-8">
+      <div className="shrink-0 h-20 z-40 dark:text-white bg-card/80 backdrop-blur-md shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] border-b py-4 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 h-full">
           <div className="flex items-center gap-4">
             <Link href="/insurance">

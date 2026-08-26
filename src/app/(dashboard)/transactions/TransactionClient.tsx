@@ -7,6 +7,7 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer } from "@/components/layout/MasterView";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Search, LayoutGrid, PieChartIcon, UploadCloud, ArrowDownRight, ArrowUpRight, Wallet } from "lucide-react";
 import { Select as AntSelect } from "antd";
 import { TransactionForm } from "@/components/forms/TransactionForm";
@@ -34,6 +35,7 @@ export function TransactionClient({
   people: any[];
   creditCards: any[];
 }) {
+  const { format, formatCompact } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -348,11 +350,11 @@ export function TransactionClient({
                             axisLine={false}
                             tickLine={false}
                             tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-                            tickFormatter={(value) => `₹${(value / 1000)}k`}
+                            tickFormatter={(value) => formatCompact(value)}
                             width={60}
                           />
                           <RechartsTooltip
-                            formatter={(value: any) => `₹${Number(value).toLocaleString("en-IN")}`}
+                            formatter={(value: any) => format(Number(value))}
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                             itemStyle={{ color: 'var(--foreground)' }}
                           />

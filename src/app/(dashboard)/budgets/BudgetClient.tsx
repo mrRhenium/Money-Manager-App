@@ -8,6 +8,7 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer } from "@/components/layout/MasterView";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, PieChart as PieChartIcon, Target, TrendingUp, TrendingDown, LayoutList } from "lucide-react";
@@ -33,6 +34,7 @@ export function BudgetClient({
   initialStartDate?: string;
   initialEndDate?: string;
 }) {
+  const { format, formatCompact } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -267,14 +269,14 @@ export function BudgetClient({
                               dy={10} 
                             />
                             <YAxis 
-                              tickFormatter={(val: number) => `₹${formatIndianNumber(val.toString())}`}
+                              tickFormatter={(val: number) => formatCompact(val)}
                               tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} 
                               axisLine={false} 
                               tickLine={false} 
                               dx={-10}
                             />
                             <Tooltip 
-                              formatter={(value: any) => `₹${formatIndianNumber(value.toString())}`}
+                              formatter={(value: any) => format(Number(value))}
                               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                               itemStyle={{ color: 'var(--foreground)' }}
                             />

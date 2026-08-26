@@ -7,10 +7,12 @@ import { Trash, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { Select, Input } from "antd";
 import { deleteInvestment } from "@/actions/investment";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const { TextArea } = Input;
 
 export function InvestmentDeleteModal({ investment }: { investment: any }) {
+  const { format } = useCurrency();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState<string>("");
@@ -75,7 +77,7 @@ export function InvestmentDeleteModal({ investment }: { investment: any }) {
             <div className="space-y-4 py-2">
               <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
                 <p className="font-semibold mb-1">Notice: Preserving History</p>
-                <p>You have an invested amount of ₹{investment.investedAmount} in this asset. <strong>Its historical data will NOT be deleted</strong>, but tracking will be paused and its status marked as closed/sold.</p>
+                <p>You have an invested amount of {format(investment.investedAmount)} in this asset. <strong>Its historical data will NOT be deleted</strong>, but tracking will be paused and its status marked as closed/sold.</p>
               </div>
 
               <div className="space-y-2">

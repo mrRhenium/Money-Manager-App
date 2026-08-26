@@ -7,6 +7,7 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer } from "@/components/layout/MasterView";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, TrendingUp, Wallet, PieChart as PieChartIcon, RefreshCw, BarChart2 } from "lucide-react";
@@ -21,6 +22,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
 export function InvestmentClient({ initialInvestments, accounts }: { initialInvestments: any[], accounts: any[] }) {
+  const { format } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -315,7 +317,7 @@ export function InvestmentClient({ initialInvestments, accounts }: { initialInve
                                 ))}
                               </Pie>
                               <Tooltip 
-                                formatter={(value: any) => `₹${Number(value).toLocaleString("en-IN")}`}
+                                formatter={(value: any) => format(Number(value))}
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: 'var(--card)', color: 'var(--foreground)' }}
                                 itemStyle={{ color: 'var(--foreground)' }}
                               />

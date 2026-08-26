@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { formatCurrency } from "@/lib/currencyFormatter";
+import { formatCurrency, formatCompactCurrency } from "@/lib/currencyFormatter";
 import { useEffect, useState } from "react";
 import { fetchExchangeRates, getConversionRate } from "@/lib/currencyRates";
 
@@ -21,6 +21,10 @@ export function useCurrency() {
     format: (amount: number) => {
       const rate = getConversionRate(currencyCode, rates);
       return formatCurrency(amount * rate, currencyCode);
+    },
+    formatCompact: (amount: number) => {
+      const rate = getConversionRate(currencyCode, rates);
+      return formatCompactCurrency(amount * rate, currencyCode);
     }
   };
 }

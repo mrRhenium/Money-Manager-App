@@ -8,6 +8,7 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer } from "@/components/layout/MasterView";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Wallet, Landmark, TrendingUp, TrendingDown, LayoutList } from "lucide-react";
@@ -19,6 +20,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recha
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#0ea5e9', '#14b8a6', '#6b7280'];
 
 export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
+  const { format } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -217,7 +219,7 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
                           ))}
                         </Pie>
                         <Tooltip 
-                          formatter={(value: any) => `₹${Number(value).toLocaleString()}`}
+                          formatter={(value: any) => format(Number(value))}
                           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
                         />
                         <Legend verticalAlign="bottom" height={36} />

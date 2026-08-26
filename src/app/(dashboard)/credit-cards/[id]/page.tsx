@@ -14,6 +14,7 @@ import { auth } from "@/lib/auth";
 import { CreditCardTransactionTable } from "@/components/tables/CreditCardTransactionTable";
 import { CreditCardStatementTable } from "@/components/tables/CreditCardStatementTable";
 import { formatIndianNumber } from "@/lib/numberHelper";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
 export default async function CreditCardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,7 +31,7 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
   return (
     <div className="absolute inset-0 flex flex-col bg-slate-50/50 dark:bg-background overflow-hidden">
       {/* HEADER SECTION */}
-      <div className="shrink-0 h-20 z-40 dark:text-white bg-background/95 dark:bg-card/95 backdrop-blur-2xl shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] border-b py-4 px-4 lg:px-8">
+      <div className="shrink-0 h-20 z-40 dark:text-white bg-card/80 backdrop-blur-md shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] border-b py-4 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/credit-cards">
@@ -68,11 +69,11 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
                 <div className="flex justify-between items-end text-sm">
                   <div>
                     <p className="opacity-70 text-xs">Outstanding</p>
-                    <p className="text-2xl font-bold">₹{card.currentOutstanding.toLocaleString("en-IN")}</p>
+                    <p className="text-2xl font-bold"><CurrencyDisplay amount={card.currentOutstanding} /></p>
                   </div>
                   <div className="text-right">
                     <p className="opacity-70 text-xs">Available</p>
-                    <p className="font-bold">₹{card.availableLimit.toLocaleString("en-IN")}</p>
+                    <p className="font-bold"><CurrencyDisplay amount={card.availableLimit} /></p>
                   </div>
                 </div>
               </div>
@@ -83,7 +84,7 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
               <Card className="shadow-sm border-none bg-card">
                 <CardContent className="p-4 pt-6">
                   <p className="text-xs text-muted-foreground mb-1">Credit Limit</p>
-                  <p className="text-xl font-bold">₹{card.creditLimit.toLocaleString("en-IN")}</p>
+                  <p className="text-xl font-bold"><CurrencyDisplay amount={card.creditLimit} /></p>
                 </CardContent>
               </Card>
               <Card className="shadow-sm border-none bg-card">
@@ -115,12 +116,12 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
             <div className="flex justify-between items-end">
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Used / Limit</p>
-                <p className="text-sm font-semibold">₹{formatIndianNumber(card.currentOutstanding.toString())} <span className="text-muted-foreground font-normal">/ ₹{formatIndianNumber(card.creditLimit.toString())}</span></p>
+                <p className="text-sm font-semibold"><CurrencyDisplay amount={card.currentOutstanding} /> <span className="text-muted-foreground font-normal">/ <CurrencyDisplay amount={card.creditLimit} /></span></p>
               </div>
               <div className="text-right">
                 <span className={utilization > 70 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>
-                <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
-                  LEFT: ₹{formatIndianNumber(card.availableLimit.toString())}
+                <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1 flex gap-1 justify-end">
+                  LEFT: <CurrencyDisplay amount={card.availableLimit} />
                 </p>
               </div>
             </div>

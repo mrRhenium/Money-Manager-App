@@ -8,6 +8,7 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer } from "@/components/layout/MasterView";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
 import { Search, Target, CheckCircle2, TrendingUp, Wallet } from "lucide-react";
@@ -17,6 +18,7 @@ import { GoalList } from "@/components/lists/GoalList";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], accounts: any[] }) {
+  const { formatCompact, format } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -274,9 +276,10 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
                           axisLine={false} 
                           tickLine={false} 
                           tick={{ fontSize: 12, fill: "var(--color-muted-foreground)", opacity: 0.7 }}
-                          tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+                          tickFormatter={(value) => formatCompact(value)}
                         />
                         <Tooltip 
+                          formatter={(value: any) => format(Number(value))}
                           cursor={{ fill: 'currentColor', opacity: 0.05 }}
                           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
                         />

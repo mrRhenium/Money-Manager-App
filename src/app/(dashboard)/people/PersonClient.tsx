@@ -7,6 +7,7 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer } from "@/components/layout/MasterView";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Search, Users, ArrowDownRight, ArrowUpRight, LayoutGrid, PieChartIcon } from "lucide-react";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
@@ -17,6 +18,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatIndianNumber } from "@/lib/numberHelper";
 
 export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
+  const { format, formatCompact } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -255,7 +257,7 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
                             dy={10} 
                           />
                           <YAxis 
-                            tickFormatter={(val: number) => `₹${formatIndianNumber(val.toString())}`}
+                            tickFormatter={(val: number) => formatCompact(val)}
                             tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} 
                             axisLine={false} 
                             tickLine={false} 
@@ -270,7 +272,7 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
                               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                               color: 'var(--foreground)'
                             }}
-                            formatter={(value: any) => [`₹${formatIndianNumber(value.toString())}`, undefined]}
+                            formatter={(value: any) => [format(Number(value)), undefined]}
                           />
                           <Legend wrapperStyle={{ paddingTop: '20px' }} />
                           <Bar dataKey="To Receive" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={50} />

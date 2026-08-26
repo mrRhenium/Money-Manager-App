@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select } from "antd";
 import { payCreditCardStatement } from "@/actions/creditCard";
 import { IndianRupee, Banknote, FileText, Landmark } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function PayBillModal({ cardId, outstanding, accounts, statements }: { cardId: string, outstanding: number, accounts: any[], statements: any[] }) {
+  const { format, currencyCode } = useCurrency();
   const [open, setOpen] = useState(false);
   const [statementId, setStatementId] = useState(statements[0]?._id || "");
   const [accountId, setAccountId] = useState("");
@@ -23,7 +25,7 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
       setError("Please fill all fields");
       return;
     }
-    
+
     setLoading(true);
     try {
       await payCreditCardStatement(statementId, accountId, Number(amount));
@@ -49,21 +51,21 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
             <span className="text-foreground">Pay Credit Card Bill</span>
           </DialogTitle>
         </DialogHeader>
-        
+
         {error && <div className="text-sm text-red-500 p-2 bg-red-500/10 rounded">{error}</div>}
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" /> Select Statement / Cycle</Label>
-            <Select 
-              value={statementId} 
+            <Select
+              value={statementId}
               onChange={(val) => setStatementId(val || "")}
               showSearch
               placeholder="Select statement"
               className="w-full h-10"
               optionFilterProp="label"
               options={statements.length > 0 ? statements.map(s => ({
-                label: `${s.statementMonth} - Due: ₹${(s.totalAmount - s.amountPaid).toLocaleString()}`,
+                label: `${s.statementMonth} - Due: ${format(s.totalAmount - s.amountPaid)}`,
                 value: s._id
               })) : [{ label: 'No pending statements', value: 'none', disabled: true } as any]}
             />
@@ -71,31 +73,31 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
 
           <div className="space-y-2">
             <Label className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Pay From Account</Label>
-            <Select 
-              value={accountId} 
+            <Select
+              value={accountId}
               onChange={(val) => setAccountId(val || "")}
               showSearch
               placeholder="Select bank account"
               className="w-full h-10"
               optionFilterProp="label"
               options={accounts.map(a => ({
-                label: `${a.name} (Bal: ₹${a.balance.toLocaleString()})`,
+                label: `${a.name} (Bal: ${format(a.balance)})`,
                 value: a._id
               }))}
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount (₹)</Label>
-            <Input 
-              type="number" 
-              value={amount} 
+            <Label className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount ({currencyCode})</Label>
+            <Input
+              type="number"
+              value={amount}
               min="0"
               onKeyDown={(e) => {
                 if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
               }}
-              onChange={e => setAmount(e.target.value)} 
-              placeholder="e.g. 5000" 
+              onChange={e => setAmount(e.target.value)}
+              placeholder="e.g. 5000"
             />
           </div>
 

@@ -74,8 +74,8 @@ function MyUpiContent() {
       />
 
       {/* CONTENT SECTION */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pb-24 pt-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pb-24 pt-4 px-2 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
 
 
 
@@ -106,8 +106,8 @@ function MyUpiContent() {
               </CardHeader>
               <CardContent className="p-3 sm:p-4 md:p-6 space-y-2.5 sm:space-y-3">
                 {upiIds.map((vpa, idx) => (
-                  <div key={idx} className="flex gap-1.5 sm:gap-2 items-center">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary text-[10px] sm:text-xs font-bold">
+                  <div key={idx} className="flex gap-1 sm:gap-2 items-center">
+                    <div className="hidden sm:flex w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 items-center justify-center shrink-0 text-primary text-[10px] sm:text-xs font-bold">
                       {idx + 1}
                     </div>
                     <Input
@@ -165,7 +165,7 @@ function MyUpiContent() {
                         <button
                           type="button"
                           onClick={() => setQrModalOpen(true)}
-                          className="p-4 sm:p-6 bg-white rounded-2xl sm:rounded-3xl shadow-sm border hover:shadow-md transition-all cursor-pointer relative group flex flex-col items-center gap-2 sm:gap-3 w-[180px] sm:w-[250px]"
+                          className="p-3 sm:p-6 bg-white rounded-2xl sm:rounded-3xl shadow-sm border hover:shadow-md transition-all cursor-pointer relative group flex flex-col items-center gap-2 sm:gap-3 w-[150px] sm:w-[250px]"
                         >
                           <QRCodeSVG
                             value={generatedUpiUrl}

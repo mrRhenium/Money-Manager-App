@@ -50,6 +50,8 @@ export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomin
             <MasterFilterDrawer
               isOpen={filterOpen}
               onClose={() => setFilterOpen(false)}
+              isFilterActive={false}
+              onClearFilters={() => {}}
             >
               <div className="flex-1 overflow-y-auto pb-8 custom-scrollbar">
                 <Suspense fallback={<div className="h-10 w-full animate-pulse bg-muted rounded-full"></div>}>

@@ -162,6 +162,7 @@ export async function markSubscriptionPaid(id: string, amountOverride?: number) 
   await account.save();
 
   // Advance due date
+  const previousState = { ...bill.toObject() };
   const nextDate = new Date(bill.nextDueDate);
   if (bill.frequency === "monthly") {
     nextDate.setMonth(nextDate.getMonth() + 1);
@@ -178,7 +179,7 @@ export async function markSubscriptionPaid(id: string, amountOverride?: number) 
   bill.nextDueDate = nextDate;
   await bill.save();
 
-  await logAuditEvent("RecurringBill", id, "PAYMENT", null, { transactionId: tx._id, amount: finalAmount });
+  await logAuditEvent("RecurringBill", id, "PAYMENT", previousState, { ...bill.toObject(), transactionId: tx._id, amount: finalAmount });
 
   revalidatePath("/subscriptions");
   return { success: true };

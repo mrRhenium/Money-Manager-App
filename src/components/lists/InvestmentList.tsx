@@ -209,24 +209,24 @@ export function InvestmentList({
 
                     <div className="grid grid-cols-2 gap-y-5 gap-x-2 pt-5 border-t border-slate-100 dark:border-slate-800 mt-auto z-10 relative">
                       <div>
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Invested</p>
-                        <p className="font-semibold text-base">{format(record.investedAmount)}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Invested</p>
+                        <p className="font-semibold text-sm">{format(record.investedAmount)}</p>
                       </div>
                       <div>
-                        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Latest Price</p>
-                        <p className="font-semibold text-base">{record.currentPrice ? format(record.currentPrice) : "-"}</p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Latest Price</p>
+                        <p className="font-semibold text-sm">{record.currentPrice ? format(record.currentPrice) : "-"}</p>
                       </div>
                       <div className="col-span-2 pt-3 mt-1 border-t border-slate-100 dark:border-slate-800">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Current Value</p>
-                            <span className="font-bold text-lg text-foreground">{format(record.currentValue)}</span>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Current Value</p>
+                            <span className="font-bold text-sm text-foreground">{format(record.currentValue)}</span>
                           </div>
                           <div>
-                            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5 text-right">Returns</p>
-                            <div className={`flex items-center gap-2 font-bold text-base justify-end ${isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground"}`}>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1 text-right">Returns</p>
+                            <div className={`flex items-center gap-2 font-bold text-sm justify-end ${isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground"}`}>
                               <span>{isPos ? "+" : ""}{format(ret)}</span>
-                              <span className="text-[11px] bg-current/10 px-1.5 py-0.5 rounded">{isPos ? "+" : ""}{retPct.toFixed(2)}%</span>
+                              <span className="text-[10px] bg-current/10 px-1.5 py-0.5 rounded">{isPos ? "+" : ""}{retPct.toFixed(2)}%</span>
                             </div>
                           </div>
                         </div>

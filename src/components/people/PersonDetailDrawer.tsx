@@ -133,9 +133,12 @@ export function PersonDetailDrawer({
         </div>
       }
       classNames={{
-        body: "bg-background text-foreground p-0 custom-scrollbar",
+        body: "!p-0 bg-background text-foreground custom-scrollbar",
         header: "bg-card text-foreground border-b border-border/50",
         content: "bg-background text-foreground"
+      }}
+      styles={{
+        body: { padding: 0 }
       }}
     >
       <div className="flex flex-col h-full">

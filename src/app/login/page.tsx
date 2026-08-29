@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, Input, Button, Form, Typography, Alert, Space } from "antd";
-import { MailOutlined, LockOutlined, WalletOutlined } from "@ant-design/icons";
+import { MailOutlined, LockOutlined, ClockCircleOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isInactiveLogout = searchParams.get("reason") === "inactivity";
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +48,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8 text-center">
-
         <Title level={2} style={{ margin: 0 }}>Welcome Back</Title>
         <Text type="secondary">Sign in to manage your finances</Text>
       </div>
@@ -61,6 +62,18 @@ export default function LoginPage() {
           onFinish={onFinish}
           size="large"
         >
+          {isInactiveLogout && !error && (
+            <Form.Item>
+              <Alert 
+                message="Session Expired" 
+                description="You were automatically logged out due to 2 hours of inactivity." 
+                type="warning" 
+                showIcon 
+                icon={<ClockCircleOutlined />}
+              />
+            </Form.Item>
+          )}
+
           {error && (
             <Form.Item>
               <Alert message={error} type="error" showIcon />
@@ -107,5 +120,17 @@ export default function LoginPage() {
         </Form>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   );
 }

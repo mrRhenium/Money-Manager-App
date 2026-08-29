@@ -232,7 +232,7 @@ export function SubscriptionClient({
       <MasterHeader 
         title={<><Repeat className="w-6 h-6 text-primary" /> Subscriptions</>}
         subtitle="Manage your recurring bills and auto-pays."
-        actions={<div className="sm:hidden"><RecurringBillForm accounts={accounts} categories={categories} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><RecurringBillForm accounts={accounts} categories={categories} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

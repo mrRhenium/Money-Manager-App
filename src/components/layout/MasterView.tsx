@@ -38,11 +38,11 @@ export function MasterToolbar({
   primaryAction
 }: MasterToolbarProps) {
   return (
-    <div className="shrink-0 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
+    <div className="shrink-0 flex flex-col-reverse lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-4 border-b border-border/50">
       
       {/* Tabs */}
       {tabs.length > 0 ? (
-        <Tabs value={activeTab} onValueChange={onTabChange} className="w-full sm:w-[450px]">
+        <Tabs value={activeTab} onValueChange={onTabChange} className="w-full lg:w-[450px]">
           <TabsList className="w-full h-12 bg-slate-100/80 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 p-1 flex rounded-full shadow-inner">
             {tabs.map((tab) => (
               <TabsTrigger
@@ -62,14 +62,14 @@ export function MasterToolbar({
       ) : <div />}
 
       {/* Right Side: Actions & Search */}
-      <div className="shrink-0 flex gap-2 w-full sm:w-auto justify-between sm:justify-end">
+      <div className="shrink-0 flex gap-2 w-full lg:w-auto justify-between lg:justify-end">
         {primaryAction && (
-          <div className="hidden sm:block">
+          <div className="hidden lg:block">
             {primaryAction}
           </div>
         )}
 
-        <div className="flex sm:hidden gap-2 w-full">
+        <div className="flex lg:hidden gap-2 w-full">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -107,12 +107,12 @@ interface MasterViewLayoutProps {
 
 export function MasterViewLayout({ children, sidebar }: MasterViewLayoutProps) {
   return (
-    <div className="flex-1 flex flex-col xl:flex-row gap-4 mt-4 overflow-hidden">
+    <div className="flex-1 flex flex-col lg:flex-row gap-4 mt-4 overflow-hidden">
       <div className="flex-1 min-w-0 overflow-y-auto pb-24 custom-scrollbar">
         {children}
       </div>
       {sidebar && (
-        <div className="hidden xl:block w-80 shrink-0 overflow-y-auto pb-24 custom-scrollbar pr-1">
+        <div className="hidden lg:block w-80 shrink-0 overflow-y-auto pb-24 custom-scrollbar pr-1">
           {sidebar}
         </div>
       )}

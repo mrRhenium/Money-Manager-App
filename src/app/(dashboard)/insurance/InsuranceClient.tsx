@@ -203,7 +203,7 @@ export function InsuranceClient({
       <MasterHeader 
         title={<><Shield className="w-6 h-6 text-primary" /> Insurance</>}
         subtitle="Manage your life, health, and general insurance policies."
-        actions={<div className="sm:hidden"><InsuranceForm accounts={accounts} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><InsuranceForm accounts={accounts} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

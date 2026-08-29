@@ -18,7 +18,7 @@ export function SidebarClient({ user }: { user: any }) {
         transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
       }} 
       className={cn(
-        "hidden md:flex flex-col relative group shrink-0 z-50",
+        "hidden lg:flex flex-col relative group shrink-0 z-50",
         // Force text color in dark mode
         "dark:text-white",
         // Modern glassmorphism

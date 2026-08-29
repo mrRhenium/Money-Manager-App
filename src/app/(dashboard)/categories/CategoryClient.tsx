@@ -99,7 +99,7 @@ export function CategoryClient({
       <MasterHeader 
         title={<><Tags className="w-6 h-6 text-primary" /> Categories</>}
         subtitle="Manage your expense and income categories."
-        actions={<div className="sm:hidden"><CategoryForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><CategoryForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

@@ -154,7 +154,7 @@ export function AccountClient({ initialAccounts }: { initialAccounts: any[] }) {
       <MasterHeader 
         title={<><Wallet className="w-6 h-6 text-primary" /> Accounts</>}
         subtitle="Manage your wallets, bank accounts, and credit cards."
-        actions={<div className="sm:hidden"><AccountForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><AccountForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

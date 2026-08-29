@@ -242,15 +242,15 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   }
 
   return (
-    <div className="absolute inset-0 flex flex-col md:relative md:block md:inset-auto md:h-auto overflow-hidden md:overflow-visible">
+    <div className="absolute inset-0 flex flex-col lg:relative lg:block lg:inset-auto lg:h-auto overflow-hidden lg:overflow-visible">
       {/* Static Header Container */}
-      <div className="shrink-0 z-40 border-b md:border-none bg-card/80 md:bg-transparent backdrop-blur-md md:backdrop-blur-none px-4 md:px-6 lg:px-8 py-3 md:pt-6 lg:pt-8 shadow-sm md:shadow-none">
+      <div className="shrink-0 z-40 border-b lg:border-none bg-card/80 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none px-4 lg:px-8 py-3 lg:pt-8 shadow-sm lg:shadow-none">
         <ActionCenterWrapper upcomingDues={upcomingDues} daysAhead={daysFilter} user={session.user} />
       </div>
 
       {/* Scrollable Content Container */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar md:overflow-visible">
-        <div className="space-y-8 px-4 md:px-6 lg:px-8 pt-4 pb-24 md:pb-8">
+      <div className="flex-1 overflow-y-auto custom-scrollbar lg:overflow-visible">
+        <div className="space-y-8 px-4 lg:px-8 pt-4 pb-24 lg:pb-8">
 
 
 

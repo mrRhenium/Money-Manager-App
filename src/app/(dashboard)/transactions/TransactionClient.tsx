@@ -239,7 +239,7 @@ export function TransactionClient({
       <MasterHeader
         title={<><Wallet className="w-6 h-6 text-primary" /> Transactions</>}
         subtitle="Track all your incomes and expenses."
-        actions={<div className="sm:hidden"><TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
 
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
@@ -257,15 +257,15 @@ export function TransactionClient({
               { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
             ]}
             primaryAction={
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link href="/import" className="hidden sm:block">
-                  <Button variant="secondary" className="h-9 sm:h-10 px-4">
+              <div className="flex items-center gap-2 lg:gap-3">
+                <Link href="/import" className="hidden lg:block">
+                  <Button variant="secondary" className="h-9 lg:h-10 px-4">
                     <UploadCloud className="w-4 h-4 mr-2" />
                     Import
                   </Button>
                 </Link>
-                <div className="hidden sm:block"><ExportButton /></div>
-                <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} triggerClassName="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold" />
+                <div className="hidden lg:block"><ExportButton /></div>
+                <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} triggerClassName="h-9 lg:h-10 px-4 lg:px-6 text-sm lg:text-base font-semibold" />
               </div>
             }
           />
@@ -273,7 +273,7 @@ export function TransactionClient({
           <MasterViewLayout
             sidebar={
               activeTab === "insights" ? (
-                <div className="hidden md:block">
+                <div className="hidden lg:block">
                   <MasterFilterSidebar
                     isFilterActive={isFilterActive}
                     onClearFilters={clearFilters}

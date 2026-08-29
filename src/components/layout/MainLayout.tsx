@@ -12,14 +12,14 @@ export async function MainLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="pb-16 md:pb-0">
+      <main style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="pb-16 lg:pb-0">
         <div>
           {children}
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden">
+      {/* Mobile/Tablet Bottom Navigation */}
+      <div className="lg:hidden">
         <BottomNav role={role} />
       </div>
     </div>

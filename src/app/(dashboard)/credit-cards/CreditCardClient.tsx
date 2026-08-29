@@ -190,7 +190,7 @@ export function CreditCardClient({ initialCards }: { initialCards: any[] }) {
       <MasterHeader 
         title={<><CardIcon className="w-6 h-6 text-primary" /> Credit Cards</>}
         subtitle="Manage your credit cards, statements, and bills."
-        actions={<div className="sm:hidden"><CreditCardForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><CreditCardForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

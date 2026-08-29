@@ -160,7 +160,7 @@ export function LoanClient({
       <MasterHeader 
         title={<><Landmark className="w-6 h-6 text-primary" /> Loans & EMIs</>}
         subtitle="Track your debts, active EMIs, and money lent to others."
-        actions={<div className="sm:hidden"><LoanForm accounts={accounts} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><LoanForm accounts={accounts} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

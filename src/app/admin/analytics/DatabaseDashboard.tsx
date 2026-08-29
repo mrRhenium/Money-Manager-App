@@ -288,7 +288,7 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
           ) : (
             <div className="pb-8">
               {/* Desktop Table */}
-              <div className="hidden md:block rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden w-full">
+              <div className="hidden lg:block rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden w-full">
                 <Table
                   columns={columns}
                   dataSource={filteredCollections}
@@ -300,7 +300,7 @@ export default function DatabaseDashboard({ initialData }: { initialData: Analyt
               </div>
 
               {/* Mobile List */}
-              <div className="md:hidden w-full">
+              <div className="lg:hidden w-full">
                 <List
                   dataSource={filteredCollections}
                   pagination={{ pageSize: 15, align: "center", size: "small" }}

@@ -109,7 +109,7 @@ export function AdminUsersClient({ users, userTimezone }: { users: any[], userTi
 
   return (
     <>
-      <div className="hidden md:block rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
+      <div className="hidden lg:block rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
         <Table
           columns={columns}
           dataSource={users}
@@ -120,7 +120,7 @@ export function AdminUsersClient({ users, userTimezone }: { users: any[], userTi
         />
       </div>
 
-      <div className="md:hidden w-full">
+      <div className="lg:hidden w-full">
         <List
           dataSource={users}
           pagination={{ pageSize: 10, align: "center", size: "small" }}

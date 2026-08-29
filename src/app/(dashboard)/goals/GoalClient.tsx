@@ -207,7 +207,7 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
       <MasterHeader 
         title={<><Target className="w-6 h-6 text-primary" /> Savings Goals</>}
         subtitle="Track your progress towards your financial targets."
-        actions={<div className="sm:hidden"><GoalForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={<div className="lg:hidden"><GoalForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

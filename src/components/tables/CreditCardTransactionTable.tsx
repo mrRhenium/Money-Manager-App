@@ -90,7 +90,7 @@ export function CreditCardTransactionTable({ transactions, userTimezone }: { tra
 
   return (
     <>
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <Table
           columns={columns}
           dataSource={transactions}
@@ -100,7 +100,7 @@ export function CreditCardTransactionTable({ transactions, userTimezone }: { tra
           locale={{ emptyText: "No transactions yet." }}
         />
       </div>
-      <div className="md:hidden w-full">
+      <div className="lg:hidden w-full">
         <List
           dataSource={transactions}
           pagination={{ pageSize: 10, align: "center", size: "small" }}

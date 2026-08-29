@@ -291,7 +291,7 @@ export function TransactionTable({
 
   return (
     <>
-      <div className="hidden md:block rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
+      <div className="hidden lg:block rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
         <Table
           columns={columns}
           dataSource={transactions}
@@ -301,7 +301,7 @@ export function TransactionTable({
           className="w-full"
         />
       </div>
-      <div className="md:hidden w-full">
+      <div className="lg:hidden w-full">
         <List
           dataSource={filteredMobileTransactions}
           pagination={{ pageSize: 10, align: "center", size: "small" }}

@@ -293,7 +293,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       }>
 
       {/* Desktop Table */}
-      <div className="hidden md:block bg-card rounded-2xl overflow-hidden">
+      <div className="hidden lg:block bg-card rounded-2xl overflow-hidden">
         <Table
           columns={columns}
           dataSource={filteredLogs}
@@ -305,7 +305,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       </div>
 
       {/* Mobile Card List */}
-      <div className="md:hidden space-y-3">
+      <div className="lg:hidden space-y-3">
         {pagedLogs.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">No audit logs found.</div>
         )}

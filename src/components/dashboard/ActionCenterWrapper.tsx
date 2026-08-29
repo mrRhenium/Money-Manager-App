@@ -21,10 +21,10 @@ export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomin
   return (
     <div className="w-full flex flex-col gap-3">
       {/* Header Area */}
-      <div className="flex flex-col gap-4 bg-transparent md:bg-gradient-to-r from-primary/10 via-primary/5 to-transparent md:p-6 md:rounded-2xl md:border border-primary/10">
+      <div className="flex flex-col gap-4 bg-transparent lg:bg-gradient-to-r from-primary/10 via-primary/5 to-transparent lg:p-6 lg:rounded-2xl lg:border border-primary/10">
         <div className="flex flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/settings" className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex md:hidden items-center justify-center hover:opacity-80 transition-opacity">
+            <Link href="/settings" className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex lg:hidden items-center justify-center hover:opacity-80 transition-opacity">
               {user?.image ? (
                 <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
               ) : (
@@ -44,7 +44,7 @@ export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomin
             <DashboardScanTrigger />
 
             {/* Mobile Filter Button */}
-            <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)} className="md:hidden rounded-full shadow-sm bg-background/80 backdrop-blur text-foreground border-border/50 hover:bg-muted h-9 w-9 transition-all">
+            <Button variant="outline" size="icon" onClick={() => setFilterOpen(true)} className="lg:hidden rounded-full shadow-sm bg-background/80 backdrop-blur text-foreground border-border/50 hover:bg-muted h-9 w-9 transition-all">
               <Filter className="w-4 h-4" />
             </Button>
             <MasterFilterDrawer
@@ -80,7 +80,7 @@ export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomin
         </div>
 
         {/* Desktop Filter Row */}
-        <div className="hidden md:flex justify-end pt-2">
+        <div className="hidden lg:flex justify-end pt-2">
           <Suspense fallback={<div className="h-10 w-48 animate-pulse bg-muted rounded-full"></div>}>
             <DashboardAdvancedFilter />
           </Suspense>

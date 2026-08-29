@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getAwaitingTransactions, confirmTransaction } from "@/actions/transaction";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { Smartphone, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
 
 export function GlobalConfirmationCheck() {
@@ -16,23 +15,33 @@ export function GlobalConfirmationCheck() {
   const { toast } = useToast();
   
   const [awaitingTxns, setAwaitingTxns] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [confirmingStatus, setConfirmingStatus] = useState<"completed" | "cancelled" | "pending" | "dismiss" | null>(null);
+  const [dismissedTxnIds, setDismissedTxnedIds] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const fetchAwaitingConfirmations = async () => {
+  const fetchAwaitingConfirmations = useCallback(async () => {
     if (!session?.user?.id) return;
     try {
       const txns = await getAwaitingTransactions();
-      setAwaitingTxns(txns);
+      // Filter out transactions that user dismissed in the current session
+      const visibleTxns = txns.filter((t: any) => !dismissedTxnIds.includes(t._id));
+      setAwaitingTxns(visibleTxns);
+      if (visibleTxns.length > 0) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
     } catch (e) {
       console.error("Failed to check awaiting confirmations", e);
     }
-  };
+  }, [session?.user?.id, dismissedTxnIds]);
 
-  // Run on mount, user shift, and focus/app resume
+  // Run on mount, session update
   useEffect(() => {
     fetchAwaitingConfirmations();
-  }, [session]);
+  }, [fetchAwaitingConfirmations]);
 
+  // Run on window focus / visibility change without spamming
   useEffect(() => {
     const handleFocus = () => {
       fetchAwaitingConfirmations();
@@ -44,26 +53,11 @@ export function GlobalConfirmationCheck() {
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [session]);
-
-  // Intercept back button when awaiting confirms exist
-  useEffect(() => {
-    if (awaitingTxns.length > 0) {
-      window.history.pushState(null, "", window.location.href);
-      const handlePopState = () => {
-        window.history.pushState(null, "", window.location.href);
-        toast.warning("Please confirm the pending payment first");
-      };
-      window.addEventListener("popstate", handlePopState);
-      return () => {
-        window.removeEventListener("popstate", handlePopState);
-      };
-    }
-  }, [awaitingTxns]);
+  }, [fetchAwaitingConfirmations]);
 
   const handleConfirm = async (id: string, status: "completed" | "cancelled" | "pending") => {
     try {
-      setLoading(true);
+      setConfirmingStatus(status);
       await confirmTransaction(id, status);
       
       if (status === "completed") {
@@ -74,33 +68,58 @@ export function GlobalConfirmationCheck() {
         toast.info("Transaction kept pending for later confirmation.");
       }
 
-      // Re-fetch list
-      await fetchAwaitingConfirmations();
+      // Add to dismissed for this session and close
+      setDismissedTxnedIds(prev => [...prev, id]);
+      setAwaitingTxns(prev => prev.filter(t => t._id !== id));
+      setIsOpen(false);
     } catch (e: any) {
       toast.error(e.message || "Failed to confirm payment status");
     } finally {
-      setLoading(false);
+      setConfirmingStatus(null);
     }
   };
 
-  if (awaitingTxns.length === 0) return null;
+  const handleDismiss = async (id: string) => {
+    try {
+      setConfirmingStatus("dismiss");
+      // Keep it as pending in background so user can still see it in transaction list
+      await confirmTransaction(id, "pending");
+    } catch (err) {
+      console.error("Error setting transaction to pending on dismiss", err);
+    } finally {
+      setDismissedTxnedIds(prev => [...prev, id]);
+      setAwaitingTxns(prev => prev.filter(t => t._id !== id));
+      setIsOpen(false);
+      setConfirmingStatus(null);
+    }
+  };
+
+  if (awaitingTxns.length === 0 || !isOpen) return null;
 
   // Render modal for the first awaiting transaction
   const activeTxn = awaitingTxns[0];
+  const isLoading = confirmingStatus !== null;
 
   return (
-    <Dialog open={true} onOpenChange={() => {}}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!open) {
+          handleDismiss(activeTxn._id);
+        }
+      }}
+    >
       <DialogContent 
         className="sm:max-w-md p-6 rounded-2xl z-[9999]" 
-        showCloseButton={false}
+        showCloseButton={true}
       >
         <DialogHeader className="text-center flex flex-col items-center">
           <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center animate-bounce mb-2">
             <Smartphone className="w-6 h-6" />
           </div>
           <DialogTitle className="font-bold text-lg text-foreground">Confirm UPI Payment</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground mt-1">
-            Did you complete the payment of <span className="font-bold text-primary">{format(activeTxn.amount)}</span> to <span className="font-bold">{activeTxn.note?.replace("UPI Payment to ", "") || "UPI Recipient"}</span>?
+          <DialogDescription className="text-sm text-muted-foreground mt-1 text-center">
+            Did you complete the payment of <span className="font-bold text-primary">{format(activeTxn.amount)}</span> to <span className="font-bold">{activeTxn.note?.replace("UPI Payment to ", "") || "UPI Payment"}</span>?
           </DialogDescription>
         </DialogHeader>
 
@@ -108,25 +127,27 @@ export function GlobalConfirmationCheck() {
           <Button 
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
             onClick={() => handleConfirm(activeTxn._id, "completed")}
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            {confirmingStatus === "completed" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             Yes, Paid Successfully
           </Button>
           <Button 
             variant="destructive"
             className="w-full font-bold"
             onClick={() => handleConfirm(activeTxn._id, "cancelled")}
-            disabled={loading}
+            disabled={isLoading}
           >
+            {confirmingStatus === "cancelled" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             No, Failed / Cancelled
           </Button>
           <Button 
             variant="secondary"
             className="w-full font-bold"
             onClick={() => handleConfirm(activeTxn._id, "pending")}
-            disabled={loading}
+            disabled={isLoading}
           >
+            {confirmingStatus === "pending" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             Not sure yet / Ask me later
           </Button>
         </div>

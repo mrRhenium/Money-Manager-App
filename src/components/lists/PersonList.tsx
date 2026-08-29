@@ -1,40 +1,68 @@
 "use client";
 
-import { List, Popconfirm, Modal, Tabs } from "antd";
-import { User as UserIcon, Trash, Search, Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "antd";
+import { List } from "antd";
+import { User as UserIcon, Star, ArrowDownLeft, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { PersonForm } from "../forms/PersonForm";
 import { PersonDeleteModal } from "../forms/PersonDeleteModal";
-import { deletePerson } from "@/actions/person";
+import { toggleFavoritePerson } from "@/actions/person";
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
+import { PersonDetailDrawer } from "@/components/people/PersonDetailDrawer";
+import { useToast } from "@/hooks/useToast";
 
 export function PersonList({ 
   people,
   hideToolbar = false,
   externalSearch = "",
   externalFilter = "All",
-  externalTab = "merchants"
+  externalTab = "all",
+  accounts = [],
+  categories = [],
+  creditCards = []
 }: { 
   people: any[];
   hideToolbar?: boolean;
   externalSearch?: string;
   externalFilter?: string;
   externalTab?: string;
+  accounts?: any[];
+  categories?: any[];
+  creditCards?: any[];
 }) {
   const { format } = useCurrency();
-  const [internalSearch, setInternalSearch] = useState("");
-  const [internalFilter, setInternalFilter] = useState("All");
-  const [internalTab, setInternalTab] = useState("merchants");
+  const { toast } = useToast();
+  const [selectedPerson, setSelectedPerson] = useState<any | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [localPeople, setLocalPeople] = useState(people);
 
-  const searchQuery = hideToolbar ? externalSearch : internalSearch;
-  const relationFilter = hideToolbar ? externalFilter : internalFilter;
-  const activeTab = hideToolbar ? externalTab : internalTab;
+  // Sync if prop changes
+  useMemo(() => {
+    setLocalPeople(people);
+  }, [people]);
+
+  const searchQuery = externalSearch;
+  const relationFilter = externalFilter;
+  const activeTab = externalTab;
+
+  const handleToggleFavorite = async (e: React.MouseEvent, person: any) => {
+    e.stopPropagation();
+    try {
+      // Optimistic update
+      setLocalPeople(prev => prev.map(p => p._id === person._id ? { ...p, isFavorite: !p.isFavorite } : p));
+      const res = await toggleFavoritePerson(person._id);
+      toast.success(res.isFavorite ? `${person.name} added to Favorites ⭐` : `${person.name} removed from Favorites`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update favorite");
+    }
+  };
+
+  const handleCardClick = (person: any) => {
+    setSelectedPerson(person);
+    setDrawerOpen(true);
+  };
 
   const filteredPeople = useMemo(() => {
-    return people.filter((person) => {
+    return localPeople.filter((person) => {
       const q = searchQuery.toLowerCase();
       const matchesSearch = 
         person.name?.toLowerCase().includes(q) ||
@@ -44,7 +72,11 @@ export function PersonList({
       const matchesRelation = relationFilter === "All" || person.relation === relationFilter;
       return matchesSearch && matchesRelation;
     });
-  }, [people, searchQuery, relationFilter]);
+  }, [localPeople, searchQuery, relationFilter]);
+
+  const filteredFavorites = useMemo(() => {
+    return filteredPeople.filter(p => p.isFavorite);
+  }, [filteredPeople]);
 
   const filteredMerchants = useMemo(() => {
     return filteredPeople.filter(p => p.relation === "Merchant" || p.relation === "Shopkeeper");
@@ -57,154 +89,153 @@ export function PersonList({
   if (people.length === 0) {
     return (
       <div className="col-span-full p-8 text-center border rounded-xl border-dashed w-full">
-        <p className="text-muted-foreground mb-4">No people added yet.</p>
+        <p className="text-muted-foreground mb-4">No contacts added yet.</p>
       </div>
     );
   }
 
-  const renderPersonItem = (person: any, index: number) => (
-    <List.Item>
-      <div className="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group relative overflow-hidden">
-        
-        {/* Decorative background circle */}
+  const renderPersonItem = (person: any, index: number) => {
+    const isFav = person.isFavorite;
+    const isPositive = person.netBalance > 0;
+    const isNegative = person.netBalance < 0;
+
+    return (
+      <List.Item>
         <div 
-          className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none"
-          style={{ backgroundColor: person.color || '#0ea5e9' }}
-        />
+          onClick={() => handleCardClick(person)}
+          className="rounded-2xl border bg-card text-card-foreground shadow-2xs hover:shadow-md transition-all p-5 flex flex-col justify-between h-full group relative overflow-hidden cursor-pointer hover:border-primary/40"
+        >
+          {/* Decorative background circle */}
+          <div 
+            className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none transition-transform group-hover:scale-110"
+            style={{ backgroundColor: person.color || '#0ea5e9' }}
+          />
 
-        <div className="flex items-start justify-between mb-4 gap-2">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors" style={{ backgroundColor: `${person.color || '#0ea5e9'}20`, color: person.color || '#0ea5e9' }}>
-              <UserIcon className="w-5 h-5" />
+          <div className="flex items-start justify-between mb-4 gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
+              <div 
+                className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs border transition-transform group-hover:scale-105" 
+                style={{ 
+                  backgroundColor: `${person.color || '#0ea5e9'}20`, 
+                  borderColor: `${person.color || '#0ea5e9'}40`,
+                  color: person.color || '#0ea5e9' 
+                }}
+              >
+                {person.avatarUrl ? (
+                  <img src={person.avatarUrl} alt={person.name} className="w-full h-full object-cover rounded-2xl" />
+                ) : (
+                  <UserIcon className="w-5 h-5" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-foreground text-sm truncate group-hover:text-primary transition-colors" title={person.name}>
+                    {person.name}
+                  </h3>
+                  {isFav && (
+                    <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0" />
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground truncate block">{person.relation || "Contact"}</span>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="font-semibold truncate" title={person.name}>{person.name}</h3>
-              <p className="text-xs text-muted-foreground truncate">{person.relation}</p>
+
+            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={(e) => handleToggleFavorite(e, person)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  isFav 
+                    ? "text-amber-500 hover:bg-amber-500/10" 
+                    : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted"
+                }`}
+                title={isFav ? "Remove Favorite" : "Mark Favorite"}
+              >
+                <Star className={`w-4 h-4 ${isFav ? "fill-amber-500" : ""}`} />
+              </button>
+              <PersonForm person={person} />
+              <PersonDeleteModal person={person} />
             </div>
           </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <PersonForm person={person} />
-            <PersonDeleteModal person={person} />
+
+          {/* Unambiguous Net Balance status badge */}
+          <div className="pt-3 border-t border-border/50 flex items-center justify-between mt-auto">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {isPositive ? (
+                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                  <ArrowDownLeft className="w-3.5 h-3.5" /> To Receive
+                </span>
+              ) : isNegative ? (
+                <span className="flex items-center gap-1 text-red-500 font-medium">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> You Owe
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-slate-500 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Balance
+                </span>
+              )}
+            </div>
+
+            <span className={`text-sm font-extrabold px-2.5 py-0.5 rounded-full border ${
+              isPositive 
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" 
+                : isNegative 
+                  ? "bg-red-500/10 text-red-500 border-red-500/20" 
+                  : "bg-secondary/60 text-muted-foreground border-border/40"
+            }`}>
+              {isPositive ? `+${format(person.netBalance)}` : 
+               isNegative ? `-${format(Math.abs(person.netBalance))}` : 
+               "All Settled (₹0)"}
+            </span>
           </div>
         </div>
-        <div className="pt-2 border-t flex items-center justify-between mt-auto">
-          <span className="text-sm text-muted-foreground">Net Balance</span>
-          <span className={`font-bold ${person.netBalance > 0 ? "text-emerald-500" : person.netBalance < 0 ? "text-red-500" : "text-muted-foreground"}`}>
-            {person.netBalance > 0 ? `+${format(person.netBalance)}` : 
-             person.netBalance < 0 ? `-${format(Math.abs(person.netBalance))}` : 
-             "Settled"}
-          </span>
-        </div>
-      </div>
-    </List.Item>
-  );
+      </List.Item>
+    );
+  };
 
-  const activePeople = activeTab === "merchants" 
-    ? filteredMerchants 
-    : activeTab === "personal" 
-      ? filteredPersonal 
-      : filteredPeople;
+  const activePeople = activeTab === "favorites"
+    ? filteredFavorites
+    : activeTab === "merchants" 
+      ? filteredMerchants 
+      : activeTab === "personal" 
+        ? filteredPersonal 
+        : filteredPeople;
 
   return (
     <div className="w-full space-y-4">
-      {/* Filter Bar */}
-      {!hideToolbar && (
-        <div className="flex flex-col sm:flex-row gap-3 bg-card p-3 rounded-xl border shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, phone, or VPA..."
-            className="pl-9 bg-background"
-            value={internalSearch}
-            onChange={(e) => setInternalSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center gap-2 sm:w-[200px]">
-          <Filter className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
-          <Select
-            className="w-full h-10"
-            value={internalFilter}
-            onChange={setInternalFilter}
-            options={[
-              { label: "All Relations", value: "All" },
-              { label: "Friend", value: "Friend" },
-              { label: "Family", value: "Family" },
-              { label: "Colleague", value: "Colleague" },
-              { label: "Merchant", value: "Merchant" },
-              { label: "Shopkeeper", value: "Shopkeeper" },
-              { label: "Other", value: "Other" },
-            ]}
-          />
+      <div className="pt-2">
+        {activePeople.length === 0 ? (
+          <div className="p-12 text-center border rounded-2xl border-dashed bg-card/40">
+            <UserIcon className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />
+            <p className="text-sm font-semibold text-foreground">
+              {activeTab === "favorites" ? "No favorite contacts yet." : "No contacts match your filters."}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {activeTab === "favorites" ? "Click the star icon on any contact to add them to your Favorites." : "Try adjusting your search query or relation filter."}
+            </p>
           </div>
-        </div>
-      )}
-
-      {hideToolbar ? (
-        <div className="pt-2">
-          {activePeople.length === 0 ? (
-            <div className="p-8 text-center border rounded-xl border-dashed">
-              <p className="text-muted-foreground">No people match your filters in this tab.</p>
-            </div>
-          ) : (
-            <List
-              grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
-              dataSource={activePeople}
-              pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-              renderItem={renderPersonItem}
-            />
-          )}
-        </div>
-      ) : (
-        <div className="">
-          <Tabs
-            activeKey={internalTab}
-            onChange={setInternalTab}
-            items={[
-              {
-                key: "merchants",
-                label: `Merchants & Shopkeepers (${filteredMerchants.length})`,
-                children: (
-                  <div className="pt-2">
-                    {filteredMerchants.length === 0 ? (
-                      <div className="p-8 text-center border rounded-xl border-dashed">
-                        <p className="text-muted-foreground">No merchants match your filters.</p>
-                      </div>
-                    ) : (
-                      <List
-                        grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
-                        dataSource={filteredMerchants}
-                        pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-                        renderItem={renderPersonItem}
-                      />
-                    )}
-                  </div>
-                ),
-              },
-              {
-                key: "personal",
-                label: `Personal & Others (${filteredPersonal.length})`,
-                children: (
-                  <div className="pt-2">
-                    {filteredPersonal.length === 0 ? (
-                      <div className="p-8 text-center border rounded-xl border-dashed">
-                        <p className="text-muted-foreground">No personal contacts match your filters.</p>
-                      </div>
-                    ) : (
-                      <List
-                        grid={{ gutter: [24, 24], xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
-                        dataSource={filteredPersonal}
-                        pagination={{ pageSize: 12, position: "bottom", align: "end" }}
-                        renderItem={renderPersonItem}
-                      />
-                    )}
-                  </div>
-                ),
-              },
-            ]}
+        ) : (
+          <List
+            grid={{ gutter: [16, 16], xs: 1, sm: 2, md: 2, lg: 2, xl: 3, xxl: 3 }}
+            dataSource={activePeople}
+            pagination={{ pageSize: 12, position: "bottom", align: "end" }}
+            renderItem={renderPersonItem}
           />
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Person Full Statement & Ledger Drawer */}
+      <PersonDetailDrawer 
+        person={selectedPerson}
+        isOpen={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
+          setSelectedPerson(null);
+        }}
+        accounts={accounts}
+        categories={categories}
+        creditCards={creditCards}
+      />
     </div>
   );
 }

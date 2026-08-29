@@ -5,7 +5,7 @@ import { formatDate } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 import { TransactionForm } from "../forms/TransactionForm";
 import { deleteTransaction } from "@/actions/transaction";
-import { Trash, Search, RefreshCcw } from "lucide-react";
+import { Trash, Search, RefreshCcw, User } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Input } from "@/components/ui/input";
 import { parseToDate } from "@/lib/dateTimeHelper";
@@ -137,6 +137,29 @@ export function TransactionTable({
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3h5v5" /><path d="M8 3H3v5" /><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" /><path d="m15 9 6-6" /></svg>
               </div>
               <span>Internal Transfer</span>
+            </div>
+          );
+        }
+        if (record.personId) {
+          const pName = record.personId.name || "Contact";
+          return (
+            <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
+              <div 
+                className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 border"
+                style={{ 
+                  backgroundColor: `${record.personId.color || '#0ea5e9'}20`, 
+                  borderColor: `${record.personId.color || '#0ea5e9'}40`,
+                  color: record.personId.color || '#0ea5e9' 
+                }}
+              >
+                <User className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="leading-tight">{pName}</span>
+                <span className="text-[11px] text-muted-foreground leading-tight">
+                  {record.categoryId?.name || record.personId.relation || record.type}
+                </span>
+              </div>
             </div>
           );
         }
@@ -329,10 +352,21 @@ export function TransactionTable({
                   <div className={`absolute left-0 top-0 bottom-0 w-1 ${borderIndicator}`} />
 
                   <div className="flex justify-between items-start pl-1">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       {isTransfer ? (
                         <div className="p-2 rounded-xl bg-blue-50 text-blue-500 shrink-0 flex items-center justify-center">
                           <RefreshCcw className="w-5 h-5" />
+                        </div>
+                      ) : record.personId ? (
+                        <div 
+                          className="p-2 rounded-xl shrink-0 flex items-center justify-center border" 
+                          style={{ 
+                            backgroundColor: `${record.personId.color || '#0ea5e9'}20`, 
+                            borderColor: `${record.personId.color || '#0ea5e9'}40`,
+                            color: record.personId.color || '#0ea5e9' 
+                          }}
+                        >
+                          <User className="w-5 h-5" />
                         </div>
                       ) : (
                         <div className="p-2 rounded-xl bg-muted/30 shrink-0 flex items-center justify-center" style={{ color: record.categoryId?.color || 'currentColor' }}>
@@ -347,7 +381,11 @@ export function TransactionTable({
                       )}
                       <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-foreground leading-none mb-1 truncate">
-                          {isTransfer ? "Internal Transfer" : (record.categoryId?.name || (record.note?.toLowerCase().includes("emi payment") ? "EMI Payment" : record.note?.toLowerCase().includes("emi reversal") ? "EMI Reversal" : "Uncategorized"))}
+                          {isTransfer 
+                            ? "Internal Transfer" 
+                            : record.personId?.name
+                            ? (record.categoryId?.name ? `${record.personId.name} • ${record.categoryId.name}` : `${record.personId.name} (${record.type})`)
+                            : (record.categoryId?.name || (record.note?.toLowerCase().includes("emi payment") ? "EMI Payment" : record.note?.toLowerCase().includes("emi reversal") ? "EMI Reversal" : "Uncategorized"))}
                         </span>
                         <span className="text-xs text-muted-foreground mt-0.5 font-medium">
                           {formatDate(record.date, "standard", userTimezone)}

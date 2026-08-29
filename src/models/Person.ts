@@ -8,6 +8,7 @@ export interface IPerson extends Document {
   vpas: string[];
   avatarUrl?: string;
   color?: string;
+  isFavorite?: boolean;
   createdAt: Date;
 }
 
@@ -24,6 +25,7 @@ const PersonSchema: Schema<IPerson> = new Schema(
     vpas: [{ type: String }],
     avatarUrl: { type: String },
     color: { type: String, default: "#0ea5e9" },
+    isFavorite: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

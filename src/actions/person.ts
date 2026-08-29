@@ -50,7 +50,7 @@ export async function getPeople() {
 
 import { logAuditEvent } from "@/actions/auditLog";
 
-export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string }) {
+export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string; isFavorite?: boolean }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
@@ -145,7 +145,7 @@ export async function savePersonVpa(name: string, vpa: string, relation: "Friend
   return JSON.parse(JSON.stringify(person));
 }
 
-export async function updatePerson(id: string, data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string }) {
+export async function updatePerson(id: string, data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string; isFavorite?: boolean }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
 
@@ -169,7 +169,17 @@ export async function updatePerson(id: string, data: { name: string; relation: "
 
   const person = await Person.findOneAndUpdate(
     { _id: id, userId: session.user.id },
-    { $set: { name: data.name, relation: data.relation, phones: data.phones || [], vpas: data.vpas || [], ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }), ...(data.color !== undefined && { color: data.color }) } },
+    { 
+      $set: { 
+        name: data.name, 
+        relation: data.relation, 
+        phones: data.phones || [], 
+        vpas: data.vpas || [], 
+        ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }), 
+        ...(data.color !== undefined && { color: data.color }),
+        ...(data.isFavorite !== undefined && { isFavorite: data.isFavorite })
+      } 
+    },
     { returnDocument: 'after' }
   );
 
@@ -181,4 +191,39 @@ export async function updatePerson(id: string, data: { name: string; relation: "
   revalidatePath("/");
 
   return JSON.parse(JSON.stringify(person));
+}
+
+export async function toggleFavoritePerson(id: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+
+  await dbConnect();
+
+  const person = await Person.findOne({ _id: id, userId: session.user.id });
+  if (!person) throw new Error("Contact not found");
+
+  const newFavorite = !person.isFavorite;
+  person.isFavorite = newFavorite;
+  await person.save();
+
+  revalidatePath("/people");
+  return { success: true, isFavorite: newFavorite };
+}
+
+export async function getPersonTransactions(personId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+
+  await dbConnect();
+
+  const transactions = await Transaction.find({
+    userId: session.user.id,
+    personId
+  })
+    .populate("accountId", "name type currency")
+    .populate("categoryId", "name icon color")
+    .sort({ date: -1, createdAt: -1 })
+    .lean();
+
+  return JSON.parse(JSON.stringify(transactions));
 }

@@ -8,7 +8,7 @@ import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawe
 import { KPICard } from "@/components/dashboard/KPICard";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { useCurrency } from "@/hooks/useCurrency";
-import { Search, Users, ArrowDownRight, ArrowUpRight, LayoutGrid, PieChartIcon } from "lucide-react";
+import { Search, Users, ArrowDownRight, ArrowUpRight, LayoutGrid, PieChartIcon, Star } from "lucide-react";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
 import { PersonForm } from "@/components/forms/PersonForm";
@@ -17,7 +17,17 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
 
-export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
+export function PersonClient({ 
+  initialPeople,
+  accounts = [],
+  categories = [],
+  creditCards = []
+}: { 
+  initialPeople: any[];
+  accounts?: any[];
+  categories?: any[];
+  creditCards?: any[];
+}) {
   const { format, formatCompact } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -28,6 +38,7 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
   const [relationFilter, setRelationFilter] = useState<string[]>(searchParams.get("relation") ? searchParams.get("relation")!.split(",") : []);
   const [balanceStatus, setBalanceStatus] = useState<string[]>(searchParams.get("balanceStatus") ? searchParams.get("balanceStatus")!.split(",") : []);
   const [hasVpa, setHasVpa] = useState<string[]>(searchParams.get("hasVpa") ? searchParams.get("hasVpa")!.split(",") : []);
+  const [favoriteFilter, setFavoriteFilter] = useState<string[]>(searchParams.get("fav") ? searchParams.get("fav")!.split(",") : []);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Sync state to URL
@@ -48,18 +59,22 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
     if (hasVpa.length > 0) current.set("hasVpa", hasVpa.join(","));
     else current.delete("hasVpa");
 
+    if (favoriteFilter.length > 0) current.set("fav", favoriteFilter.join(","));
+    else current.delete("fav");
+
     const search = current.toString();
     const query = search ? `?${search}` : "";
     window.history.replaceState(null, '', `${pathname}${query}`);
-  }, [activeTab, searchQuery, relationFilter, pathname]);
+  }, [activeTab, searchQuery, relationFilter, balanceStatus, hasVpa, favoriteFilter, pathname]);
 
-  const isFilterActive = searchQuery !== "" || relationFilter.length > 0 || balanceStatus.length > 0 || hasVpa.length > 0;
+  const isFilterActive = searchQuery !== "" || relationFilter.length > 0 || balanceStatus.length > 0 || hasVpa.length > 0 || favoriteFilter.length > 0;
 
   const clearFilters = () => {
     setSearchQuery("");
     setRelationFilter([]);
     setBalanceStatus([]);
     setHasVpa([]);
+    setFavoriteFilter([]);
   };
 
   const filteredPeople = React.useMemo(() => {
@@ -83,6 +98,13 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
         return false;
       });
     }
+    if (favoriteFilter.length > 0) {
+      result = result.filter(p => {
+        if (favoriteFilter.includes("yes") && p.isFavorite) return true;
+        if (favoriteFilter.includes("no") && !p.isFavorite) return true;
+        return false;
+      });
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -90,7 +112,7 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
       );
     }
     return result;
-  }, [initialPeople, relationFilter, balanceStatus, hasVpa, searchQuery]);
+  }, [initialPeople, relationFilter, balanceStatus, hasVpa, favoriteFilter, searchQuery]);
 
   // KPIs
   const totalOweUs = filteredPeople.filter((p: any) => p.netBalance > 0).reduce((acc: number, p: any) => acc + p.netBalance, 0);
@@ -110,6 +132,24 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
     <div className="space-y-6">
       <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Name, phone, or VPA..." />
       
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Favorites</h3>
+        <AntSelect
+          mode="multiple"
+          allowClear
+          maxTagCount="responsive"
+          placeholder="All Contacts"
+          value={favoriteFilter}
+          onChange={setFavoriteFilter}
+          className="w-full min-h-10"
+          popupMatchSelectWidth={false}
+          options={[
+            { label: "⭐ Favorites Only", value: "yes" },
+            { label: "Non-Favorites", value: "no" },
+          ]}
+        />
+      </div>
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Relationship</h3>
         <AntSelect
@@ -190,7 +230,8 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             tabs={[
-              { value: "data", label: "Data View", icon: <LayoutGrid className="w-4 h-4 mr-2" /> },
+              { value: "data", label: "All Contacts", icon: <LayoutGrid className="w-4 h-4 mr-2" /> },
+              { value: "favorites", label: "Favorites", icon: <Star className="w-4 h-4 mr-2 fill-amber-500 text-amber-500" /> },
               { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
             ]}
             primaryAction={<PersonForm triggerClassName="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold" />}
@@ -206,17 +247,30 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
               </MasterFilterSidebar>
             }
           >
-            {/* 
-              Since PersonList has its own internal Tabs, we actually want to override it 
-              with our external state. Let's make sure PersonList handles the active tab logic.
-            */}
             <TabsContent value="data" className="h-full m-0">
               <div className="pb-24">
                 <PersonList
                   people={filteredPeople}
                   hideToolbar={true}
                   externalSearch={searchQuery}
-                  externalTab={activeTab}
+                  externalTab="all"
+                  accounts={accounts}
+                  categories={categories}
+                  creditCards={creditCards}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="favorites" className="h-full m-0">
+              <div className="pb-24">
+                <PersonList
+                  people={filteredPeople}
+                  hideToolbar={true}
+                  externalSearch={searchQuery}
+                  externalTab="favorites"
+                  accounts={accounts}
+                  categories={categories}
+                  creditCards={creditCards}
                 />
               </div>
             </TabsContent>

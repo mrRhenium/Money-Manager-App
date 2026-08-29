@@ -8,10 +8,12 @@ import CardStatement from "@/models/CardStatement";
 import Category from "@/models/Category";
 import User from "@/models/User";
 import Budget from "@/models/Budget";
+import Person from "@/models/Person";
 
 // Force models to register for populate
 import "@/models/Category";
 import "@/models/Account";
+import "@/models/Person";
 
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -31,6 +33,7 @@ export async function getTransactions(limit = 50) {
     .populate("categoryId", "name icon color type")
     .populate("accountId", "name type")
     .populate("toAccountId", "name type")
+    .populate("personId", "name relation color isFavorite")
     .lean();
     
   return JSON.parse(JSON.stringify(transactions));

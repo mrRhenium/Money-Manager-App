@@ -679,8 +679,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                   })}
                 </Select>
 
-                {/* Quick App Badges (Active Apps) */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {/* Quick App Badges (Active Apps) - Visible on desktop/tablet, hidden on mobile */}
+                <div className="hidden sm:flex flex-wrap items-center gap-1.5 pt-1">
                   <span className="text-[10px] text-muted-foreground font-medium">Quick Pick:</span>
                   {sortedUpiApps
                     .filter(a => a.isActive !== false)

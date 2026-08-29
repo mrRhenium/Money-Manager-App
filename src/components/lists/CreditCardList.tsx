@@ -80,12 +80,14 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
 
           return (
             <List.Item>
-              <Link href={`/credit-cards/${card._id}`} className="group relative block cursor-pointer transition-transform hover:-translate-y-1 h-full">
+              <div className="group relative block rounded-2xl transition-transform hover:-translate-y-1 h-full">
                 <div 
-                  className="rounded-2xl p-6 text-white shadow-lg overflow-hidden h-56 flex flex-col justify-between"
+                  className="rounded-2xl p-6 text-white shadow-lg overflow-hidden h-56 flex flex-col justify-between relative"
                   style={{ background: `linear-gradient(135deg, ${card.color} 0%, #1a1a1a 150%)` }}
                 >
-                  <div className="flex justify-between items-start gap-2">
+                  <Link href={`/credit-cards/${card._id}`} className="absolute inset-0 z-0" aria-label={`View details of ${card.bankName} ${card.cardName}`} />
+
+                  <div className="flex justify-between items-start gap-2 relative z-10 pointer-events-none">
                     <div className="flex items-start gap-2 min-w-0">
                       <span className="text-white/70 font-bold shrink-0 text-sm mt-1">{index + 1}.</span>
                       <div className="min-w-0">
@@ -93,22 +95,22 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
                         <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 z-10 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       <div className="bg-white/25 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md mt-1">
                         {card.cardNetwork}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-end">
-                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 font-mono text-base sm:text-lg md:text-xl tracking-widest opacity-90">
+                  <div className="flex justify-between items-end relative z-10">
+                    <Link href={`/credit-cards/${card._id}`} className="flex items-center gap-2 sm:gap-3 md:gap-4 font-mono text-base sm:text-lg md:text-xl tracking-widest opacity-90 hover:opacity-100 transition-opacity">
                       <span>••••</span>
                       <span>••••</span>
                       <span>••••</span>
                       <span>{card.last4Digits}</span>
-                    </div>
+                    </Link>
 
-                    <div className="flex items-center gap-1 z-10 shrink-0" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                    <div className="flex items-center gap-1 shrink-0">
                       <CreditCardForm card={card} />
                       <Button 
                         variant="ghost" 
@@ -135,7 +137,7 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
                   </div>
                 </div>
 
-                <div className="mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50 w-full space-y-3">
+                <Link href={`/credit-cards/${card._id}`} className="block mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50 w-full space-y-3">
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Used / Limit</p>
@@ -159,8 +161,8 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
                       <AlertCircle className="w-3 h-3 shrink-0" /> High utilization affects credit score
                     </p>
                   )}
-                </div>
-              </Link>
+                </Link>
+              </div>
             </List.Item>
           );
         }}

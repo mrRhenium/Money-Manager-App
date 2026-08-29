@@ -16,7 +16,7 @@ export function GlobalConfirmationCheck() {
   
   const [awaitingTxns, setAwaitingTxns] = useState<any[]>([]);
   const [confirmingStatus, setConfirmingStatus] = useState<"completed" | "cancelled" | "pending" | "dismiss" | null>(null);
-  const [dismissedTxnIds, setDismissedTxnedIds] = useState<string[]>([]);
+  const [dismissedTxnIds, setDismissedTxnIds] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   const fetchAwaitingConfirmations = useCallback(async () => {
@@ -58,6 +58,12 @@ export function GlobalConfirmationCheck() {
   const handleConfirm = async (id: string, status: "completed" | "cancelled" | "pending") => {
     try {
       setConfirmingStatus(status);
+      
+      // Close modal and remove from active list immediately
+      setDismissedTxnIds(prev => [...prev, id]);
+      setAwaitingTxns(prev => prev.filter(t => t._id !== id));
+      setIsOpen(false);
+
       await confirmTransaction(id, status);
       
       if (status === "completed") {
@@ -67,12 +73,8 @@ export function GlobalConfirmationCheck() {
       } else {
         toast.info("Transaction kept pending for later confirmation.");
       }
-
-      // Add to dismissed for this session and close
-      setDismissedTxnedIds(prev => [...prev, id]);
-      setAwaitingTxns(prev => prev.filter(t => t._id !== id));
-      setIsOpen(false);
     } catch (e: any) {
+      console.error(e);
       toast.error(e.message || "Failed to confirm payment status");
     } finally {
       setConfirmingStatus(null);
@@ -82,14 +84,15 @@ export function GlobalConfirmationCheck() {
   const handleDismiss = async (id: string) => {
     try {
       setConfirmingStatus("dismiss");
+      setDismissedTxnIds(prev => [...prev, id]);
+      setAwaitingTxns(prev => prev.filter(t => t._id !== id));
+      setIsOpen(false);
+
       // Keep it as pending in background so user can still see it in transaction list
       await confirmTransaction(id, "pending");
     } catch (err) {
       console.error("Error setting transaction to pending on dismiss", err);
     } finally {
-      setDismissedTxnedIds(prev => [...prev, id]);
-      setAwaitingTxns(prev => prev.filter(t => t._id !== id));
-      setIsOpen(false);
       setConfirmingStatus(null);
     }
   };

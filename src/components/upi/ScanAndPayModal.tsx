@@ -349,18 +349,20 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
   // Final confirmation status handler
   const handleFinalConfirm = async (status: "completed" | "cancelled" | "pending") => {
-    if (!createdTxnId) return;
+    const txnId = createdTxnId;
+    
+    // Close modal and reset state immediately
+    onOpenChange(false);
+    resetModal();
+
+    if (!txnId) return;
 
     try {
       setLoading(true);
       setConfirmingStatus(status);
-      
-      // Close the modal and reset states immediately so the popup closes without lag
-      onOpenChange(false);
-      resetModal();
 
       // Trigger transaction confirmation on the backend in the background
-      await confirmTransaction(createdTxnId, status);
+      await confirmTransaction(txnId, status);
 
       if (status === "completed") {
         toast.success("Payment marked as successful!");

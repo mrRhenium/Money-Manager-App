@@ -15,6 +15,7 @@ import { CreditCardTransactionTable } from "@/components/tables/CreditCardTransa
 import { CreditCardStatementTable } from "@/components/tables/CreditCardStatementTable";
 import { formatIndianNumber } from "@/lib/numberHelper";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { CreditCardForm } from "@/components/forms/CreditCardForm";
 
 export default async function CreditCardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -45,6 +46,9 @@ export default async function CreditCardDetailPage({ params }: { params: Promise
               </h1>
               <p className="text-muted-foreground text-sm font-mono tracking-widest mt-1">•••• {card.last4Digits}</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <CreditCardForm card={card} />
           </div>
         </div>
       </div>

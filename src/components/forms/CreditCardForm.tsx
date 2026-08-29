@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { getCurrentFormatted, formatDateString, parseToDate } from "@/lib/dateTimeHelper";
+import { useState, useEffect } from "react";
+import { getCurrentFormatted, formatDateString, parseToDate, getEndOfMonth } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,6 +14,7 @@ import { createCreditCard, updateCreditCard } from "@/actions/creditCard";
 import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette, PenLine } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useToast } from "@/hooks/useToast";
 import { ColorPicker } from "@/components/ui/IconColorPicker";
 
 const formSchema = z.object({
@@ -39,6 +40,7 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { currencyCode } = useCurrency();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
@@ -58,42 +60,9 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setError("");
-    setLoading(true);
-    
-    // Validate Dates
-    const start = parseToDate(values.startingDate);
-    const end = parseToDate(values.expiryDate);
-    if (end <= start) {
-      setError("Expiry date must be after starting date.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const parsedPayload = {
-        ...values,
-        creditLimit: parseIndianNumber(values.creditLimit),
-      };
-
-      if (card?._id) {
-        await updateCreditCard(card._id, parsedPayload);
-      } else {
-        await createCreditCard(parsedPayload);
-      }
-      setOpen(false);
-      form.reset();
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to save credit card.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
+  // Re-populate form whenever card changes or modal opens
+  useEffect(() => {
+    if (open) {
       form.reset({
         cardName: card?.cardName ? String(card.cardName) : "",
         bankName: card?.bankName ? String(card.bankName) : "",
@@ -110,7 +79,49 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
       });
       setError("");
     }
+  }, [card, open, form]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setError("");
+    setLoading(true);
+    
+    // Validate Dates
+    const start = parseToDate(values.startingDate);
+    const end = getEndOfMonth(values.expiryDate);
+    if (end <= start) {
+      setError("Expiry date must be after issue date.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const parsedPayload = {
+        ...values,
+        creditLimit: parseIndianNumber(values.creditLimit),
+      };
+
+      if (card?._id) {
+        await updateCreditCard(card._id, parsedPayload);
+        toast.success("Credit card updated successfully!");
+      } else {
+        await createCreditCard(parsedPayload);
+        toast.success("Credit card registered successfully!");
+      }
+      setOpen(false);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to save credit card.");
+      toast.error(err.message || "Failed to save credit card.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
+    if (!newOpen) {
+      setError("");
+    }
   };
 
   return (

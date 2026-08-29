@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCategory, updateCategory } from "@/actions/category";
-import { Plus, FolderPlus, Type, List, Palette, PenLine, Sparkles } from "lucide-react";
+import { Plus, FolderPlus, Type, List, Palette, PenLine, Loader2 } from "lucide-react";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -22,6 +23,9 @@ const formSchema = z.object({
 
 export function CategoryForm({ category, triggerClassName }: { category?: any, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
@@ -32,22 +36,8 @@ export function CategoryForm({ category, triggerClassName }: { category?: any, t
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      if (category?._id) {
-        await updateCategory(category._id, values);
-      } else {
-        await createCategory(values);
-      }
-      setOpen(false);
-      form.reset();
-    } catch (error) {
-      console.error("Failed to save category", error);
-    }
-  }
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
+  useEffect(() => {
+    if (open) {
       form.reset({
         name: category?.name || "",
         type: category?.type || "expense",
@@ -55,6 +45,36 @@ export function CategoryForm({ category, triggerClassName }: { category?: any, t
         icon: category?.icon || "Circle",
       });
     }
+  }, [category, open, form]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      setIsLoading(true);
+      if (category?._id) {
+        const res = await updateCategory(category._id, values);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to update category");
+          return;
+        }
+        toast.success("Category updated successfully!");
+      } else {
+        const res = await createCategory(values);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to create category");
+          return;
+        }
+        toast.success("Category created successfully!");
+      }
+      setOpen(false);
+    } catch (error: any) {
+      console.error("Failed to save category", error);
+      toast.error(error.message || "Failed to save category");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
   };
 
@@ -131,7 +151,10 @@ export function CategoryForm({ category, triggerClassName }: { category?: any, t
                 <IconPicker value={field.value} onChange={field.onChange} color={form.watch("color")} />
               )}
             />
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{category ? "Save Changes" : "Create Category"}</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {isLoading ? "Saving..." : (category ? "Save Changes" : "Create Category")}
+            </Button>
           </form>
         </Form>
       </DialogContent>

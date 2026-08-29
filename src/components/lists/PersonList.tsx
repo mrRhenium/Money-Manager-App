@@ -1,14 +1,16 @@
 "use client";
 
 import { List } from "antd";
-import { User as UserIcon, Star, ArrowDownLeft, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { User as UserIcon, Star, ArrowDownLeft, ArrowUpRight, CheckCircle2, Trash } from "lucide-react";
 import { PersonForm } from "../forms/PersonForm";
 import { PersonDeleteModal } from "../forms/PersonDeleteModal";
-import { toggleFavoritePerson } from "@/actions/person";
+import { toggleFavoritePerson, deletePerson } from "@/actions/person";
 import { useState, useMemo } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { PersonDetailDrawer } from "@/components/people/PersonDetailDrawer";
 import { useToast } from "@/hooks/useToast";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { Button } from "@/components/ui/button";
 
 export function PersonList({ 
   people,
@@ -31,6 +33,7 @@ export function PersonList({
 }) {
   const { format } = useCurrency();
   const { toast } = useToast();
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
   const [selectedPerson, setSelectedPerson] = useState<any | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [localPeople, setLocalPeople] = useState(people);
@@ -63,6 +66,7 @@ export function PersonList({
 
   const filteredPeople = useMemo(() => {
     return localPeople.filter((person) => {
+      if (hiddenIds.has(person._id)) return false;
       const q = searchQuery.toLowerCase();
       const matchesSearch = 
         person.name?.toLowerCase().includes(q) ||
@@ -72,7 +76,7 @@ export function PersonList({
       const matchesRelation = relationFilter === "All" || person.relation === relationFilter;
       return matchesSearch && matchesRelation;
     });
-  }, [localPeople, searchQuery, relationFilter]);
+  }, [localPeople, searchQuery, relationFilter, hiddenIds]);
 
   const filteredFavorites = useMemo(() => {
     return filteredPeople.filter(p => p.isFavorite);
@@ -133,9 +137,6 @@ export function PersonList({
                   <h3 className="font-bold text-foreground text-sm truncate group-hover:text-primary transition-colors" title={person.name}>
                     {person.name}
                   </h3>
-                  {isFav && (
-                    <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0" />
-                  )}
                 </div>
                 <span className="text-xs text-muted-foreground truncate block">{person.relation || "Contact"}</span>
               </div>
@@ -154,7 +155,29 @@ export function PersonList({
                 <Star className={`w-4 h-4 ${isFav ? "fill-amber-500" : ""}`} />
               </button>
               <PersonForm person={person} />
-              <PersonDeleteModal person={person} />
+              {person.transactionCount > 0 ? (
+                <PersonDeleteModal person={person} />
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  onClick={() => {
+                    triggerDelete({
+                      id: person._id,
+                      entityName: person.name,
+                      onCommit: async () => {
+                        const res = await deletePerson(person._id);
+                        if (res && !res.success) {
+                          throw new Error(res.error);
+                        }
+                      }
+                    });
+                  }}
+                >
+                  <Trash className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,10 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createAccount, updateAccount } from "@/actions/account";
-import { Plus, Landmark, PenLine, List, Banknote } from "lucide-react";
+import { Plus, Landmark, PenLine, List, Banknote, Loader2 } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -26,9 +27,11 @@ const formSchema = z.object({
 
 export function AccountForm({ account, triggerClassName }: { account?: any, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currency, setCurrency] = useState(account?.currency || "INR");
   const [color, setColor] = useState(account?.color || "#3b82f6");
   const [icon, setIcon] = useState(account?.icon || "landmark");
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,8 +42,22 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: account?.name || "",
+        type: account?.type || "bank",
+        balance: account?.balance !== undefined ? account.balance.toString() : "",
+      });
+      setCurrency(account?.currency || "INR");
+      setColor(account?.color || "#3b82f6");
+      setIcon(account?.icon || "landmark");
+    }
+  }, [account, open, form]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      setIsLoading(true);
       const payload = {
         ...values,
         balance: parseIndianNumber(values.balance),
@@ -51,27 +68,21 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
 
       if (account) {
         await updateAccount(account._id, payload);
+        toast.success("Account updated successfully!");
       } else {
         await createAccount(payload);
+        toast.success("Account created successfully!");
       }
       setOpen(false);
-      form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      toast.error(error.message || "Failed to save account");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      form.reset({
-        name: account?.name || "",
-        type: account?.type || "bank",
-        balance: account?.balance ? account.balance.toString() : "",
-      });
-      setCurrency(account?.currency || "INR");
-      setColor(account?.color || "#3b82f6");
-      setIcon(account?.icon || "landmark");
-    }
     setOpen(newOpen);
   };
 
@@ -103,9 +114,9 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2"><PenLine className="w-4 h-4 text-muted-foreground" /> Account Name</FormLabel>
+                  <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Account Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. HDFC Bank" {...field} />
+                    <Input placeholder="e.g. HDFC Salary" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,15 +130,17 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
                   <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Account Type</FormLabel>
                   <FormControl>
                     <Select
+                      showSearch
+                      placeholder="Select type"
                       className="w-full h-10"
+                      optionFilterProp="label"
                       options={[
-                        { label: 'Bank', value: 'bank' },
-                        { label: 'Cash', value: 'cash' },
-                        { label: 'Credit Card', value: 'card' },
-                        { label: 'Wallet', value: 'wallet' },
-                        { label: 'Investment', value: 'investment' },
-                        { label: 'Saving', value: 'saving' },
-                        { label: 'Other', value: 'other' },
+                        { label: 'Bank Account', value: 'bank' },
+                        { label: 'Cash Wallet', value: 'cash' },
+                        { label: 'Digital Wallet', value: 'wallet' },
+                        { label: 'Savings & Deposits', value: 'saving' },
+                        { label: 'Investment Portfolio', value: 'investment' },
+                        { label: 'Other Account', value: 'other' },
                       ]}
                       {...field}
                     />
@@ -163,7 +176,10 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
               <IconPicker value={icon} onChange={setIcon} />
             </div>
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{account ? "Save Changes" : "Create Account"}</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {isLoading ? "Saving..." : (account ? "Save Changes" : "Create Account")}
+            </Button>
           </form>
         </Form>
       </DialogContent>

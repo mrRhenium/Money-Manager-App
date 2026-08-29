@@ -524,7 +524,10 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
               )}
             />
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{transaction ? "Save Changes" : "Save Transaction"}</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {isSubmitting ? "Saving..." : (transaction ? "Save Changes" : "Save Transaction")}
+            </Button>
           </form>
         </Form>
       </DialogContent>

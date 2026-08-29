@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createCreditCard, updateCreditCard } from "@/actions/creditCard";
-import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette, PenLine } from "lucide-react";
+import { Plus, CreditCard as CardIcon, Landmark, Tag, User, Hash, Banknote, Calendar, CalendarClock, CalendarDays, CalendarCheck, Palette, PenLine, Loader2 } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/useToast";
@@ -276,7 +276,10 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
               <ColorPicker value={field.value} onChange={field.onChange} id={`creditCardColorInput-${card?._id || 'new'}`} />
             )} />
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{card ? "Save Changes" : "Register Card"}</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {loading ? "Saving..." : (card ? "Save Changes" : "Register Card")}
+            </Button>
           </form>
         </Form>
       </DialogContent>

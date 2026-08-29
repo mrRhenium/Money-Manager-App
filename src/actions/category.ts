@@ -21,38 +21,40 @@ export async function getCategories() {
 }
 
 export async function createCategory(data: { name: string; type: "expense" | "income"; icon?: string; color?: string }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
-  
-  if (data.color) {
-    const standardizedColor = data.color.toLowerCase();
-    const existing = await Category.findOne({
-      $or: [
-        { userId: session.user.id },
-        { isSystem: true }
-      ],
-      color: { $regex: new RegExp(`^${standardizedColor}$`, "i") }
+    await dbConnect();
+
+    // Check duplicate name within the same type for the user
+    const existingName = await Category.findOne({
+      userId: session.user.id,
+      name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") },
+      type: data.type
     });
-    if (existing) {
-      throw new Error("This color code is already in use by another category.");
+    if (existingName) {
+      return { success: false, error: `A category named "${data.name}" already exists for ${data.type}.` };
     }
+    
+    const category = await Category.create({
+      ...data,
+      userId: session.user.id,
+      isSystem: false,
+    });
+
+    await logAuditEvent("Category", category._id.toString(), "CREATE", undefined, category);
+
+    revalidatePath("/categories");
+    revalidatePath("/transactions");
+    revalidatePath("/budgets");
+    revalidatePath("/");
+    
+    return { success: true, data: JSON.parse(JSON.stringify(category)) };
+  } catch (err: any) {
+    console.error("Error creating category:", err);
+    return { success: false, error: err.message || "Failed to create category" };
   }
-  
-  const category = await Category.create({
-    ...data,
-    userId: session.user.id,
-    isSystem: false,
-  });
-
-  await logAuditEvent("Category", category._id.toString(), "CREATE", undefined, category);
-
-  revalidatePath("/categories");
-  revalidatePath("/transactions");
-  revalidatePath("/");
-  
-  return JSON.parse(JSON.stringify(category));
 }
 
 import Transaction from "@/models/Transaction";
@@ -107,41 +109,39 @@ export async function deleteCategory(id: string) {
 }
 
 export async function updateCategory(id: string, data: { name: string; type: "expense" | "income"; color: string; icon?: string }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  if (data.color) {
-    const standardizedColor = data.color.toLowerCase();
-    const existing = await Category.findOne({
-      _id: { $ne: id },
-      $or: [
-        { userId: session.user.id },
-        { isSystem: true }
-      ],
-      color: { $regex: new RegExp(`^${standardizedColor}$`, "i") }
+    const oldCategory = await Category.findOne({
+      _id: id,
+      $or: [{ userId: session.user.id }, { isSystem: true }]
     });
-    if (existing) {
-      throw new Error("This color code is already in use by another category.");
+
+    if (!oldCategory) {
+      return { success: false, error: "Category not found or unauthorized." };
     }
+
+    const category = await Category.findOneAndUpdate(
+      { _id: id, $or: [{ userId: session.user.id }, { isSystem: true }] },
+      { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon } },
+      { returnDocument: 'after' }
+    );
+
+    if (category) {
+      await logAuditEvent("Category", id, "UPDATE", oldCategory, category);
+    }
+
+    revalidatePath("/categories");
+    revalidatePath("/transactions");
+    revalidatePath("/budgets");
+    revalidatePath("/");
+
+    return { success: true, data: JSON.parse(JSON.stringify(category)) };
+  } catch (err: any) {
+    console.error("Error updating category:", err);
+    return { success: false, error: err.message || "Failed to update category" };
   }
-
-  const oldCategory = await Category.findOne({ _id: id, userId: session.user.id, isSystem: false });
-
-  const category = await Category.findOneAndUpdate(
-    { _id: id, userId: session.user.id, isSystem: false },
-    { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon } },
-    { returnDocument: 'after' }
-  );
-
-  if (category) {
-    await logAuditEvent("Category", id, "UPDATE", oldCategory, category);
-  }
-
-  revalidatePath("/categories");
-  revalidatePath("/transactions");
-  revalidatePath("/");
-
-  return JSON.parse(JSON.stringify(category));
 }

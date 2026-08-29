@@ -51,29 +51,27 @@ export function CategoryList({
           <span className="font-medium text-foreground">{cat.name}</span>
         </div>
         <div className="flex items-center gap-1.5 z-10">
+          <CategoryForm category={cat} />
           {!cat.isSystem && (
-            <>
-              <CategoryForm category={cat} />
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-full transition-colors"
-                onClick={() => {
-                  triggerDelete({
-                    id: cat._id,
-                    entityName: cat.name,
-                    onCommit: async () => {
-                      const res = await deleteCategory(cat._id);
-                      if (res && !res.success) {
-                        throw new Error(res.error);
-                      }
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-full transition-colors"
+              onClick={() => {
+                triggerDelete({
+                  id: cat._id,
+                  entityName: cat.name,
+                  onCommit: async () => {
+                    const res = await deleteCategory(cat._id);
+                    if (res && !res.success) {
+                      throw new Error(res.error);
                     }
-                  });
-                }}
-              >
-                <Trash className="w-4 h-4" />
-              </Button>
-            </>
+                  }
+                });
+              }}
+            >
+              <Trash className="w-4 h-4" />
+            </Button>
           )}
         </div>
         {/* Decorative background circle */}

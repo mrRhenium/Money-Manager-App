@@ -26,6 +26,7 @@ const formSchema = z.object({
 
 export function PersonForm({ person, triggerClassName }: { person?: any, triggerClassName?: string }) {
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>(person?.avatarUrl || "");
   const [isUploading, setIsUploading] = useState(false);
   const [color, setColor] = useState(person?.color || "#0ea5e9");
@@ -40,6 +41,19 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        relation: person?.relation || "Friend",
+        name: person?.name || "",
+        phones: person?.phones?.length ? person.phones.map((p: string) => ({ value: p })) : [],
+        vpas: person?.vpas?.length ? person.vpas.map((v: string) => ({ value: v })) : [],
+      });
+      setAvatarUrl(person?.avatarUrl || "");
+      setColor(person?.color || "#0ea5e9");
+    }
+  }, [person, open, form]);
+
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
     name: "phones",
     control: form.control,
@@ -52,6 +66,7 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      setIsLoading(true);
       const transformedValues: any = {
         name: values.name,
         relation: values.relation,
@@ -63,14 +78,16 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
 
       if (person?._id) {
         await updatePerson(person._id, transformedValues);
+        toast.success("Contact updated successfully!");
       } else {
         await createPerson(transformedValues);
+        toast.success("Contact added successfully!");
       }
       setOpen(false);
-      form.reset();
-      toast.success(person ? "Contact updated" : "Contact added");
     } catch (error: any) {
       toast.error(error.message || "Failed to save contact");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -296,7 +313,10 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
             <div className="pt-2 pb-2 border-t">
               <ColorPicker value={color} onChange={setColor} id={`personColor-${person?._id || 'new'}`} />
             </div>
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{person ? "Save Changes" : "Add Contact"}</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {isLoading ? "Saving..." : (person ? "Save Changes" : "Add Contact")}
+            </Button>
           </form>
         </Form>
       </DialogContent>

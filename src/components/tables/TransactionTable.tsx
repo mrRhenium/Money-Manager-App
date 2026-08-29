@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Popconfirm, List } from "antd";
+import { Table, List } from "antd";
 import { formatDate } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 import { TransactionForm } from "../forms/TransactionForm";
@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useMemo } from "react";
+import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { useMemo, useState, useRef } from "react";
 
 export function TransactionTable({
   transactions,
@@ -38,9 +39,14 @@ export function TransactionTable({
   externalMobileAccount?: string[];
 }) {
   const { format } = useCurrency();
+  const { hiddenIds, triggerDelete } = useUndoableDelete();
+
+  const visibleTransactions = useMemo(() => {
+    return transactions.filter(t => !hiddenIds.has(t._id));
+  }, [transactions, hiddenIds]);
 
   const filteredMobileTransactions = useMemo(() => {
-    let result = [...transactions];
+    let result = [...visibleTransactions];
 
     if (externalMobileType && externalMobileType !== "all") {
       result = result.filter(t => t.type === externalMobileType);
@@ -296,17 +302,22 @@ export function TransactionTable({
       render: (_: any, record: any) => (
         <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
           <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} transaction={record} />
-          <Popconfirm
-            title="Delete Transaction"
-            description="Are you sure you want to delete this transaction?"
-            onConfirm={() => deleteTransaction(record._id)}
-            okText="Yes"
-            cancelText="No"
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            onClick={() => {
+              triggerDelete({
+                id: record._id,
+                entityName: record.note ? `Transaction (${record.note})` : "Transaction",
+                onCommit: async () => {
+                  await deleteTransaction(record._id);
+                }
+              });
+            }}
           >
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
-              <Trash className="w-4 h-4" />
-            </Button>
-          </Popconfirm>
+            <Trash className="w-4 h-4" />
+          </Button>
         </div>
       ),
     }
@@ -317,7 +328,7 @@ export function TransactionTable({
       <div className="hidden lg:block rounded-xl border bg-card text-card-foreground shadow overflow-hidden w-full">
         <Table
           columns={columns}
-          dataSource={transactions}
+          dataSource={visibleTransactions}
           rowKey="_id"
           pagination={{ defaultPageSize: 10, position: ["bottomRight"], showSizeChanger: true }}
           scroll={{ x: 'max-content' }}
@@ -453,18 +464,24 @@ export function TransactionTable({
                     <div onClick={e => e.stopPropagation()}>
                       <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} transaction={record} />
                     </div>
-                    <Popconfirm
-                      title="Delete Transaction"
-                      description="Are you sure you want to delete this transaction?"
-                      onConfirm={() => deleteTransaction(record._id)}
-                      okText="Yes"
-                      cancelText="No"
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerDelete({
+                          id: record._id,
+                          entityName: record.note ? `Transaction (${record.note})` : "Transaction",
+                          onCommit: async () => {
+                            await deleteTransaction(record._id);
+                          }
+                        });
+                      }}
                     >
-                      <Button variant="ghost" size="sm" className="h-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash className="w-4 h-4 mr-1.5" />
-                        Delete
-                      </Button>
-                    </Popconfirm>
+                      <Trash className="w-4 h-4 mr-1.5" />
+                      Delete
+                    </Button>
                   </div>
                 </div>
               </List.Item>

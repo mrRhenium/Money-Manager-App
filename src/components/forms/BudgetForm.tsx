@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,10 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { upsertBudget } from "@/actions/budget";
-import { Plus, Target, Folder, Banknote, CalendarDays, PenLine, Clock } from "lucide-react";
+import { Plus, Target, Folder, Banknote, CalendarDays, PenLine, Clock, Loader2 } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
@@ -50,10 +51,12 @@ interface BudgetFormProps {
 
 export function BudgetForm({ categories, budget, triggerClassName }: BudgetFormProps) {
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [color, setColor] = useState(budget?.color || "#f59e0b");
   const [icon, setIcon] = useState(budget?.icon || "PiggyBank");
   const [currency, setCurrency] = useState(budget?.currency || "INR");
   const [errorMsg, setErrorMsg] = useState("");
+  const { toast } = useToast();
   
   const currentMonth = getCurrentFormatted("YYYY-MM");
 
@@ -70,12 +73,30 @@ export function BudgetForm({ categories, budget, triggerClassName }: BudgetFormP
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        categoryId: budget?.categoryId?._id || budget?.categoryId || "",
+        type: budget?.type || "monthly",
+        month: budget?.month || currentMonth,
+        startDate: budget?.startDate ? new Date(budget.startDate).toISOString().split('T')[0] : "",
+        endDate: budget?.endDate ? new Date(budget.endDate).toISOString().split('T')[0] : "",
+        amount: budget?.amount ? formatIndianNumber(budget.amount) : "",
+        rollover: budget?.rollover || false,
+      });
+      setColor(budget?.color || "#f59e0b");
+      setIcon(budget?.icon || "PiggyBank");
+      setErrorMsg("");
+    }
+  }, [budget, open, form, currentMonth]);
+
   const budgetType = form.watch("type");
   const expenseCategories = categories.filter(c => c.type === "expense");
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setErrorMsg("");
     try {
+      setIsLoading(true);
       const parsedAmount = parseIndianNumber(values.amount);
       const res = await upsertBudget({
         _id: budget?._id,
@@ -92,33 +113,22 @@ export function BudgetForm({ categories, budget, triggerClassName }: BudgetFormP
       
       if (res && !res.success) {
         setErrorMsg(res.error || "Failed to save budget");
+        toast.error(res.error || "Failed to save budget");
         return;
       }
 
+      toast.success(budget ? "Budget updated successfully!" : "Budget created successfully!");
       setOpen(false);
-      form.reset();
     } catch (error: any) {
       console.error("Failed to save budget", error);
       setErrorMsg(error.message || "An unexpected error occurred");
+      toast.error(error.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      form.reset({
-        categoryId: budget?.categoryId?._id || budget?.categoryId || "",
-        type: budget?.type || "monthly",
-        month: budget?.month || currentMonth,
-        startDate: budget?.startDate ? new Date(budget.startDate).toISOString().split('T')[0] : "",
-        endDate: budget?.endDate ? new Date(budget.endDate).toISOString().split('T')[0] : "",
-        amount: budget?.amount ? formatIndianNumber(budget.amount) : "",
-        rollover: budget?.rollover || false,
-      });
-      setColor(budget?.color || "#f59e0b");
-      setIcon(budget?.icon || "PiggyBank");
-      setCurrency(budget?.currency || "INR");
-      setErrorMsg("");
-    }
     setOpen(newOpen);
   };
 
@@ -267,7 +277,10 @@ export function BudgetForm({ categories, budget, triggerClassName }: BudgetFormP
               <IconPicker value={icon} onChange={setIcon} />
             </div>
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{budget ? "Save Changes" : "Save Budget"}</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              {isLoading ? "Saving..." : (budget ? "Save Changes" : "Save Budget")}
+            </Button>
           </form>
         </Form>
       </DialogContent>

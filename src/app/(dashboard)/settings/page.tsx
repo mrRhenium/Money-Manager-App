@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { LogOut, User, Bell, Palette, Globe } from "lucide-react";
+import { LogOut, User, Bell, Palette, Globe, Smartphone } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { subscribeUser, sendTestNotification } from "@/actions/push";
@@ -14,6 +14,7 @@ import { getUserProfile, updateProfile, updateThemeColor, updateCurrency, delete
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { Select } from "antd";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
+import { PaymentAppsSettings } from "@/components/settings/PaymentAppsSettings";
 import { useToast } from "@/hooks/useToast";
 import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine, ChevronRight } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -74,7 +75,7 @@ function SettingsContent() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab") as "profile" | "preferences" | "timezone" | "notifications" | "logout" | null;
+  const tabParam = searchParams.get("tab") as "profile" | "preferences" | "payment_apps" | "timezone" | "notifications" | "logout" | null;
   const activeTab = tabParam || "profile";
 
   const [isMobile, setIsMobile] = useState(false);
@@ -90,6 +91,7 @@ function SettingsContent() {
 
   const showProfile = searchMatch("Profile Information", ["name", "email", "mobile", "phone", "upi", "vpa", "qr code"]);
   const showPreferences = searchMatch("Preferences", ["theme", "color", "appearance"]);
+  const showPaymentApps = searchMatch("UPI & Payment Apps", ["upi", "gpay", "google pay", "phonepe", "paytm", "amazon pay", "bhim", "cred", "payment apps", "scan and pay", "active", "apps"]);
   const showTimezone = searchMatch("Global Timezone", ["time", "zone", "utc", "gmt", "region"]);
   const showNotifications = searchMatch("Notifications", ["push", "alerts", "reminders", "test"]);
   const showLogout = searchMatch("Sign Out", ["log out", "logout", "exit", "leave"]);
@@ -442,6 +444,24 @@ function SettingsContent() {
     );
   };
 
+  const renderPaymentAppsCard = (isMobileView = false) => {
+    const content = (
+      <PaymentAppsSettings noBorder={isMobileView} />
+    );
+
+    if (isMobileView) return content;
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>UPI & Payment Apps</CardTitle>
+          <CardDescription>Select which UPI apps are active on your device and set your default app for Scan & Pay.</CardDescription>
+        </CardHeader>
+        <CardContent>{content}</CardContent>
+      </Card>
+    );
+  };
+
   const renderTimezoneCard = (isMobileView = false) => {
     const content = (
       <TimezonePicker initialTimezone={(session?.user as any)?.timezone || "UTC"} noBorder={isMobileView} />
@@ -558,11 +578,12 @@ function SettingsContent() {
             <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
               {showProfile && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Profile Information</h3>{renderProfileCard(isMobile)}</div>}
               {showPreferences && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Preferences</h3>{renderPreferencesCard(isMobile)}</div>}
+              {showPaymentApps && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">UPI & Payment Apps</h3>{renderPaymentAppsCard(isMobile)}</div>}
               {showTimezone && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Global Timezone</h3>{renderTimezoneCard(isMobile)}</div>}
               {showNotifications && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Notifications</h3>{renderNotificationsCard(isMobile)}</div>}
               {showLogout && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Sign Out</h3>{renderLogoutCard(isMobile)}</div>}
 
-              {!showProfile && !showPreferences && !showTimezone && !showNotifications && !showLogout && (
+              {!showProfile && !showPreferences && !showPaymentApps && !showTimezone && !showNotifications && !showLogout && (
                 <div className="p-12 text-center text-muted-foreground border rounded-xl border-dashed">
                   No settings match your search.
                 </div>
@@ -596,6 +617,18 @@ function SettingsContent() {
                     <Palette className="w-4 h-4" />
                   </div>
                   Preferences
+                </button>
+                <button
+                  onClick={() => handleTabChange("payment_apps")}
+                  className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${activeTab === "payment_apps" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
+                    }`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "payment_apps" && !isMobile ? "bg-white/20 text-white" : "bg-amber-500/10 text-amber-500"}`}>
+                    <Smartphone className="w-4 h-4" />
+                  </div>
+                  Payment Apps
                 </button>
                 <button
                   onClick={() => handleTabChange("timezone")}
@@ -664,6 +697,19 @@ function SettingsContent() {
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </button>
 
+                <button onClick={() => handleTabChange("payment_apps")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                      <Smartphone className="w-6 h-6 text-amber-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-base text-foreground">UPI & Payment Apps</p>
+                      <p className="text-sm text-muted-foreground">Manage active apps and default</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </button>
+
                 <button onClick={() => handleTabChange("timezone")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
@@ -707,6 +753,7 @@ function SettingsContent() {
               <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
                 {activeTab === "profile" && renderProfileCard()}
                 {activeTab === "preferences" && renderPreferencesCard()}
+                {activeTab === "payment_apps" && renderPaymentAppsCard()}
                 {activeTab === "timezone" && renderTimezoneCard()}
                 {activeTab === "notifications" && renderNotificationsCard()}
                 {activeTab === "logout" && renderLogoutCard()}
@@ -733,6 +780,7 @@ function SettingsContent() {
               <DialogTitle className="text-base font-bold text-foreground">
                 {activeTab === "profile" && "Profile Information"}
                 {activeTab === "preferences" && "Preferences"}
+                {activeTab === "payment_apps" && "UPI & Payment Apps"}
                 {activeTab === "timezone" && "Global Timezone"}
                 {activeTab === "notifications" && "Notifications"}
                 {activeTab === "logout" && "Sign Out"}
@@ -741,6 +789,7 @@ function SettingsContent() {
             <div className="pt-1">
               {activeTab === "profile" && renderProfileCard(true)}
               {activeTab === "preferences" && renderPreferencesCard(true)}
+              {activeTab === "payment_apps" && renderPaymentAppsCard(true)}
               {activeTab === "timezone" && renderTimezoneCard(true)}
               {activeTab === "notifications" && renderNotificationsCard(true)}
               {activeTab === "logout" && renderLogoutCard(true)}

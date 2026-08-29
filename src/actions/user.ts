@@ -136,3 +136,58 @@ export async function updateCurrency(currency: string) {
   
   return { success: true };
 }
+
+import { DEFAULT_ACTIVE_APP_IDS, ALL_UPI_APPS } from "@/lib/upiApps";
+
+export async function getUpiAppsConfig() {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+
+  await dbConnect();
+  
+  const user = await User.findById(session.user.id).select("upiAppsConfig defaultUpiApp").lean();
+  if (!user) throw new Error("We couldn't find your user profile.");
+
+  const savedConfigs = user.upiAppsConfig || [];
+  const defaultApp = user.defaultUpiApp || "default";
+
+  // Build full list of all supported apps merged with user's active/inactive status
+  const appsWithStatus = ALL_UPI_APPS.map(app => {
+    const saved = savedConfigs.find((c: any) => c.appId === app.id);
+    const isActive = saved !== undefined ? saved.isActive : DEFAULT_ACTIVE_APP_IDS.includes(app.id);
+    const isDefault = app.id === defaultApp;
+    return {
+      ...app,
+      isActive,
+      isDefault,
+    };
+  });
+
+  return {
+    apps: JSON.parse(JSON.stringify(appsWithStatus)),
+    defaultUpiApp: defaultApp,
+  };
+}
+
+export async function updateUpiAppsConfig(data: {
+  apps: { appId: string; isActive: boolean }[];
+  defaultUpiApp?: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+
+  await dbConnect();
+  
+  const updateData: any = {
+    upiAppsConfig: data.apps,
+  };
+
+  if (data.defaultUpiApp) {
+    updateData.defaultUpiApp = data.defaultUpiApp;
+  }
+
+  await User.findByIdAndUpdate(session.user.id, updateData);
+  
+  return { success: true };
+}
+

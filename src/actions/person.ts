@@ -26,20 +26,24 @@ export async function getPeople() {
         status: { $nin: ["cancelled", "pending", "awaiting_confirmation"] }
       }).lean();
 
-      let netBalance = 0; // Positive = They owe us (Receive), Negative = We owe them (Pay)
+      let totalGiven = 0;
+      let totalReceived = 0;
 
       transactions.forEach((t) => {
-        if (t.type === "lend") netBalance += t.amount;
-        if (t.type === "borrow") netBalance -= t.amount;
-        // Settlements: If we are receiving money back, it's income. Wait, settlement is a specific type.
-        // For simplicity, if settlement is to us (we receive), it decreases their debt (netBalance drops).
-        // Let's assume for MVP: settlement reduces the absolute balance toward 0.
-        // Or better: transaction amounts should just correctly adjust. Let's do a simple calculation here.
+        if (t.type === "lend" || t.type === "expense") {
+          totalGiven += t.amount;
+        } else if (t.type === "borrow" || t.type === "income" || t.type === "settlement") {
+          totalReceived += t.amount;
+        }
       });
+
+      const netBalance = totalGiven - totalReceived; // Positive = They owe us (Remaining to receive), Negative = We owe them (Remaining to pay)
 
       return {
         ...person,
         netBalance,
+        totalGiven,
+        totalReceived,
         transactionCount: transactions.length,
       };
     })

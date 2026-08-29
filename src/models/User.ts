@@ -22,6 +22,8 @@ export interface IUser extends Document {
   timezone?: string;
   themeColor?: string;
   isActive?: boolean;
+  upiAppsConfig?: { appId: string; isActive: boolean }[];
+  defaultUpiApp?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,6 +51,13 @@ const UserSchema: Schema<IUser> = new Schema(
     timezone: { type: String, default: "UTC" },
     themeColor: { type: String },
     isActive: { type: Boolean, default: true },
+    upiAppsConfig: [
+      {
+        appId: { type: String, required: true },
+        isActive: { type: Boolean, default: true },
+      },
+    ],
+    defaultUpiApp: { type: String, default: "default" },
   },
   { timestamps: true }
 );

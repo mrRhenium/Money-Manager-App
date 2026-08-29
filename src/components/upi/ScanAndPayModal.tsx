@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,14 @@ import { getCurrentDate } from "@/lib/dateTimeHelper";
 import { getCategories } from "@/actions/category";
 import { getAccounts } from "@/actions/account";
 import { getPeople, savePersonVpa } from "@/actions/person";
+import { getUpiAppsConfig } from "@/actions/user";
 import { useToast } from "@/hooks/useToast";
-import { Camera, AlertCircle, CheckCircle, Smartphone, Loader2, Landmark, Tag, Users } from "lucide-react";
+import { Camera, AlertCircle, CheckCircle, Smartphone, Loader2, Landmark, Tag, Users, Star, ExternalLink, Sparkles } from "lucide-react";
 import { Select, Spin } from "antd";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { useCurrency } from "@/hooks/useCurrency";
+import { ALL_UPI_APPS, DEFAULT_ACTIVE_APP_IDS, buildUpiDeepLink, UpiAppInfo } from "@/lib/upiApps";
+import Link from "next/link";
 
 interface ScanAndPayModalProps {
   open: boolean;
@@ -48,6 +51,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   const [categories, setCategories] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [people, setPeople] = useState<any[]>([]);
+  const [upiApps, setUpiApps] = useState<any[]>([]);
+  const [selectedAppId, setSelectedAppId] = useState<string>("default");
   
   // Quick Select State
   const [selectedPersonId, setSelectedPersonId] = useState("");
@@ -61,15 +66,58 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
   const [generatedUpiUrl, setGeneratedUpiUrl] = useState("");
   const [isIOS, setIsIOS] = useState(false);
 
-  // Load Categories & Accounts
+  // Sort Accounts with Active & Liquid accounts (Bank, Wallet, Cash) on top
+  const sortedAccounts = useMemo(() => {
+    return [...accounts].sort((a, b) => {
+      const aIsActive = a.isActive !== false && a.status !== "inactive";
+      const bIsActive = b.isActive !== false && b.status !== "inactive";
+      if (aIsActive && !bIsActive) return -1;
+      if (!aIsActive && bIsActive) return 1;
+      return (b.balance || 0) - (a.balance || 0);
+    });
+  }, [accounts]);
+
+  // Sort UPI Apps with Active Apps on top, default app first, and inactive apps at bottom
+  const sortedUpiApps = useMemo(() => {
+    const list = upiApps.length > 0 ? upiApps : ALL_UPI_APPS.map(a => ({
+      ...a,
+      isActive: DEFAULT_ACTIVE_APP_IDS.includes(a.id),
+      isDefault: a.id === "default"
+    }));
+
+    return [...list].sort((a, b) => {
+      const aActive = a.isActive !== false;
+      const bActive = b.isActive !== false;
+      
+      // 1. Active apps on top of inactive apps
+      if (aActive && !bActive) return -1;
+      if (!aActive && bActive) return 1;
+
+      // 2. If both are active, selected or default app first
+      if (a.id === selectedAppId) return -1;
+      if (b.id === selectedAppId) return 1;
+      if (a.isDefault) return -1;
+      if (b.isDefault) return 1;
+
+      return 0;
+    });
+  }, [upiApps, selectedAppId]);
+
+  // Load Categories, Accounts & UPI Apps Preferences
   useEffect(() => {
     if (open) {
       getCategories().then(setCategories).catch(console.error);
       getPeople().then(setPeople).catch(console.error);
+      getUpiAppsConfig().then(res => {
+        setUpiApps(res.apps);
+        if (res.defaultUpiApp) {
+          setSelectedAppId(res.defaultUpiApp);
+        }
+      }).catch(console.error);
       getAccounts().then(accs => {
         setAccounts(accs);
-        // Default to first bank/wallet/cash account if available
-        const defaultAcc = accs.find((a: any) => a.type === "bank" || a.type === "wallet" || a.type === "cash") || accs[0];
+        // Default to first active bank/wallet/cash account if available
+        const defaultAcc = accs.find((a: any) => (a.isActive !== false && a.status !== "inactive") && (a.type === "bank" || a.type === "wallet" || a.type === "cash")) || accs[0];
         if (defaultAcc) {
           setAccountId(defaultAcc._id);
         }
@@ -269,15 +317,14 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
 
       setCreatedTxnId(txn._id);
 
-      // Build standard UPI URL
-      const upiParams = new URLSearchParams({
+      // Build targeted UPI URL for the chosen app
+      const upiUrl = buildUpiDeepLink(selectedAppId, {
         pa: vpa,
         pn: payeeName,
         am: parsedAmount.toString(),
         cu: "INR",
         tn: note || "Money Manager Scan & Pay"
       });
-      const upiUrl = `upi://pay?${upiParams.toString()}`;
       setGeneratedUpiUrl(upiUrl);
 
       if (isIOS) {
@@ -514,10 +561,13 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                   value={accountId}
                   onChange={setAccountId}
                   className="w-full h-10 mt-1"
-                  options={accounts.map(a => ({
-                    value: a._id,
-                    label: `${a.name} (${format(a.balance)})`
-                  }))}
+                  options={sortedAccounts.map(a => {
+                    const isAccActive = a.isActive !== false && a.status !== "inactive";
+                    return {
+                      value: a._id,
+                      label: `${a.name} (${format(a.balance)})${!isAccActive ? " [Inactive]" : ""}`
+                    };
+                  })}
                 />
               </div>
 
@@ -545,7 +595,123 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 />
               </div>
 
-              <div className="text-[10px] text-muted-foreground italic text-center mt-4">
+              {/* UPI App Selection with Active/Inactive Badges */}
+              <div className="flex flex-col gap-1.5 p-3.5 rounded-xl border bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Smartphone className="w-3.5 h-3.5 text-primary" />
+                    Open with Payment App
+                  </Label>
+                  <Link 
+                    href="/settings?tab=payment_apps" 
+                    onClick={() => onOpenChange(false)}
+                    className="text-[11px] text-primary hover:underline flex items-center gap-0.5"
+                  >
+                    <span>Manage Apps</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </Link>
+                </div>
+
+                <Select
+                  value={selectedAppId}
+                  onChange={setSelectedAppId}
+                  className="w-full h-10 mt-0.5"
+                  popupClassName="custom-scrollbar"
+                  optionLabelProp="label"
+                >
+                  {sortedUpiApps.map(app => {
+                    const isActive = app.isActive ?? true;
+                    return (
+                      <Select.Option 
+                        key={app.id} 
+                        value={app.id}
+                        label={
+                          <div className="flex items-center justify-between w-full pr-1">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span 
+                                className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0"
+                                style={{ backgroundColor: app.bgColor || "rgba(14, 165, 233, 0.12)", color: app.color || "#0ea5e9" }}
+                              >
+                                {app.shortName?.charAt(0) || "U"}
+                              </span>
+                              <span className="font-semibold text-xs text-foreground truncate">{app.name}</span>
+                            </div>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                              isActive 
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
+                                : "bg-muted text-muted-foreground border border-border/40"
+                            }`}>
+                              {isActive ? "Active" : "Not in use"}
+                            </span>
+                          </div>
+                        }
+                      >
+                        <div className="flex items-center justify-between w-full py-1">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div 
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs border"
+                              style={{ 
+                                backgroundColor: app.bgColor || "rgba(14, 165, 233, 0.12)", 
+                                borderColor: app.borderColor || "rgba(14, 165, 233, 0.3)", 
+                                color: app.color || "#0ea5e9" 
+                              }}
+                            >
+                              {app.shortName?.charAt(0) || "U"}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-xs text-foreground leading-tight truncate">{app.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{app.shortName}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                              isActive 
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
+                                : "bg-muted text-muted-foreground border border-border/40"
+                            }`}>
+                              {isActive ? "Active (In Use)" : "Not in use"}
+                            </span>
+                          </div>
+                        </div>
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+
+                {/* Quick App Badges (Active Apps) */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] text-muted-foreground font-medium">Quick Pick:</span>
+                  {sortedUpiApps
+                    .filter(a => a.isActive !== false)
+                    .slice(0, 5)
+                    .map(app => (
+                      <button
+                        key={app.id}
+                        type="button"
+                        onClick={() => setSelectedAppId(app.id)}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all border ${
+                          selectedAppId === app.id 
+                            ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/30" 
+                            : "bg-card hover:bg-muted text-foreground border-border/60"
+                        }`}
+                      >
+                        <span 
+                          className="w-3 h-3 rounded-full flex items-center justify-center text-[7px] font-black"
+                          style={{ 
+                            backgroundColor: selectedAppId === app.id ? "rgba(255,255,255,0.3)" : app.bgColor, 
+                            color: selectedAppId === app.id ? "#fff" : app.color 
+                          }}
+                        >
+                          {app.shortName?.charAt(0)}
+                        </span>
+                        <span>{app.shortName}</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              <div className="text-[10px] text-muted-foreground italic text-center mt-2">
                 This UPI ID will be automatically saved to your Payee Book for quicker access next time.
               </div>
             </div>
@@ -554,9 +720,9 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
               <Button variant="ghost" className="flex-1" onClick={() => setStep("scan")} disabled={loading}>
                 Back
               </Button>
-              <Button className="flex-1" onClick={handleProceedToPay} disabled={loading}>
+              <Button className="flex-1 font-bold" onClick={handleProceedToPay} disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Pay Now
+                Pay with {sortedUpiApps.find(a => a.id === selectedAppId)?.shortName || "UPI"}
               </Button>
             </div>
           </div>

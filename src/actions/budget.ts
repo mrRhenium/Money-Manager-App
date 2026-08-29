@@ -78,6 +78,7 @@ export async function getBudgetsWithProgress(options: { month?: string, startDat
             categoryId: budget.categoryId?._id,
             type: "expense",
             date: { $gte: bStart, $lte: bEnd },
+            status: { $nin: ["cancelled", "pending", "awaiting_confirmation"] },
           },
         },
         {
@@ -208,6 +209,7 @@ export async function deleteBudget(id: string, reason?: string, notes?: string) 
           categoryId: budget.categoryId,
           type: "expense",
           date: { $gte: bStart, $lte: bEnd },
+          status: { $nin: ["cancelled", "pending", "awaiting_confirmation"] },
         },
       },
       {

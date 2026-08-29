@@ -176,6 +176,7 @@ export function PersonClient({ initialPeople }: { initialPeople: any[] }) {
       <MasterHeader
         title={<><Users className="w-6 h-6 text-primary" /> People Ledger</>}
         subtitle="Manage money you lent or borrowed."
+        actions={<div className="sm:hidden"><PersonForm triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
 
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

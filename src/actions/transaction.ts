@@ -372,8 +372,8 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
 
   await logAuditEvent("Transaction", id, "UPDATE", oldTxnSnapshot, transaction);
 
-  // If transitioned to completed, apply balance adjustments
-  if (status === "completed" && (oldStatus === "awaiting_confirmation" || oldStatus === "pending")) {
+  // 1. Transitioning TO COMPLETED from uncompleted status: apply balance adjustments
+  if (status === "completed" && (oldStatus === "awaiting_confirmation" || oldStatus === "pending" || oldStatus === "cancelled")) {
     if (transaction.paymentMode === "credit_card" && transaction.creditCardId) {
       const card = await CreditCard.findOne({ _id: transaction.creditCardId, userId: session.user.id });
       if (card) {
@@ -451,7 +451,77 @@ export async function confirmTransaction(id: string, status: "completed" | "canc
     }
   }
 
+  // 2. Transitioning FROM COMPLETED to CANCELLED or PENDING: Revert balance adjustments
+  if (oldStatus === "completed" && (status === "cancelled" || status === "pending")) {
+    if (transaction.paymentMode === "credit_card" && transaction.creditCardId) {
+      const card = await CreditCard.findOne({ _id: transaction.creditCardId, userId: session.user.id });
+      if (card) {
+        card.currentOutstanding = Math.max(0, card.currentOutstanding - transaction.amount);
+        card.availableLimit = card.creditLimit - card.currentOutstanding;
+        await card.save();
+
+        const statementMonth = getStatementMonth(transaction.date.toISOString());
+        const statement = await CardStatement.findOne({ cardId: transaction.creditCardId, statementMonth });
+        if (statement) {
+          statement.totalAmount = Math.max(0, statement.totalAmount - transaction.amount);
+          statement.minimumDue = (statement.totalAmount * card.minimumDuePercent) / 100;
+          statement.transactions = statement.transactions.filter(
+            (tId: any) => tId.toString() !== transaction._id.toString()
+          );
+          await statement.save();
+        }
+      }
+    } else if (transaction.type === "transfer" && transaction.toAccountId && transaction.accountId) {
+      const sourceAcc = await Account.findOne({ _id: transaction.accountId, userId: session.user.id });
+      if (sourceAcc) {
+        const amt = sourceAcc.currency === transaction.originalCurrency ? (transaction.originalAmount || transaction.amount) : getConversionRate(sourceAcc.currency, await fetchExchangeRates()) * transaction.amount;
+        sourceAcc.balance += amt;
+        await sourceAcc.save();
+      }
+      const destAcc = await Account.findOne({ _id: transaction.toAccountId, userId: session.user.id });
+      if (destAcc) {
+        const amt = transaction.destinationAmount !== undefined ? transaction.destinationAmount : (destAcc.currency === "INR" ? transaction.amount : getConversionRate(destAcc.currency, await fetchExchangeRates()) * transaction.amount);
+        destAcc.balance -= amt;
+        await destAcc.save();
+      }
+    } else if (transaction.accountId) {
+      const acc = await Account.findOne({ _id: transaction.accountId, userId: session.user.id });
+      if (acc) {
+        const accAmt = acc.currency === transaction.originalCurrency ? (transaction.originalAmount || transaction.amount) : getConversionRate(acc.currency, await fetchExchangeRates()) * transaction.amount;
+        let balanceChange = 0;
+        if (transaction.type === "expense" || transaction.type === "lend") {
+          balanceChange = accAmt; // Revert: add back
+        } else if (transaction.type === "income" || transaction.type === "borrow" || transaction.type === "settlement") {
+          balanceChange = -accAmt; // Revert: subtract back
+        }
+
+        if (balanceChange !== 0) {
+          acc.balance += balanceChange;
+          await acc.save();
+        }
+      }
+    }
+
+    if (transaction.goalId) {
+      const Goal = (await import("@/models/Goal")).default;
+      const goal = await Goal.findOne({ _id: transaction.goalId, userId: session.user.id });
+      if (goal) {
+        goal.currentAmount -= transaction.amount;
+        if (goal.currentAmount < goal.targetAmount) {
+          goal.status = "active";
+        }
+        await goal.save();
+      }
+    }
+  }
+
   revalidatePath("/transactions");
+  revalidatePath("/accounts");
+  revalidatePath("/credit-cards");
+  revalidatePath("/loans");
+  revalidatePath("/goals");
+  revalidatePath("/budgets");
+  revalidatePath("/people");
   revalidatePath("/");
 
   return JSON.parse(JSON.stringify(transaction));

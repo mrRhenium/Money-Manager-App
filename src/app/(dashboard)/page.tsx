@@ -140,6 +140,9 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   }
 
   const timeframeTxns = transactions.filter((t: any) => {
+    // Only completed transactions should be counted towards period income/expenses
+    if (t.status && t.status !== "completed") return false;
+
     const txDate = parseToDate(t.date);
     if (isMonthYear) {
       if (selectedYears.length > 0 && !selectedYears.includes(txDate.getFullYear())) return false;
@@ -364,7 +367,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto overflow-x-hidden max-h-[320px] px-4 custom-scrollbar">
             <div className="space-y-4">
-              {transactions.slice(0, 5).map((t: any) => (
+              {transactions.filter((t: any) => !t.status || t.status === "completed").slice(0, 5).map((t: any) => (
                 <div key={t._id} className="flex items-center justify-between group cursor-pointer hover:bg-secondary/40 p-2 rounded-lg transition-colors">
                   <div className="flex items-center gap-4 min-w-0 flex-1">
                     <div

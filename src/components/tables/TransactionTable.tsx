@@ -220,6 +220,35 @@ export function TransactionTable({
         const isTransfer = record.type === "transfer";
         const isNegative = record.type === "expense" || record.type === "lend";
         const isPositive = record.type === "income";
+        const isCancelled = record.status === "cancelled";
+        const isPending = record.status === "pending" || record.status === "awaiting_confirmation";
+
+        if (isCancelled) {
+          return (
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="font-medium whitespace-nowrap text-muted-foreground line-through opacity-75">
+                {format(record.amount)}
+              </span>
+              <span className="text-[10px] uppercase font-bold text-zinc-500 bg-zinc-500/10 px-1.5 py-0.5 rounded border border-zinc-500/20">
+                Cancelled
+              </span>
+            </div>
+          );
+        }
+
+        if (isPending) {
+          return (
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="font-semibold whitespace-nowrap text-amber-600 dark:text-amber-400">
+                {isNegative ? "-" : (isPositive ? "+" : "")}{" "}{format(record.amount)}
+              </span>
+              <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Pending
+              </span>
+            </div>
+          );
+        }
 
         if (isTransfer) {
           return (
@@ -280,12 +309,24 @@ export function TransactionTable({
             const isTransfer = record.type === "transfer";
             const isNegative = record.type === "expense" || record.type === "lend";
             const isPositive = record.type === "income";
+            const isCancelled = record.status === "cancelled";
+            const isPending = record.status === "pending" || record.status === "awaiting_confirmation";
             const isQr = record.paymentSource === "upi_scan" || (record.upiPayeeName && record.upiPayeeVpa);
+
+            const borderIndicator = isCancelled 
+              ? 'bg-zinc-400' 
+              : isPending 
+              ? 'bg-amber-500' 
+              : isPositive 
+              ? 'bg-emerald-500' 
+              : isNegative 
+              ? 'bg-red-500' 
+              : 'bg-blue-500';
 
             return (
               <List.Item className="border-none px-0 py-2">
                 <div className="bg-card w-full border shadow-sm rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${isPositive ? 'bg-emerald-500' : isNegative ? 'bg-red-500' : 'bg-blue-500'}`} />
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${borderIndicator}`} />
 
                   <div className="flex justify-between items-start pl-1">
                     <div className="flex items-center gap-3">
@@ -314,8 +355,31 @@ export function TransactionTable({
                       </div>
                     </div>
 
-                    <div className={`font-bold text-lg whitespace-nowrap ${isPositive ? "text-emerald-500" : (isNegative ? "text-red-500" : "text-blue-500")}`}>
-                      {isNegative ? "-" : (isPositive ? "+" : "")}{format(record.amount)}
+                    <div className="flex flex-col items-end gap-1">
+                      <div className={`font-bold text-lg whitespace-nowrap ${
+                        isCancelled 
+                          ? "text-muted-foreground line-through opacity-75" 
+                          : isPending 
+                          ? "text-amber-600 dark:text-amber-400" 
+                          : isPositive 
+                          ? "text-emerald-500" 
+                          : isNegative 
+                          ? "text-red-500" 
+                          : "text-blue-500"
+                      }`}>
+                        {isCancelled ? "" : isNegative ? "-" : (isPositive ? "+" : "")}{format(record.amount)}
+                      </div>
+                      {isCancelled && (
+                        <span className="text-[10px] uppercase font-bold text-zinc-500 bg-zinc-500/10 px-1.5 py-0.5 rounded border border-zinc-500/20">
+                          Cancelled
+                        </span>
+                      )}
+                      {isPending && (
+                        <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          Pending
+                        </span>
+                      )}
                     </div>
                   </div>
 

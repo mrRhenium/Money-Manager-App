@@ -23,6 +23,7 @@ export async function getPeople() {
       const transactions = await Transaction.find({
         userId: session.user.id,
         personId: person._id,
+        status: { $nin: ["cancelled", "pending", "awaiting_confirmation"] }
       }).lean();
 
       let netBalance = 0; // Positive = They owe us (Receive), Negative = We owe them (Pay)

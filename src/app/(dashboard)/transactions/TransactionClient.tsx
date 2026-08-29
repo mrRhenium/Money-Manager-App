@@ -97,7 +97,15 @@ export function TransactionClient({
     if (categoryFilter.length > 0) result = result.filter(t => t.categoryId && categoryFilter.includes(t.categoryId._id));
     if (accountFilter.length > 0) result = result.filter(t => (t.accountId && accountFilter.includes(t.accountId._id)) || (t.toAccountId && accountFilter.includes(t.toAccountId._id)));
     if (personFilter.length > 0) result = result.filter(t => t.personId && personFilter.includes(t.personId._id));
-    if (statusFilter.length > 0) result = result.filter(t => statusFilter.includes(t.status || "cleared"));
+    if (statusFilter.length > 0) {
+      result = result.filter(t => {
+        const s = t.status || "completed";
+        if (statusFilter.includes("completed") && s === "completed") return true;
+        if (statusFilter.includes("pending") && (s === "pending" || s === "awaiting_confirmation")) return true;
+        if (statusFilter.includes("cancelled") && s === "cancelled") return true;
+        return false;
+      });
+    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -106,19 +114,22 @@ export function TransactionClient({
       );
     }
     return result;
-  }, [initialTransactions, searchQuery, typeFilter, categoryFilter, accountFilter]);
+  }, [initialTransactions, searchQuery, typeFilter, categoryFilter, accountFilter, personFilter, statusFilter]);
 
-  // KPIs
-  const totalIncome = filteredTransactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
-  const totalExpense = filteredTransactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
+  // KPIs - Only consider completed transactions for financial totals
+  const completedFilteredTxns = useMemo(() => {
+    return filteredTransactions.filter(t => !t.status || t.status === "completed");
+  }, [filteredTransactions]);
+
+  const totalIncome = completedFilteredTxns.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = completedFilteredTxns.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
   const netCashflow = totalIncome - totalExpense;
 
-  // Chart Data preparation
+  // Chart Data preparation - Only include completed transactions
   const chartData = useMemo(() => {
     const dailyTotals: Record<string, { date: string, timestamp: number, income: number, expense: number }> = {};
 
-    // Process all transactions for graph, ignoring current filters to show global trend, or you can use filteredTransactions. Let's use filteredTransactions for context-aware graphs.
-    filteredTransactions.forEach(t => {
+    completedFilteredTxns.forEach(t => {
       const dateStr = formatDateString(t.date, "MMM DD");
       const timestamp = parseToDate(t.date).getTime();
 
@@ -132,9 +143,8 @@ export function TransactionClient({
 
     return Object.values(dailyTotals)
       .sort((a, b) => a.timestamp - b.timestamp)
-      // Only keep the last 30 days if it's too large, or just return all
       .slice(-30);
-  }, [filteredTransactions, userTimezone]);
+  }, [completedFilteredTxns, userTimezone]);
 
   const categoryOptions = categories.map(c => ({ label: c.name, value: c._id }));
   const accountOptions = accounts.map(a => ({ label: a.name, value: a._id }));
@@ -215,10 +225,9 @@ export function TransactionClient({
           value={statusFilter}
           onChange={setStatusFilter}
           options={[
-            { label: "Cleared", value: "cleared" },
+            { label: "Completed", value: "completed" },
             { label: "Pending", value: "pending" },
-            { label: "Reconciled", value: "reconciled" },
-            { label: "Failed", value: "failed" },
+            { label: "Cancelled", value: "cancelled" },
           ]}
         />
       </div>
@@ -230,6 +239,7 @@ export function TransactionClient({
       <MasterHeader
         title={<><Wallet className="w-6 h-6 text-primary" /> Transactions</>}
         subtitle="Track all your incomes and expenses."
+        actions={<div className="sm:hidden"><TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
       />
 
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">

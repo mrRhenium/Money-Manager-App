@@ -101,10 +101,20 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
       };
 
       if (card?._id) {
-        await updateCreditCard(card._id, parsedPayload);
+        const res = await updateCreditCard(card._id, parsedPayload);
+        if (res && !res.success) {
+          setError(res.error || "Failed to update credit card");
+          toast.error(res.error || "Failed to update credit card");
+          return;
+        }
         toast.success("Credit card updated successfully!");
       } else {
-        await createCreditCard(parsedPayload);
+        const res = await createCreditCard(parsedPayload);
+        if (res && !res.success) {
+          setError(res.error || "Failed to create credit card");
+          toast.error(res.error || "Failed to create credit card");
+          return;
+        }
         toast.success("Credit card registered successfully!");
       }
       setOpen(false);

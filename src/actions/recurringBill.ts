@@ -42,49 +42,61 @@ export async function createRecurringBill(data: {
   isAutoPay?: boolean;
   isFixedAmount?: boolean;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
-  
-  const bill = await RecurringBill.create({
-    ...data,
-    userId: session.user.id,
-    nextDueDate: parseToDate(data.nextDueDate),
-    isActive: data.isActive !== undefined ? data.isActive : true,
-    isAutoPay: data.isAutoPay !== undefined ? data.isAutoPay : false,
-    isFixedAmount: data.isFixedAmount !== undefined ? data.isFixedAmount : true,
-  });
+    await dbConnect();
+    
+    const bill = await RecurringBill.create({
+      ...data,
+      userId: session.user.id,
+      nextDueDate: parseToDate(data.nextDueDate),
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      isAutoPay: data.isAutoPay !== undefined ? data.isAutoPay : false,
+      isFixedAmount: data.isFixedAmount !== undefined ? data.isFixedAmount : true,
+    });
 
-  await logAuditEvent("RecurringBill", bill._id.toString(), "CREATE", undefined, bill);
+    await logAuditEvent("RecurringBill", bill._id.toString(), "CREATE", undefined, bill);
 
-  revalidatePath("/subscriptions");
-  return JSON.parse(JSON.stringify(bill));
+    revalidatePath("/subscriptions");
+    revalidatePath("/");
+    return { success: true, data: JSON.parse(JSON.stringify(bill)) };
+  } catch (err: any) {
+    console.error("Error creating subscription:", err);
+    return { success: false, error: err.message || "Failed to create subscription" };
+  }
 }
 
 export async function updateRecurringBill(id: string, data: Partial<any>) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  if (data.nextDueDate) {
-    data.nextDueDate = parseToDate(data.nextDueDate);
+    if (data.nextDueDate) {
+      data.nextDueDate = parseToDate(data.nextDueDate);
+    }
+
+    const oldBill = await RecurringBill.findOne({ _id: id, userId: session.user.id });
+    if (!oldBill) return { success: false, error: "We couldn't find the requested subscription." };
+
+    const bill = await RecurringBill.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      data,
+      { returnDocument: 'after' }
+    );
+
+    await logAuditEvent("RecurringBill", id, "UPDATE", oldBill, bill);
+
+    revalidatePath("/subscriptions");
+    revalidatePath("/");
+    return { success: true, data: JSON.parse(JSON.stringify(bill)) };
+  } catch (err: any) {
+    console.error("Error updating subscription:", err);
+    return { success: false, error: err.message || "Failed to update subscription" };
   }
-
-  const oldBill = await RecurringBill.findOne({ _id: id, userId: session.user.id });
-  if (!oldBill) throw new Error("We couldn't find the requested recurring bill.");
-
-  const bill = await RecurringBill.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    data,
-    { returnDocument: 'after' }
-  );
-
-  await logAuditEvent("RecurringBill", id, "UPDATE", oldBill, bill);
-
-  revalidatePath("/subscriptions");
-  return JSON.parse(JSON.stringify(bill));
 }
 
 export async function deleteRecurringBill(id: string, reason?: string, notes?: string) {
@@ -175,7 +187,8 @@ export async function markSubscriptionPaid(id: string, amountOverride?: number) 
   bill.nextDueDate = nextDate;
   await bill.save();
 
-  await logAuditEvent("RecurringBill", id, "PAYMENT", previousState, { ...bill.toObject(), transactionId: tx._id, amount: finalAmount });
+  const transactionId = tx.success && tx.data ? tx.data._id : undefined;
+  await logAuditEvent("RecurringBill", id, "PAYMENT", previousState, { ...bill.toObject(), transactionId, amount: finalAmount });
 
   revalidatePath("/subscriptions");
   return { success: true };

@@ -15,6 +15,7 @@ import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { getCurrentFormatted, formatDateString } from "@/lib/dateTimeHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { IconPicker, ColorPicker } from "@/components/ui/IconColorPicker";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -41,6 +42,7 @@ interface RecurringBillFormProps {
 }
 
 export function RecurringBillForm({ accounts, categories, triggerClassName, bill, viewOnly }: RecurringBillFormProps) {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currency, setCurrency] = useState(bill?.currency || "INR");
@@ -76,14 +78,25 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
       };
 
       if (bill?._id) {
-        await updateRecurringBill(bill._id, parsedPayload);
+        const res = await updateRecurringBill(bill._id, parsedPayload);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to update subscription");
+          return;
+        }
+        toast.success("Subscription updated successfully!");
       } else {
-        await createRecurringBill(parsedPayload as any);
+        const res = await createRecurringBill(parsedPayload as any);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to create subscription");
+          return;
+        }
+        toast.success("Subscription created successfully!");
       }
       setOpen(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      toast.error(error?.message || "Failed to save subscription");
     } finally {
       setIsLoading(false);
     }

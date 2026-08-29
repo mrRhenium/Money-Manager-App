@@ -48,68 +48,78 @@ export async function getInsurancePolicyById(id: string) {
 }
 
 export async function createInsurancePolicy(data: any) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
-  
-  if (data.coverageAmount <= 0) throw new Error("Coverage amount must be greater than 0");
-  if (data.premiumAmount <= 0) throw new Error("Premium amount must be greater than 0");
-  if (data.endDate && new Date(data.endDate) <= new Date(data.startDate)) {
-    throw new Error("End date must be after start date");
+    await dbConnect();
+    
+    if (data.coverageAmount <= 0) return { success: false, error: "Coverage amount must be greater than 0" };
+    if (data.premiumAmount <= 0) return { success: false, error: "Premium amount must be greater than 0" };
+    if (data.endDate && new Date(data.endDate) <= new Date(data.startDate)) {
+      return { success: false, error: "End date must be after start date" };
+    }
+
+    const policy = await InsurancePolicy.create({
+      ...data,
+      userId: session.user.id,
+    });
+
+    await logAuditEvent("InsurancePolicy", policy._id.toString(), "CREATE", undefined, policy);
+
+    // Log first upcoming premium if not already paid
+    await PremiumPaymentHistory.create({
+      policyId: policy._id,
+      dueDate: policy.renewalDate || policy.startDate,
+      amount: policy.premiumAmount,
+      status: "unpaid"
+    });
+
+    revalidatePath("/dashboard/insurance");
+    revalidatePath("/dashboard");
+    
+    return { success: true, data: JSON.parse(JSON.stringify(policy)) };
+  } catch (err: any) {
+    console.error("Error creating insurance policy:", err);
+    return { success: false, error: err.message || "Failed to create policy" };
   }
-
-  const policy = await InsurancePolicy.create({
-    ...data,
-    userId: session.user.id,
-  });
-
-  await logAuditEvent("InsurancePolicy", policy._id.toString(), "CREATE", undefined, policy);
-
-  // Log first upcoming premium if not already paid
-  await PremiumPaymentHistory.create({
-    policyId: policy._id,
-    dueDate: policy.renewalDate || policy.startDate,
-    amount: policy.premiumAmount,
-    status: "unpaid"
-  });
-
-  revalidatePath("/dashboard/insurance");
-  revalidatePath("/dashboard");
-  
-  return JSON.parse(JSON.stringify(policy));
 }
 
 export async function updateInsurancePolicy(id: string, data: any) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  if (data.coverageAmount <= 0) throw new Error("Coverage amount must be greater than 0");
-  if (data.premiumAmount <= 0) throw new Error("Premium amount must be greater than 0");
-  if (data.endDate && new Date(data.endDate) <= new Date(data.startDate)) {
-    throw new Error("End date must be after start date");
+    if (data.coverageAmount <= 0) return { success: false, error: "Coverage amount must be greater than 0" };
+    if (data.premiumAmount <= 0) return { success: false, error: "Premium amount must be greater than 0" };
+    if (data.endDate && new Date(data.endDate) <= new Date(data.startDate)) {
+      return { success: false, error: "End date must be after start date" };
+    }
+
+    const oldPolicy = await InsurancePolicy.findOne({ _id: id, userId: session.user.id });
+    if (!oldPolicy) return { success: false, error: "Policy not found or unauthorized." };
+
+    const policy = await InsurancePolicy.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
+    
+    if (policy) {
+      await logAuditEvent("InsurancePolicy", policy._id.toString(), "UPDATE", oldPolicy, policy);
+    }
+
+    revalidatePath("/dashboard/insurance");
+    revalidatePath(`/dashboard/insurance/${id}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, data: JSON.parse(JSON.stringify(policy)) };
+  } catch (err: any) {
+    console.error("Error updating insurance policy:", err);
+    return { success: false, error: err.message || "Failed to update policy" };
   }
-
-  const oldPolicy = await InsurancePolicy.findOne({ _id: id, userId: session.user.id });
-  if (!oldPolicy) throw new Error("Policy not found");
-
-  const policy = await InsurancePolicy.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    { $set: data },
-    { returnDocument: 'after' }
-  );
-  
-  if (policy) {
-    await logAuditEvent("InsurancePolicy", policy._id.toString(), "UPDATE", oldPolicy, policy);
-  }
-
-  revalidatePath("/dashboard/insurance");
-  revalidatePath(`/dashboard/insurance/${id}`);
-  revalidatePath("/dashboard");
-
-  return JSON.parse(JSON.stringify(policy));
 }
 
 export async function deleteInsurancePolicy(id: string, reason?: string, notes?: string) {

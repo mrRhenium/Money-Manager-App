@@ -21,6 +21,7 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useToast } from "@/hooks/useToast";
 
 const formSchema = z.object({
   type: z.enum(["income", "expense", "lend", "borrow", "settlement", "transfer"]),
@@ -57,6 +58,7 @@ interface TransactionFormProps {
 }
 
 export function TransactionForm({ accounts, categories, people = [], creditCards = [], triggerClassName, transaction }: TransactionFormProps) {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isScanning, setIsScanning] = useState(false);
@@ -152,17 +154,29 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
       };
 
       if (transaction?._id) {
-        await updateTransaction(transaction._id, parsedPayload);
+        const res = await updateTransaction(transaction._id, parsedPayload);
+        if (res && !res.success) {
+          setErrorMsg(res.error || "Failed to update transaction");
+          toast.error(res.error || "Failed to update transaction");
+          return;
+        }
+        toast.success("Transaction updated successfully!");
       } else {
-        await createTransaction(parsedPayload);
+        const res = await createTransaction(parsedPayload);
+        if (res && !res.success) {
+          setErrorMsg(res.error || "Failed to create transaction");
+          toast.error(res.error || "Failed to create transaction");
+          return;
+        }
+        toast.success("Transaction created successfully!");
       }
       setOpen(false);
       form.reset();
       setBillImage("");
       setErrorMsg("");
-      setOpen(false);
     } catch (error: any) {
       setErrorMsg(error?.message || "Something went wrong.");
+      toast.error(error?.message || "Something went wrong.");
     } finally {
       setIsSubmitting(false);
     }

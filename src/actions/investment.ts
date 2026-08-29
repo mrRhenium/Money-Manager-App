@@ -41,113 +41,128 @@ export async function getInvestmentById(id: string) {
 }
 
 export async function createInvestment(data: any) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
-  
-  const investment = await Investment.create({
-    ...data,
-    userId: session.user.id,
-  });
-
-  // Log initial value
-  await InvestmentValueHistory.create({
-    investmentId: investment._id,
-    date: investment.startDate || getCurrentDate(),
-    value: investment.currentValue,
-    note: "Initial Investment"
-  });
-
-  if (data.linkedAccountId && data.investedAmount > 0) {
-    const Transaction = (await import("@/models/Transaction")).default;
-    const Account = (await import("@/models/Account")).default;
+    await dbConnect();
     
-    // Create expense transaction
-    const txn = await Transaction.create({
+    const investment = await Investment.create({
+      ...data,
       userId: session.user.id,
-      type: "expense",
-      amount: data.investedAmount,
-      originalAmount: data.investedAmount,
-      date: investment.startDate || getCurrentDate(),
-      accountId: data.linkedAccountId,
-      paymentMode: "bank",
-      note: `Investment Funding: ${data.name}`,
-      status: "completed"
     });
 
-    await Account.findOneAndUpdate(
-      { _id: data.linkedAccountId },
-      { $inc: { balance: -data.investedAmount } }
-    );
+    // Log initial value
+    await InvestmentValueHistory.create({
+      investmentId: investment._id,
+      date: investment.startDate || getCurrentDate(),
+      value: investment.currentValue,
+      note: "Initial Investment"
+    });
+
+    if (data.linkedAccountId && data.investedAmount > 0) {
+      const Transaction = (await import("@/models/Transaction")).default;
+      const Account = (await import("@/models/Account")).default;
+      
+      // Create expense transaction
+      await Transaction.create({
+        userId: session.user.id,
+        type: "expense",
+        amount: data.investedAmount,
+        originalAmount: data.investedAmount,
+        date: investment.startDate || getCurrentDate(),
+        accountId: data.linkedAccountId,
+        paymentMode: "bank",
+        note: `Investment Funding: ${data.name}`,
+        status: "completed"
+      });
+
+      await Account.findOneAndUpdate(
+        { _id: data.linkedAccountId },
+        { $inc: { balance: -data.investedAmount } }
+      );
+    }
+
+    await logAuditEvent("Investment", investment._id.toString(), "CREATE", undefined, investment);
+
+    revalidatePath("/dashboard/investments");
+    revalidatePath("/dashboard");
+    revalidatePath("/investments");
+    
+    return { success: true, data: JSON.parse(JSON.stringify(investment)) };
+  } catch (err: any) {
+    console.error("Error creating investment:", err);
+    return { success: false, error: err.message || "Failed to create investment" };
   }
-
-  await logAuditEvent("Investment", investment._id.toString(), "CREATE", undefined, investment);
-
-  revalidatePath("/dashboard/investments");
-  revalidatePath("/dashboard");
-  revalidatePath("/investments");
-  
-  return JSON.parse(JSON.stringify(investment));
 }
 
 export async function updateInvestment(id: string, data: any) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  const oldInvestment = await Investment.findOne({ _id: id, userId: session.user.id });
-  if (!oldInvestment) throw new Error("We couldn't find the requested investment.");
+    const oldInvestment = await Investment.findOne({ _id: id, userId: session.user.id });
+    if (!oldInvestment) return { success: false, error: "We couldn't find the requested investment." };
 
-  const investment = await Investment.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    { $set: data },
-    { returnDocument: 'after' }
-  );
+    const investment = await Investment.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      { $set: data },
+      { returnDocument: 'after' }
+    );
 
-  await logAuditEvent("Investment", id, "UPDATE", oldInvestment, investment);
+    await logAuditEvent("Investment", id, "UPDATE", oldInvestment, investment);
 
-  revalidatePath("/dashboard/investments");
-  revalidatePath(`/dashboard/investments/${id}`);
-  revalidatePath("/dashboard");
-  revalidatePath("/investments");
+    revalidatePath("/dashboard/investments");
+    revalidatePath(`/dashboard/investments/${id}`);
+    revalidatePath("/dashboard");
+    revalidatePath("/investments");
 
-  return JSON.parse(JSON.stringify(investment));
+    return { success: true, data: JSON.parse(JSON.stringify(investment)) };
+  } catch (err: any) {
+    console.error("Error updating investment:", err);
+    return { success: false, error: err.message || "Failed to update investment" };
+  }
 }
 
 export async function updateInvestmentValue(id: string, newValue: number, note?: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  const oldInvestment = await Investment.findOne({ _id: id, userId: session.user.id });
-  if (!oldInvestment) throw new Error("We couldn't find the requested investment.");
+    const oldInvestment = await Investment.findOne({ _id: id, userId: session.user.id });
+    if (!oldInvestment) return { success: false, error: "We couldn't find the requested investment." };
 
-  const investment = await Investment.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    { $set: { currentValue: newValue } },
-    { returnDocument: 'after' }
-  );
+    const investment = await Investment.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      { $set: { currentValue: newValue } },
+      { returnDocument: 'after' }
+    );
 
-  if (investment) {
-    await InvestmentValueHistory.create({
-      investmentId: id,
-      date: getCurrentDate(),
-      value: newValue,
-      note: note || "Manual value update"
-    });
-    
-    await logAuditEvent("Investment", id, "UPDATE", { currentValue: oldInvestment.currentValue }, { currentValue: newValue, note });
+    if (investment) {
+      await InvestmentValueHistory.create({
+        investmentId: id,
+        date: getCurrentDate(),
+        value: newValue,
+        note: note || "Manual value update"
+      });
+      
+      await logAuditEvent("Investment", id, "UPDATE", { currentValue: oldInvestment.currentValue }, { currentValue: newValue, note });
+    }
+
+    revalidatePath("/dashboard/investments");
+    revalidatePath(`/dashboard/investments/${id}`);
+    revalidatePath("/dashboard");
+    revalidatePath("/investments");
+
+    return { success: true, data: JSON.parse(JSON.stringify(investment)) };
+  } catch (err: any) {
+    console.error("Error updating investment value:", err);
+    return { success: false, error: err.message || "Failed to update investment value" };
   }
-
-  revalidatePath("/dashboard/investments");
-  revalidatePath(`/dashboard/investments/${id}`);
-  revalidatePath("/dashboard");
-  revalidatePath("/investments");
-
-  return JSON.parse(JSON.stringify(investment));
 }
 
 export async function deleteInvestment(id: string, reason?: string, notes?: string) {

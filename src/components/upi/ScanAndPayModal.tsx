@@ -300,7 +300,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       await savePersonVpa(payeeName, vpa, "Merchant");
 
       // Create transaction immediately with awaiting_confirmation status
-      const txn = await createTransaction({
+      const txnRes = await createTransaction({
         type: "expense",
         amount: parsedAmount,
         date: getCurrentDate().toISOString(),
@@ -315,6 +315,13 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
         upiPayeeVpa: vpa
       });
 
+      if (txnRes && !txnRes.success) {
+        toast.error(txnRes.error || "Failed to initiate payment");
+        setLoading(false);
+        return;
+      }
+
+      const txn = txnRes.data || txnRes;
       setCreatedTxnId(txn._id);
 
       // Build targeted UPI URL for the chosen app

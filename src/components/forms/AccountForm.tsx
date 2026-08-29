@@ -67,10 +67,18 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
       };
 
       if (account) {
-        await updateAccount(account._id, payload);
+        const res = await updateAccount(account._id, payload);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to update account");
+          return;
+        }
         toast.success("Account updated successfully!");
       } else {
-        await createAccount(payload);
+        const res = await createAccount(payload);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to create account");
+          return;
+        }
         toast.success("Account created successfully!");
       }
       setOpen(false);

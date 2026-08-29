@@ -55,35 +55,47 @@ export async function getPeople() {
 import { logAuditEvent } from "@/actions/auditLog";
 
 export async function createPerson(data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string; isFavorite?: boolean }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
-  
-  // Uniqueness checks
-  const existingName = await Person.findOne({ userId: session.user.id, name: data.name });
-  if (existingName) throw new Error("A contact with this name already exists.");
+    await dbConnect();
+    
+    // Uniqueness checks
+    const existingName = await Person.findOne({ userId: session.user.id, name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") } });
+    if (existingName) return { success: false, error: `A contact named "${data.name}" already exists.` };
 
-  if (data.phones && data.phones.length > 0) {
-    const existingPhone = await Person.findOne({ userId: session.user.id, phones: { $in: data.phones } });
-    if (existingPhone) throw new Error(`One of the phone numbers is already used by ${existingPhone.name}.`);
+    if (data.phones && data.phones.length > 0) {
+      const cleanPhones = data.phones.filter(Boolean);
+      if (cleanPhones.length > 0) {
+        const existingPhone = await Person.findOne({ userId: session.user.id, phones: { $in: cleanPhones } });
+        if (existingPhone) return { success: false, error: `One of the phone numbers is already used by ${existingPhone.name}.` };
+      }
+    }
+
+    if (data.vpas && data.vpas.length > 0) {
+      const cleanVpas = data.vpas.filter(Boolean);
+      if (cleanVpas.length > 0) {
+        const existingVpa = await Person.findOne({ userId: session.user.id, vpas: { $in: cleanVpas } });
+        if (existingVpa) return { success: false, error: `One of the UPI VPAs is already used by ${existingVpa.name}.` };
+      }
+    }
+
+    const person = await Person.create({
+      ...data,
+      userId: session.user.id,
+    });
+
+    await logAuditEvent("Person", person._id.toString(), "CREATE", undefined, person);
+
+    revalidatePath("/people");
+    revalidatePath("/");
+    
+    return { success: true, data: JSON.parse(JSON.stringify(person)) };
+  } catch (err: any) {
+    console.error("Error creating contact:", err);
+    return { success: false, error: err.message || "Failed to create contact" };
   }
-
-  if (data.vpas && data.vpas.length > 0) {
-    const existingVpa = await Person.findOne({ userId: session.user.id, vpas: { $in: data.vpas } });
-    if (existingVpa) throw new Error(`One of the UPI VPAs is already used by ${existingVpa.name}.`);
-  }
-
-  const person = await Person.create({
-    ...data,
-    userId: session.user.id,
-  });
-
-  await logAuditEvent("Person", person._id.toString(), "CREATE", undefined, person);
-
-  revalidatePath("/people");
-  
-  return JSON.parse(JSON.stringify(person));
 }
 
 export async function deletePerson(id: string, reason?: string, notes?: string) {
@@ -150,68 +162,84 @@ export async function savePersonVpa(name: string, vpa: string, relation: "Friend
 }
 
 export async function updatePerson(id: string, data: { name: string; relation: "Friend" | "Family" | "Colleague" | "Merchant" | "Shopkeeper" | "Other"; phones?: string[]; vpas?: string[]; avatarUrl?: string; color?: string; isFavorite?: boolean }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  // Uniqueness checks
-  const existingName = await Person.findOne({ userId: session.user.id, name: data.name, _id: { $ne: id } });
-  if (existingName) throw new Error("A contact with this name already exists.");
+    // Uniqueness checks
+    const existingName = await Person.findOne({ userId: session.user.id, name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") }, _id: { $ne: id } });
+    if (existingName) return { success: false, error: `A contact named "${data.name}" already exists.` };
 
-  if (data.phones && data.phones.length > 0) {
-    const existingPhone = await Person.findOne({ userId: session.user.id, phones: { $in: data.phones }, _id: { $ne: id } });
-    if (existingPhone) throw new Error(`One of the phone numbers is already used by ${existingPhone.name}.`);
+    if (data.phones && data.phones.length > 0) {
+      const cleanPhones = data.phones.filter(Boolean);
+      if (cleanPhones.length > 0) {
+        const existingPhone = await Person.findOne({ userId: session.user.id, phones: { $in: cleanPhones }, _id: { $ne: id } });
+        if (existingPhone) return { success: false, error: `One of the phone numbers is already used by ${existingPhone.name}.` };
+      }
+    }
+
+    if (data.vpas && data.vpas.length > 0) {
+      const cleanVpas = data.vpas.filter(Boolean);
+      if (cleanVpas.length > 0) {
+        const existingVpa = await Person.findOne({ userId: session.user.id, vpas: { $in: cleanVpas }, _id: { $ne: id } });
+        if (existingVpa) return { success: false, error: `One of the UPI VPAs is already used by ${existingVpa.name}.` };
+      }
+    }
+
+    const oldPerson = await Person.findOne({ _id: id, userId: session.user.id });
+    if (!oldPerson) return { success: false, error: "Contact not found or unauthorized." };
+
+    const person = await Person.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      { 
+        $set: { 
+          name: data.name, 
+          relation: data.relation, 
+          phones: data.phones || [], 
+          vpas: data.vpas || [], 
+          ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }), 
+          ...(data.color !== undefined && { color: data.color }),
+          ...(data.isFavorite !== undefined && { isFavorite: data.isFavorite })
+        } 
+      },
+      { returnDocument: 'after' }
+    );
+
+    if (person) {
+      await logAuditEvent("Person", id, "UPDATE", oldPerson, person);
+    }
+
+    revalidatePath("/people");
+    revalidatePath("/");
+
+    return { success: true, data: JSON.parse(JSON.stringify(person)) };
+  } catch (err: any) {
+    console.error("Error updating contact:", err);
+    return { success: false, error: err.message || "Failed to update contact" };
   }
-
-  if (data.vpas && data.vpas.length > 0) {
-    const existingVpa = await Person.findOne({ userId: session.user.id, vpas: { $in: data.vpas }, _id: { $ne: id } });
-    if (existingVpa) throw new Error(`One of the UPI VPAs is already used by ${existingVpa.name}.`);
-  }
-
-  const oldPerson = await Person.findOne({ _id: id, userId: session.user.id });
-
-  const person = await Person.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    { 
-      $set: { 
-        name: data.name, 
-        relation: data.relation, 
-        phones: data.phones || [], 
-        vpas: data.vpas || [], 
-        ...(data.avatarUrl !== undefined && { avatarUrl: data.avatarUrl }), 
-        ...(data.color !== undefined && { color: data.color }),
-        ...(data.isFavorite !== undefined && { isFavorite: data.isFavorite })
-      } 
-    },
-    { returnDocument: 'after' }
-  );
-
-  if (person) {
-    await logAuditEvent("Person", id, "UPDATE", oldPerson, person);
-  }
-
-  revalidatePath("/people");
-  revalidatePath("/");
-
-  return JSON.parse(JSON.stringify(person));
 }
 
 export async function toggleFavoritePerson(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-  await dbConnect();
+    await dbConnect();
 
-  const person = await Person.findOne({ _id: id, userId: session.user.id });
-  if (!person) throw new Error("Contact not found");
+    const person = await Person.findOne({ _id: id, userId: session.user.id });
+    if (!person) return { success: false, error: "Contact not found" };
 
-  const newFavorite = !person.isFavorite;
-  person.isFavorite = newFavorite;
-  await person.save();
+    const newFavorite = !person.isFavorite;
+    person.isFavorite = newFavorite;
+    await person.save();
 
-  revalidatePath("/people");
-  return { success: true, isFavorite: newFavorite };
+    revalidatePath("/people");
+    return { success: true, isFavorite: newFavorite };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to toggle favorite" };
+  }
 }
 
 export async function getPersonTransactions(personId: string) {

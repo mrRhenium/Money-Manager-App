@@ -77,10 +77,18 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
       };
 
       if (person?._id) {
-        await updatePerson(person._id, transformedValues);
+        const res = await updatePerson(person._id, transformedValues);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to update contact");
+          return;
+        }
         toast.success("Contact updated successfully!");
       } else {
-        await createPerson(transformedValues);
+        const res = await createPerson(transformedValues);
+        if (res && !res.success) {
+          toast.error(res.error || "Failed to create contact");
+          return;
+        }
         toast.success("Contact added successfully!");
       }
       setOpen(false);

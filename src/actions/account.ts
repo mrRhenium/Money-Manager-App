@@ -20,26 +20,40 @@ export async function getAccounts() {
 }
 
 export async function createAccount(data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; creditLimit?: number; color?: string; icon?: string; isLiability?: boolean; currency?: string }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
-  
-  const account = await Account.create({
-    ...data,
-    balance: data.balance || 0,
-    isLiability: data.isLiability || false,
-    currency: data.currency || "INR",
-    userId: session.user.id,
-  });
+    await dbConnect();
 
-  await logAuditEvent("Account", account._id.toString(), "CREATE", undefined, account);
+    // Check duplicate account name for user
+    const existing = await Account.findOne({
+      userId: session.user.id,
+      name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") }
+    });
+    if (existing) {
+      return { success: false, error: `An account named "${data.name}" already exists.` };
+    }
+    
+    const account = await Account.create({
+      ...data,
+      balance: data.balance || 0,
+      isLiability: data.isLiability || false,
+      currency: data.currency || "INR",
+      userId: session.user.id,
+    });
 
-  revalidatePath("/accounts");
-  revalidatePath("/transactions");
-  revalidatePath("/");
-  
-  return JSON.parse(JSON.stringify(account));
+    await logAuditEvent("Account", account._id.toString(), "CREATE", undefined, account);
+
+    revalidatePath("/accounts");
+    revalidatePath("/transactions");
+    revalidatePath("/");
+    
+    return { success: true, data: JSON.parse(JSON.stringify(account)) };
+  } catch (err: any) {
+    console.error("Error creating account:", err);
+    return { success: false, error: err.message || "Failed to create account" };
+  }
 }
 
 import Transaction from "@/models/Transaction";
@@ -103,26 +117,45 @@ export async function deleteAccount(id: string) {
 }
 
 export async function updateAccount(id: string, data: { name: string; type: "bank" | "cash" | "card" | "wallet" | "investment" | "saving" | "other"; balance?: number; color?: string; icon?: string; isLiability?: boolean; currency?: string }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  const oldAccount = await Account.findOne({ _id: id, userId: session.user.id });
+    // Check duplicate name
+    const existing = await Account.findOne({
+      _id: { $ne: id },
+      userId: session.user.id,
+      name: { $regex: new RegExp(`^${data.name.trim()}$`, "i") }
+    });
+    if (existing) {
+      return { success: false, error: `An account named "${data.name}" already exists.` };
+    }
 
-  const account = await Account.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon, isLiability: data.isLiability || false, currency: data.currency || "INR" } },
-    { returnDocument: 'after' }
-  );
+    const oldAccount = await Account.findOne({ _id: id, userId: session.user.id });
 
-  if (account) {
-    await logAuditEvent("Account", id, "UPDATE", oldAccount, account);
+    if (!oldAccount) {
+      return { success: false, error: "Account not found or unauthorized." };
+    }
+
+    const account = await Account.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon, isLiability: data.isLiability || false, currency: data.currency || "INR" } },
+      { returnDocument: 'after' }
+    );
+
+    if (account) {
+      await logAuditEvent("Account", id, "UPDATE", oldAccount, account);
+    }
+
+    revalidatePath("/accounts");
+    revalidatePath("/transactions");
+    revalidatePath("/");
+
+    return { success: true, data: JSON.parse(JSON.stringify(account)) };
+  } catch (err: any) {
+    console.error("Error updating account:", err);
+    return { success: false, error: err.message || "Failed to update account" };
   }
-
-  revalidatePath("/accounts");
-  revalidatePath("/transactions");
-  revalidatePath("/");
-
-  return JSON.parse(JSON.stringify(account));
 }

@@ -28,12 +28,12 @@ export async function updateTimezone(timezone: string) {
 }
 
 export async function updateProfile(data: { name: string; mobile: string; image?: string; qrCode?: string; upiIds?: string[] }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
-
-  await dbConnect();
-  
   try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
+
+    await dbConnect();
+    
     const updateData: any = { name: data.name };
     if (data.mobile) {
       updateData.mobile = data.mobile;
@@ -49,9 +49,9 @@ export async function updateProfile(data: { name: string; mobile: string; image?
     return { success: true };
   } catch (error: any) {
     if (error.code === 11000 && error.keyPattern && error.keyPattern.mobile) {
-      throw new Error("This mobile number is already registered to another account.");
+      return { success: false, error: "This mobile number is already registered to another account." };
     }
-    throw new Error("We encountered an issue updating your profile. Please try again later.");
+    return { success: false, error: "We encountered an issue updating your profile. Please try again later." };
   }
 }
 

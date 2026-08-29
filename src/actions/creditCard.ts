@@ -55,35 +55,39 @@ export async function getCreditCardById(id: string) {
 }
 
 export async function createCreditCard(data: any) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  // Validate duplicate bank+last4
-  const existing = await CreditCard.findOne({
-    userId: session.user.id,
-    bankName: data.bankName,
-    last4Digits: data.last4Digits,
-  });
+    // Validate duplicate bank+last4
+    const existing = await CreditCard.findOne({
+      userId: session.user.id,
+      bankName: data.bankName,
+      last4Digits: data.last4Digits,
+    });
 
-  if (existing) {
-    throw new Error(`A credit card from ${data.bankName} ending in ${data.last4Digits} already exists.`);
+    if (existing) {
+      return { success: false, error: `A credit card from ${data.bankName} ending in ${data.last4Digits} already exists.` };
+    }
+
+    const card = await CreditCard.create({
+      ...data,
+      userId: session.user.id,
+      availableLimit: data.creditLimit,
+      currentOutstanding: 0,
+    });
+
+    await logAuditEvent("CreditCard", card._id.toString(), "CREATE", undefined, card);
+
+    revalidatePath("/credit-cards");
+    revalidatePath("/");
+    return { success: true, data: JSON.parse(JSON.stringify(card)) };
+  } catch (err: any) {
+    console.error("Error creating credit card:", err);
+    return { success: false, error: err.message || "Failed to create credit card" };
   }
-
-
-
-  const card = await CreditCard.create({
-    ...data,
-    userId: session.user.id,
-    availableLimit: data.creditLimit,
-    currentOutstanding: 0,
-  });
-
-  await logAuditEvent("CreditCard", card._id.toString(), "CREATE", undefined, card);
-
-  revalidatePath("/credit-cards");
-  return JSON.parse(JSON.stringify(card));
 }
 
 export async function deleteCreditCard(id: string, reason?: string, notes?: string) {
@@ -188,41 +192,55 @@ export async function updateCreditCard(
     color: string;
   }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
-  if (!card) throw new Error("We couldn't find this credit card in your account.");
+    // Check duplicate last 4 digits on another card
+    const existing = await CreditCard.findOne({
+      _id: { $ne: id },
+      userId: session.user.id,
+      bankName: data.bankName,
+      last4Digits: data.last4Digits,
+    });
+    if (existing) {
+      return { success: false, error: `Another credit card from ${data.bankName} ending in ${data.last4Digits} already exists.` };
+    }
 
-  const oldCard = JSON.parse(JSON.stringify(card));
+    const card = await CreditCard.findOne({ _id: id, userId: session.user.id });
+    if (!card) return { success: false, error: "We couldn't find this credit card in your account." };
 
+    const oldCard = JSON.parse(JSON.stringify(card));
 
+    card.bankName = data.bankName;
+    card.cardName = data.cardName;
+    card.cardNetwork = data.cardNetwork;
+    card.last4Digits = data.last4Digits;
+    card.cardholderName = data.cardholderName;
+    card.creditLimit = data.creditLimit;
+    card.startingDate = parseToDate(data.startingDate);
+    card.expiryDate = parseToDate(data.expiryDate);
+    card.billingCycleStartDay = data.billingCycleStartDay;
+    card.billingCycleEndDay = data.billingCycleEndDay;
+    card.paymentDueDay = data.paymentDueDay;
+    card.color = data.color;
 
-  card.bankName = data.bankName;
-  card.cardName = data.cardName;
-  card.cardNetwork = data.cardNetwork;
-  card.last4Digits = data.last4Digits;
-  card.cardholderName = data.cardholderName;
-  card.creditLimit = data.creditLimit;
-  card.startingDate = parseToDate(data.startingDate);
-  card.expiryDate = parseToDate(data.expiryDate);
-  card.billingCycleStartDay = data.billingCycleStartDay;
-  card.billingCycleEndDay = data.billingCycleEndDay;
-  card.paymentDueDay = data.paymentDueDay;
-  card.color = data.color;
+    // Recalculate available limit based on existing outstanding balance
+    card.availableLimit = data.creditLimit - card.currentOutstanding;
 
-  // Recalculate available limit based on existing outstanding balance
-  card.availableLimit = data.creditLimit - card.currentOutstanding;
+    await card.save();
 
-  await card.save();
+    await logAuditEvent("CreditCard", id, "UPDATE", oldCard, card);
 
-  await logAuditEvent("CreditCard", id, "UPDATE", oldCard, card);
+    revalidatePath("/credit-cards");
+    revalidatePath(`/credit-cards/${card._id}`);
+    revalidatePath("/");
 
-  revalidatePath("/credit-cards");
-  revalidatePath(`/credit-cards/${card._id}`);
-  revalidatePath("/");
-
-  return JSON.parse(JSON.stringify(card));
+    return { success: true, data: JSON.parse(JSON.stringify(card)) };
+  } catch (err: any) {
+    console.error("Error updating credit card:", err);
+    return { success: false, error: err.message || "Failed to update credit card" };
+  }
 }

@@ -25,21 +25,26 @@ export async function createGoal(data: {
   color: string;
   icon: string;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  const goal = await Goal.create({
-    ...data,
-    userId: session.user.id,
-    currentAmount: 0,
-    status: "active",
-  });
+    const goal = await Goal.create({
+      ...data,
+      userId: session.user.id,
+      currentAmount: 0,
+      status: "active",
+    });
 
-  revalidatePath("/goals");
-  revalidatePath("/");
-  return JSON.parse(JSON.stringify(goal));
+    revalidatePath("/goals");
+    revalidatePath("/");
+    return { success: true, data: JSON.parse(JSON.stringify(goal)) };
+  } catch (err: any) {
+    console.error("Error creating goal:", err);
+    return { success: false, error: err.message || "Failed to create goal" };
+  }
 }
 
 export async function updateGoal(
@@ -52,22 +57,27 @@ export async function updateGoal(
     icon?: string;
   }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  const goal = await Goal.findOneAndUpdate(
-    { _id: id, userId: session.user.id },
-    data,
-    { returnDocument: 'after' }
-  );
+    const goal = await Goal.findOneAndUpdate(
+      { _id: id, userId: session.user.id },
+      data,
+      { returnDocument: 'after' }
+    );
 
-  if (!goal) throw new Error("We couldn't find the requested goal. It may have been deleted.");
+    if (!goal) return { success: false, error: "We couldn't find the requested goal. It may have been deleted." };
 
-  revalidatePath("/goals");
-  revalidatePath("/");
-  return JSON.parse(JSON.stringify(goal));
+    revalidatePath("/goals");
+    revalidatePath("/");
+    return { success: true, data: JSON.parse(JSON.stringify(goal)) };
+  } catch (err: any) {
+    console.error("Error updating goal:", err);
+    return { success: false, error: err.message || "Failed to update goal" };
+  }
 }
 
 export async function addFundsToGoal(
@@ -76,80 +86,91 @@ export async function addFundsToGoal(
   sourceAccountId?: string,
   destinationAccountId?: string
 ) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
+    await dbConnect();
 
-  const goal = await Goal.findOne({ _id: id, userId: session.user.id });
-  if (!goal) throw new Error("We couldn't find the requested goal. It may have been deleted.");
+    const goal = await Goal.findOne({ _id: id, userId: session.user.id });
+    if (!goal) return { success: false, error: "We couldn't find the requested goal. It may have been deleted." };
 
-  // Handle transfer if both accounts are provided
-  if (sourceAccountId && destinationAccountId && sourceAccountId !== destinationAccountId) {
-    const sourceAcc = await Account.findOne({ _id: sourceAccountId, userId: session.user.id });
-    const destAcc = await Account.findOne({ _id: destinationAccountId, userId: session.user.id });
-    
-    if (!sourceAcc || !destAcc) throw new Error("We couldn't find the requested account.");
-    if (sourceAcc.balance < amountToAdd) throw new Error("Your selected account doesn't have enough funds for this transfer.");
+    // Handle transfer if both accounts are provided
+    if (sourceAccountId && destinationAccountId && sourceAccountId !== destinationAccountId) {
+      const sourceAcc = await Account.findOne({ _id: sourceAccountId, userId: session.user.id });
+      const destAcc = await Account.findOne({ _id: destinationAccountId, userId: session.user.id });
+      
+      if (!sourceAcc || !destAcc) return { success: false, error: "We couldn't find the requested account." };
+      if (sourceAcc.balance < amountToAdd) return { success: false, error: "Your selected account doesn't have enough funds for this transfer." };
 
-    await createTransaction({
-      type: "transfer",
-      amount: amountToAdd,
-      date: new Date().toISOString(),
-      accountId: sourceAcc._id.toString(),
-      toAccountId: destAcc._id.toString(),
-      goalId: goal._id.toString(),
-      note: `Added funds to Goal: ${goal.name}`,
-      status: "completed"
-    });
-  } else {
-    // If no transfer logic, just update the goal amount directly (e.g. from cash)
-    goal.currentAmount += amountToAdd;
-    if (goal.currentAmount >= goal.targetAmount) {
-      goal.status = "completed";
+      await createTransaction({
+        type: "transfer",
+        amount: amountToAdd,
+        date: new Date().toISOString(),
+        accountId: sourceAcc._id.toString(),
+        toAccountId: destAcc._id.toString(),
+        goalId: goal._id.toString(),
+        note: `Added funds to Goal: ${goal.name}`,
+        status: "completed"
+      });
+    } else {
+      // If no transfer logic, just update the goal amount directly (e.g. from cash)
+      goal.currentAmount += amountToAdd;
+      if (goal.currentAmount >= goal.targetAmount) {
+        goal.status = "completed";
+      }
+      await goal.save();
     }
-    await goal.save();
-  }
 
-  revalidatePath("/goals");
-  revalidatePath("/");
-  return JSON.parse(JSON.stringify(goal));
+    revalidatePath("/goals");
+    revalidatePath("/");
+    return { success: true, data: JSON.parse(JSON.stringify(goal)) };
+  } catch (err: any) {
+    console.error("Error adding funds to goal:", err);
+    return { success: false, error: err.message || "Failed to add funds to goal" };
+  }
 }
 
 export async function deleteGoal(id: string, reason?: string, notes?: string, returnAccountId?: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Your session has expired or you are not logged in. Please sign in to continue.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Your session has expired or you are not logged in. Please sign in to continue." };
 
-  await dbConnect();
-  
-  const goal = await Goal.findOne({ _id: id, userId: session.user.id });
-  if (!goal) throw new Error("We couldn't find the requested goal. It may have been deleted.");
+    await dbConnect();
+    
+    const goal = await Goal.findOne({ _id: id, userId: session.user.id });
+    if (!goal) return { success: false, error: "We couldn't find the requested goal. It may have been deleted." };
 
-  if (goal.status === "completed") {
-    throw new Error("Completed goals cannot be deleted.");
-  }
-
-  // Create Audit Log before deletion
-  const { createAuditLog } = await import('./auditLog');
-  await createAuditLog({
-    action: "GOAL_DELETED",
-    entityType: "goal",
-    entityId: id,
-    entityName: goal.name,
-    details: {
-      reason: reason || "User deleted goal",
-      notes: notes || "",
-      amountInvolved: goal.currentAmount
+    if (goal.status === "completed") {
+      return { success: false, error: "Completed goals cannot be deleted." };
     }
-  });
 
-  // Remove goalId reference from all related transactions so they become regular transfers
-  await Transaction.updateMany({ goalId: goal._id, userId: session.user.id }, { $unset: { goalId: 1 } });
+    // Create Audit Log before deletion
+    const { createAuditLog } = await import('./auditLog');
+    await createAuditLog({
+      action: "GOAL_DELETED",
+      entityType: "goal",
+      entityId: id,
+      entityName: goal.name,
+      details: {
+        reason: reason || "User deleted goal",
+        notes: notes || "",
+        amountInvolved: goal.currentAmount
+      }
+    });
 
-  await Goal.deleteOne({ _id: id, userId: session.user.id });
+    // Remove goalId reference from all related transactions so they become regular transfers
+    await Transaction.updateMany({ goalId: goal._id, userId: session.user.id }, { $unset: { goalId: 1 } });
 
-  revalidatePath("/goals");
-  revalidatePath("/");
+    await Goal.deleteOne({ _id: id, userId: session.user.id });
+
+    revalidatePath("/goals");
+    revalidatePath("/");
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error deleting goal:", err);
+    return { success: false, error: err.message || "Failed to delete goal" };
+  }
 }
 
 export async function withdrawFundsFromGoal(

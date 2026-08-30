@@ -7,17 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   Smartphone, 
-  CheckCircle2, 
   Search, 
   RotateCcw, 
   Loader2, 
   Star, 
   Check, 
-  X,
-  ExternalLink,
   ShieldCheck
 } from "lucide-react";
 import { ALL_UPI_APPS, DEFAULT_ACTIVE_APP_IDS } from "@/lib/upiApps";
+import { UpiAppLogo } from "@/components/upi/UpiAppLogo";
 
 interface PaymentAppsSettingsProps {
   noBorder?: boolean;
@@ -31,11 +29,6 @@ export function PaymentAppsSettings({ noBorder = false }: PaymentAppsSettingsPro
   const [defaultApp, setDefaultApp] = useState<string>("default");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Load config on mount
-  useEffect(() => {
-    loadConfig();
-  }, []);
-
   const loadConfig = async () => {
     try {
       setLoading(true);
@@ -48,6 +41,11 @@ export function PaymentAppsSettings({ noBorder = false }: PaymentAppsSettingsPro
       setLoading(false);
     }
   };
+
+  // Load config on mount
+  useEffect(() => {
+    loadConfig();
+  }, []);
 
   const handleToggleActive = (appId: string) => {
     setApps(prev => prev.map(app => {
@@ -184,16 +182,7 @@ export function PaymentAppsSettings({ noBorder = false }: PaymentAppsSettingsPro
             >
               {/* App Icon / Logo & Info */}
               <div className="flex items-center gap-2.5 min-w-0">
-                <div 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border"
-                  style={{
-                    backgroundColor: app.bgColor,
-                    borderColor: app.borderColor,
-                    color: app.color,
-                  }}
-                >
-                  {app.shortName.charAt(0)}
-                </div>
+                <UpiAppLogo appId={app.id} size="md" />
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h4 className="text-xs sm:text-sm font-semibold text-foreground truncate">{app.name}</h4>

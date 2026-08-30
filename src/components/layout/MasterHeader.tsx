@@ -26,7 +26,7 @@ export function MasterHeader({ title, subtitle, backHref, actions, className }: 
       <div className="flex flex-row items-center justify-between gap-3 sm:gap-4 h-full w-full min-w-0">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           {backHref && (
-            <Link href={backHref} className="shrink-0">
+            <Link replace href={backHref} className="shrink-0">
               <Button
                 variant="ghost"
                 size="icon"

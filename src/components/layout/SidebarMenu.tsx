@@ -4,13 +4,11 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Home,
   Wallet,
   CreditCard,
   PieChart,
   Users,
   Settings,
-  ShieldCheck,
   Landmark,
   Tags,
   TrendingUp,
@@ -18,7 +16,6 @@ import {
   Repeat,
   Umbrella,
   Target,
-  UploadCloud,
   QrCode,
   LayoutDashboard,
   Banknote,
@@ -68,6 +65,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
 
           const content = (
             <Link
+              replace
               href={item.href}
               className={cn(
                 "flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300 relative group overflow-hidden",
@@ -93,6 +91,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
             <Tooltip key={item.href}>
               <TooltipTrigger render={
                 <Link
+                  replace
                   href={item.href}
                   className={cn(
                     "flex items-center justify-center w-10 h-10 mx-auto rounded-xl transition-all duration-300 relative group overflow-hidden",

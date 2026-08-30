@@ -18,6 +18,7 @@ import { Select, Spin } from "antd";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { useCurrency } from "@/hooks/useCurrency";
 import { ALL_UPI_APPS, DEFAULT_ACTIVE_APP_IDS, buildUpiDeepLink, UpiAppInfo } from "@/lib/upiApps";
+import { UpiAppLogo } from "@/components/upi/UpiAppLogo";
 import Link from "next/link";
 
 interface ScanAndPayModalProps {
@@ -675,12 +676,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                         label={
                           <div className="flex items-center justify-between w-full pr-1">
                             <div className="flex items-center gap-2 min-w-0">
-                              <span 
-                                className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0"
-                                style={{ backgroundColor: app.bgColor || "rgba(14, 165, 233, 0.12)", color: app.color || "#0ea5e9" }}
-                              >
-                                {app.shortName?.charAt(0) || "U"}
-                              </span>
+                              <UpiAppLogo appId={app.id} size="sm" className="w-5 h-5 rounded-md" />
                               <span className="font-semibold text-xs text-foreground truncate">{app.name}</span>
                             </div>
                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
@@ -695,16 +691,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                       >
                         <div className="flex items-center justify-between w-full py-1">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div 
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs border"
-                              style={{ 
-                                backgroundColor: app.bgColor || "rgba(14, 165, 233, 0.12)", 
-                                borderColor: app.borderColor || "rgba(14, 165, 233, 0.3)", 
-                                color: app.color || "#0ea5e9" 
-                              }}
-                            >
-                              {app.shortName?.charAt(0) || "U"}
-                            </div>
+                            <UpiAppLogo appId={app.id} size="md" className="w-7 h-7 rounded-lg" />
                             <div className="min-w-0">
                               <p className="font-bold text-xs text-foreground leading-tight truncate">{app.name}</p>
                               <p className="text-[10px] text-muted-foreground">{app.shortName}</p>
@@ -737,21 +724,13 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                         key={app.id}
                         type="button"
                         onClick={() => setSelectedAppId(app.id)}
-                        className={`px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all border ${
+                        className={`px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all border ${
                           selectedAppId === app.id 
                             ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/30" 
                             : "bg-card hover:bg-muted text-foreground border-border/60"
                         }`}
                       >
-                        <span 
-                          className="w-3 h-3 rounded-full flex items-center justify-center text-[7px] font-black"
-                          style={{ 
-                            backgroundColor: selectedAppId === app.id ? "rgba(255,255,255,0.3)" : app.bgColor, 
-                            color: selectedAppId === app.id ? "#fff" : app.color 
-                          }}
-                        >
-                          {app.shortName?.charAt(0)}
-                        </span>
+                        <UpiAppLogo appId={app.id} size="sm" className="w-3.5 h-3.5 rounded-xs" />
                         <span>{app.shortName}</span>
                       </button>
                     ))}

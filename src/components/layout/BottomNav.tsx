@@ -89,6 +89,7 @@ export function BottomNav({ role }: { role?: string }) {
                     <div className="grid grid-cols-3 gap-4 py-4">
                       {menuItems.map((menuItem) => (
                         <Link
+                          replace
                           key={menuItem.href}
                           href={menuItem.href}
                           onClick={() => setMenuOpen(false)}
@@ -121,7 +122,7 @@ export function BottomNav({ role }: { role?: string }) {
 
           return (
             <li key={item.href} className="flex-1 flex justify-center h-full">
-              <Link href={item.href} className="w-full h-full">
+              <Link replace href={item.href} className="w-full h-full">
                 {NavItemContent}
               </Link>
             </li>

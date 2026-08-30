@@ -1,42 +1,79 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import * as LucideIcons from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Palette, Sparkles } from "lucide-react";
-
-export const ICON_OPTIONS = [
-  { name: "ShoppingBag", icon: LucideIcons.ShoppingBag, label: "Shopping" },
-  { name: "Utensils", icon: LucideIcons.Utensils, label: "Food" },
-  { name: "Car", icon: LucideIcons.Car, label: "Transport" },
-  { name: "Home", icon: LucideIcons.Home, label: "Housing" },
-  { name: "Zap", icon: LucideIcons.Zap, label: "Utilities" },
-  { name: "HeartPulse", icon: LucideIcons.HeartPulse, label: "Medical" },
-  { name: "GraduationCap", icon: LucideIcons.GraduationCap, label: "Education" },
-  { name: "Tv", icon: LucideIcons.Tv, label: "Entertainment" },
-  { name: "DollarSign", icon: LucideIcons.DollarSign, label: "Salary" },
-  { name: "TrendingUp", icon: LucideIcons.TrendingUp, label: "Investment" },
-  { name: "Gift", icon: LucideIcons.Gift, label: "Gifts" },
-  { name: "Repeat", icon: LucideIcons.Repeat, label: "Recurring" },
-  { name: "Shield", icon: LucideIcons.Shield, label: "Insurance" },
-  { name: "Users", icon: LucideIcons.Users, label: "People" },
-  { name: "Wallet", icon: LucideIcons.Wallet, label: "Wallet" },
-  { name: "Landmark", icon: LucideIcons.Landmark, label: "Bank" },
-  { name: "Smartphone", icon: LucideIcons.Smartphone, label: "Mobile" },
-  { name: "Briefcase", icon: LucideIcons.Briefcase, label: "Work" },
-  { name: "PiggyBank", icon: LucideIcons.PiggyBank, label: "Savings" },
-  { name: "CircleDollarSign", icon: LucideIcons.CircleDollarSign, label: "Money" },
-  { name: "Bitcoin", icon: LucideIcons.Bitcoin, label: "Crypto" },
-  { name: "Building2", icon: LucideIcons.Building2, label: "Real Estate" },
-  { name: "Gem", icon: LucideIcons.Gem, label: "Gold" },
-  { name: "Circle", icon: LucideIcons.Circle, label: "Other" },
-];
+import { Palette, Sparkles, Circle } from "lucide-react";
+import { Select } from "antd";
+import { SEED_ICONS } from "@/lib/iconConstants";
 
 export const DEFAULT_COLORS = [
   "#0ea5e9", "#8b5cf6", "#f59e0b", "#ef4444", "#10b981",
   "#ec4899", "#6366f1", "#14b8a6", "#f97316", "#64748b",
 ];
 
-import { Select } from "antd";
+// Helper to safely render any Lucide icon by string name
+export function getLucideIcon(name: string): React.ComponentType<any> {
+  if (!name) return Circle;
+  const IconComp = (LucideIcons as any)[name];
+  return IconComp || Circle;
+}
+
+export function DynamicLucideIcon({ 
+  name, 
+  className = "w-4 h-4", 
+  style 
+}: { 
+  name: string; 
+  className?: string; 
+  style?: React.CSSProperties 
+}) {
+  const IconComp = getLucideIcon(name);
+  return <IconComp className={className} style={style} />;
+}
+
+// Global cached icons for instant UI response
+let cachedIcons: any[] | null = null;
+
+export function useSystemIcons() {
+  const [icons, setIcons] = useState<any[]>(cachedIcons || SEED_ICONS);
+  const [loading, setLoading] = useState(!cachedIcons);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadIcons() {
+      try {
+        const res = await fetch("/api/icons");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0 && isMounted) {
+            cachedIcons = data;
+            setIcons(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load dynamic icons:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadIcons();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return { icons, loading };
+}
+
+// Backward compatibility ICON_OPTIONS export
+export const ICON_OPTIONS = SEED_ICONS.map((item) => ({
+  name: item.name,
+  icon: getLucideIcon(item.name),
+  label: item.label,
+  category: item.category,
+}));
 
 interface IconPickerProps {
   value: string;
@@ -46,6 +83,43 @@ interface IconPickerProps {
 }
 
 export function IconPicker({ value, onChange, color, disabled }: IconPickerProps) {
+  const { icons } = useSystemIcons();
+
+  // Group icons by category for structured dropdown display
+  const groupedCategories = React.useMemo(() => {
+    const groups: { [cat: string]: any[] } = {};
+    icons.forEach((item) => {
+      const cat = item.category || "General";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(item);
+    });
+
+    return Object.entries(groups).map(([catName, list]) => ({
+      label: catName,
+      options: list.map((item) => {
+        const IconComp = getLucideIcon(item.name);
+        return {
+          label: (
+            <div className="flex items-center justify-between gap-2 py-0.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <IconComp 
+                  className="w-4 h-4 shrink-0" 
+                  style={{ color: color || "currentColor" }} 
+                />
+                <span className="truncate">{item.label}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground font-mono opacity-60 shrink-0">
+                {item.name}
+              </span>
+            </div>
+          ),
+          value: item.name,
+          searchTerms: `${item.label} ${item.name} ${item.category || ""} ${(item.tags || []).join(" ")}`.toLowerCase(),
+        };
+      }),
+    }));
+  }, [icons, color]);
+
   return (
     <div className="space-y-1.5 flex flex-col justify-end">
       <label className="text-sm font-medium flex items-center gap-2">
@@ -57,18 +131,13 @@ export function IconPicker({ value, onChange, color, disabled }: IconPickerProps
         value={value}
         onChange={onChange}
         showSearch
-        options={ICON_OPTIONS.map((item) => {
-          const IconComponent = item.icon;
-          return {
-            label: (
-              <div className="flex items-center gap-2">
-                <IconComponent className="w-4 h-4" style={{ color: color || "currentColor" }} />
-                <span>{item.label}</span>
-              </div>
-            ),
-            value: item.name
-          };
-        })}
+        filterOption={(input, option: any) => {
+          if (!option || !option.searchTerms) return false;
+          return (option.searchTerms as string).includes(input.toLowerCase());
+        }}
+        options={groupedCategories}
+        placeholder="Select or search an icon..."
+        dropdownStyle={{ maxHeight: 340, overflowY: "auto" }}
       />
     </div>
   );

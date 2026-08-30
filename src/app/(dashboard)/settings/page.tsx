@@ -558,7 +558,7 @@ function SettingsContent() {
   return (
     <MasterLayout>
       <MasterHeader
-        title={<><Settings className="w-6 h-6 text-primary" /> Settings</>}
+        title={<div className="flex items-center gap-2"><Settings className="w-6 h-6 text-primary" /> Settings</div>}
         subtitle="Manage your account settings and preferences."
       />
 
@@ -777,13 +777,13 @@ function SettingsContent() {
             className="w-[95vw] max-w-lg p-5 rounded-2xl max-h-[85vh] overflow-y-auto"
           >
             <DialogHeader>
-              <DialogTitle className="text-base font-bold text-foreground">
-                {activeTab === "profile" && "Profile Information"}
-                {activeTab === "preferences" && "Preferences"}
-                {activeTab === "payment_apps" && "UPI & Payment Apps"}
-                {activeTab === "timezone" && "Global Timezone"}
-                {activeTab === "notifications" && "Notifications"}
-                {activeTab === "logout" && "Sign Out"}
+              <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                {activeTab === "profile" && <><div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><User className="w-3.5 h-3.5 text-primary" /></div> Profile Information</>}
+                {activeTab === "preferences" && <><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> Preferences</>}
+                {activeTab === "payment_apps" && <><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</>}
+                {activeTab === "timezone" && <><div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0"><Globe className="w-3.5 h-3.5 text-emerald-500" /></div> Global Timezone</>}
+                {activeTab === "notifications" && <><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</>}
+                {activeTab === "logout" && <><div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0"><LogOut className="w-3.5 h-3.5 text-red-500" /></div> Sign Out</>}
               </DialogTitle>
             </DialogHeader>
             <div className="pt-1">

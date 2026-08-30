@@ -12,7 +12,7 @@ export function BottomNav({ role }: { role?: string }) {
   const [scanOpen, setScanOpen] = useState(false);
 
   let navItems = [
-    { label: "Dashboard", href: "/", icon: Home },
+    { label: "Dashboard", href: "/", icon: LayoutDashboard },
     { label: "Transactions", href: "/transactions", icon: Wallet },
     { label: "Add", href: "#", icon: ScanLine, isMain: true },
     { label: "My UPI", href: "/my-upi", icon: QrCode },

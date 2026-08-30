@@ -22,7 +22,8 @@ import {
   QrCode,
   LayoutDashboard,
   Banknote,
-  Database
+  Database,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +31,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
   const pathname = usePathname();
 
   let items = [
-    { href: "/", icon: Home, label: "Dashboard" },
+    { href: "/", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/my-upi", icon: QrCode, label: "My UPI" },
     { href: "/accounts", icon: Landmark, label: "Accounts" },
     { href: "/credit-cards", icon: CreditCard, label: "Credit Cards" },
@@ -52,6 +53,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
       { href: "/admin/dashboard", icon: LayoutDashboard, label: "Admin Dashboard" },
       { href: "/admin/users", icon: Users, label: "Manage Users" },
       { href: "/admin/currencies", icon: Banknote, label: "Currencies" },
+      { href: "/admin/icons", icon: Sparkles, label: "System Icons" },
       { href: "/admin/analytics", icon: Database, label: "Database Analytics" },
       { href: "/settings", icon: Settings, label: "Settings" },
     ];

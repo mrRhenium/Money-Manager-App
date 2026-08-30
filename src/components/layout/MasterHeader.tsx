@@ -37,7 +37,7 @@ export function MasterHeader({ title, subtitle, backHref, actions, className }: 
             </Link>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate w-full" title={typeof title === "string" ? title : undefined}>
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate w-full flex items-center gap-2" title={typeof title === "string" ? title : undefined}>
               {title}
             </h1>
             {subtitle && (

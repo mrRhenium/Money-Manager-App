@@ -47,9 +47,18 @@ export function AppNavigationManager() {
       const initialized = sessionStorage.getItem("app_nav_root_initialized");
       if (!initialized) {
         sessionStorage.setItem("app_nav_root_initialized", "true");
-        const current = window.location.pathname;
-        window.history.replaceState({ isRoot: true }, "", "/");
-        window.history.pushState({ path: current }, "", current);
+        const currentPath = window.location.pathname;
+        const currentSearch = window.location.search;
+
+        if (currentSearch.includes("personId=")) {
+          // Prepend both Dashboard (/) and Master (/people) so Back goes: detail -> master -> dashboard
+          window.history.replaceState({ isRoot: true }, "", "/");
+          window.history.pushState({ isMaster: true }, "", currentPath);
+          window.history.pushState({ isDetail: true }, "", `${currentPath}${currentSearch}`);
+        } else {
+          window.history.replaceState({ isRoot: true }, "", "/");
+          window.history.pushState({ path: currentPath }, "", currentPath);
+        }
       }
     }
   }, []);
@@ -65,8 +74,9 @@ export function AppNavigationManager() {
       const previousPath = currentPathRef.current;
       const currentPath = window.location.pathname;
 
-      // If user was on a master and popped into another master, redirect cleanly to Dashboard
-      if (TOP_LEVEL_MASTERS.has(previousPath) && TOP_LEVEL_MASTERS.has(currentPath)) {
+      // Only redirect to Dashboard if popping between TWO DIFFERENT masters (e.g. /transactions -> /accounts)
+      // Intra-master pops (e.g. /people?personId=... -> /people) remain on /people
+      if (previousPath !== currentPath && TOP_LEVEL_MASTERS.has(previousPath) && TOP_LEVEL_MASTERS.has(currentPath)) {
         router.replace("/");
       }
     };

@@ -46,7 +46,7 @@ export function PersonList({
     setLocalPeople(people);
   }, [people]);
 
-  // Open drawer automatically if personId query param exists on mount or URL change
+  // Open / Close drawer based on personId query param or URL change
   useEffect(() => {
     const personId = searchParams.get("personId");
     if (personId && localPeople.length > 0) {
@@ -55,8 +55,32 @@ export function PersonList({
         setSelectedPerson(found);
         setDrawerOpen(true);
       }
+    } else if (!personId) {
+      setDrawerOpen(false);
+      setSelectedPerson(null);
     }
   }, [searchParams, localPeople]);
+
+  // Synchronize browser/hardware back button with drawer visibility
+  useEffect(() => {
+    const handlePopState = () => {
+      const current = new URLSearchParams(window.location.search);
+      const personId = current.get("personId");
+      if (!personId) {
+        setDrawerOpen(false);
+        setSelectedPerson(null);
+      } else {
+        const found = localPeople.find(p => p._id === personId);
+        if (found) {
+          setSelectedPerson(found);
+          setDrawerOpen(true);
+        }
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [localPeople]);
 
   const searchQuery = externalSearch;
   const relationFilter = externalFilter;
@@ -80,7 +104,7 @@ export function PersonList({
     const current = new URLSearchParams(window.location.search);
     current.set("personId", person._id);
     const query = current.toString() ? `?${current.toString()}` : "";
-    window.history.replaceState(null, '', `${pathname}${query}`);
+    window.history.pushState({ personDetail: true }, '', `${pathname}${query}`);
   };
 
   const filteredPeople = useMemo(() => {
@@ -272,9 +296,9 @@ export function PersonList({
           setDrawerOpen(false);
           setSelectedPerson(null);
           const current = new URLSearchParams(window.location.search);
-          current.delete("personId");
-          const query = current.toString() ? `?${current.toString()}` : "";
-          window.history.replaceState(null, '', `${pathname}${query}`);
+          if (current.has("personId")) {
+            window.history.back();
+          }
         }}
         accounts={accounts}
         categories={categories}

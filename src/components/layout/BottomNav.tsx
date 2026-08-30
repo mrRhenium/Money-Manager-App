@@ -87,22 +87,25 @@ export function BottomNav({ role }: { role?: string }) {
                       <DialogTitle className="text-xl font-bold">More Options</DialogTitle>
                     </DialogHeader>
                     <div className="grid grid-cols-3 gap-4 py-4">
-                      {menuItems.map((menuItem) => (
-                        <Link
-                          replace
-                          key={menuItem.href}
-                          href={menuItem.href}
-                          onClick={() => setMenuOpen(false)}
-                          className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl hover:bg-muted/50 transition-colors"
-                        >
-                          <div className={`p-3 rounded-full ${pathname === menuItem.href ? "bg-primary text-primary-foreground shadow-md scale-110" : "bg-secondary text-secondary-foreground"}`}>
-                            <menuItem.icon className="w-5 h-5" />
-                          </div>
-                          <span className={`text-xs font-medium text-center ${pathname === menuItem.href ? "text-primary font-bold" : "text-foreground"}`}>
-                            {menuItem.label}
-                          </span>
-                        </Link>
-                      ))}
+                      {menuItems.map((menuItem) => {
+                        const shouldReplace = pathname !== "/" && menuItem.href !== "/";
+                        return (
+                          <Link
+                            replace={shouldReplace}
+                            key={menuItem.href}
+                            href={menuItem.href}
+                            onClick={() => setMenuOpen(false)}
+                            className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl hover:bg-muted/50 transition-colors"
+                          >
+                            <div className={`p-3 rounded-full ${pathname === menuItem.href ? "bg-primary text-primary-foreground shadow-md scale-110" : "bg-secondary text-secondary-foreground"}`}>
+                              <menuItem.icon className="w-5 h-5" />
+                            </div>
+                            <span className={`text-xs font-medium text-center ${pathname === menuItem.href ? "text-primary font-bold" : "text-foreground"}`}>
+                              {menuItem.label}
+                            </span>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -120,9 +123,10 @@ export function BottomNav({ role }: { role?: string }) {
             );
           }
 
+          const shouldReplace = pathname !== "/" && item.href !== "/";
           return (
             <li key={item.href} className="flex-1 flex justify-center h-full">
-              <Link replace href={item.href} className="w-full h-full">
+              <Link replace={shouldReplace} href={item.href} className="w-full h-full">
                 {NavItemContent}
               </Link>
             </li>

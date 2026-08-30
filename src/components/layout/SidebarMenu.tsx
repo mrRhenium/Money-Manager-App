@@ -63,9 +63,11 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
           const isActive = pathname === item.href;
           const Icon = item.icon;
 
+          const shouldReplace = pathname !== "/" && item.href !== "/";
+
           const content = (
             <Link
-              replace
+              replace={shouldReplace}
               href={item.href}
               className={cn(
                 "flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300 relative group overflow-hidden",
@@ -91,7 +93,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
             <Tooltip key={item.href}>
               <TooltipTrigger render={
                 <Link
-                  replace
+                  replace={shouldReplace}
                   href={item.href}
                   className={cn(
                     "flex items-center justify-center w-10 h-10 mx-auto rounded-xl transition-all duration-300 relative group overflow-hidden",

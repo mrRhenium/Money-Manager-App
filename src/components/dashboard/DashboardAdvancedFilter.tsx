@@ -144,6 +144,7 @@ export function DashboardAdvancedFilter() {
           maxTagCount="responsive"
           size="large"
           disabled={!isMonthYear}
+          popupMatchSelectWidth={false}
         />
         <AntSelect
           mode="multiple"
@@ -156,6 +157,7 @@ export function DashboardAdvancedFilter() {
           maxTagCount="responsive"
           size="large"
           disabled={!isMonthYear}
+          popupMatchSelectWidth={false}
         />
       </div>
     </div>

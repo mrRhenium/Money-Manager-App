@@ -197,15 +197,24 @@ export async function payEMI(loanId: string, amountOverride?: number) {
       loanId: loan._id.toString(),
     });
 
-    // Reduce outstanding balance
-    loan.outstandingBalance -= actualPayment;
-
-    if (loan.outstandingBalance <= 0) {
-      loan.status = "completed";
-      loan.outstandingBalance = 0;
+    // createTransaction already deducted the balance via loanId logic.
+    // Reload updated loan to advance nextDueDate and set lastEmiPaidDate
+    const updatedLoan = await Loan.findById(loanId);
+    if (updatedLoan) {
+      const now = getCurrentDate();
+      const baseDate = updatedLoan.nextDueDate
+        ? new Date(updatedLoan.nextDueDate)
+        : (() => {
+            let next = new Date(now.getFullYear(), now.getMonth(), updatedLoan.emiDate);
+            if (next < now) next.setMonth(next.getMonth() + 1);
+            return next;
+          })();
+      const advancedDueDate = new Date(baseDate);
+      advancedDueDate.setMonth(advancedDueDate.getMonth() + 1);
+      updatedLoan.nextDueDate = advancedDueDate;
+      updatedLoan.lastEmiPaidDate = now;
+      await updatedLoan.save();
     }
-
-    await loan.save();
 
     await createAuditLog({
       action: "EMI_PAID",
@@ -221,7 +230,7 @@ export async function payEMI(loanId: string, amountOverride?: number) {
     revalidatePath("/loans");
     revalidatePath("/");
     
-    return { success: true, data: JSON.parse(JSON.stringify(loan)) };
+    return { success: true, data: JSON.parse(JSON.stringify(updatedLoan || loan)) };
   } catch (err: any) {
     console.error("Error paying EMI:", err);
     return { success: false, error: err.message || "Failed to process EMI payment" };
@@ -256,6 +265,15 @@ export async function undoLastEMI(loanId: string) {
 
     // Call deleteTransaction which will now automatically handle reverting the loan balance and account balance
     await deleteTransaction(txn._id.toString());
+
+    // If loan had a nextDueDate advanced, step it back 1 month
+    const updatedLoan = await Loan.findById(loanId);
+    if (updatedLoan && updatedLoan.nextDueDate) {
+      const prevDue = new Date(updatedLoan.nextDueDate);
+      prevDue.setMonth(prevDue.getMonth() - 1);
+      updatedLoan.nextDueDate = prevDue;
+      await updatedLoan.save();
+    }
 
     await createAuditLog({
       action: "EMI_REVERSED",

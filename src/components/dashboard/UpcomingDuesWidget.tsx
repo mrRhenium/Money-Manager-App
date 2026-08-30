@@ -7,10 +7,11 @@ import { formatDateString, parseToDate, getCurrentDate } from "@/lib/dateTimeHel
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { Calendar, CreditCard, Shield, TrendingUp, AlertCircle, RefreshCw, CheckCircle2, CalendarDays, ChevronLeft, ChevronRight, Landmark } from "lucide-react";
+import { Calendar, CreditCard, Shield, TrendingUp, RefreshCw, CheckCircle2, CalendarDays, ChevronLeft, ChevronRight, Landmark } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PayDueModal, DueItem } from "./PayDueModal";
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
   loan_emi: { label: "🏦 Loans (EMIs)", icon: Landmark, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-500/10" },
@@ -21,31 +22,35 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string;
   subscription: { label: "🔄 Subscriptions", icon: RefreshCw, color: "text-amber-600 dark:text-amber-400", bgColor: "bg-amber-500/10" },
 };
 
-export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], daysAhead?: number }) {
+export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { dues: any[], daysAhead?: number, accounts?: any[] }) {
   const { format } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedDue, setSelectedDue] = useState<DueItem | null>(null);
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const itemsPerPage = 10;
 
-  if (!dues || dues.length === 0) return null;
+  const filteredDues = useMemo(() => {
+    if (!dues || dues.length === 0) return [];
+    return dues.filter(due => {
+      if (selectedCategory !== "all" && due.type !== selectedCategory) return false;
+      if (!searchQuery) return true;
+      const s = searchQuery.toLowerCase();
+      const dateStr = formatDateString(due.dueDate, "DD-MM-YYYY");
+      return (
+        (due.title || "").toLowerCase().includes(s) ||
+        (due.type || "").toLowerCase().includes(s) ||
+        due.amount.toString().includes(s) ||
+        dateStr.includes(s)
+      );
+    });
+  }, [dues, selectedCategory, searchQuery]);
 
-  const filteredDues = dues.filter(due => {
-    if (selectedCategory !== "all" && due.type !== selectedCategory) return false;
-    if (!searchQuery) return true;
-    const s = searchQuery.toLowerCase();
-    const dateStr = formatDateString(due.dueDate, "DD-MM-YYYY");
-    return (
-      (due.title || "").toLowerCase().includes(s) ||
-      (due.type || "").toLowerCase().includes(s) ||
-      due.amount.toString().includes(s) ||
-      dateStr.includes(s)
-    );
-  });
-  const totalAmount = filteredDues.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalAmount = useMemo(() => filteredDues.reduce((acc, curr) => acc + curr.amount, 0), [filteredDues]);
   const totalPages = Math.ceil(filteredDues.length / itemsPerPage);
-  const paginatedDues = filteredDues.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedDues = useMemo(() => filteredDues.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredDues, currentPage, itemsPerPage]);
 
   // Group paginatedDues by type for categorized display
   const groupedDues = useMemo(() => {
@@ -62,6 +67,8 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
     Object.keys(groups).forEach(key => { if (!order.includes(key)) sorted.push([key, groups[key]]); });
     return sorted;
   }, [paginatedDues]);
+
+  if (!dues || dues.length === 0) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -91,21 +98,30 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
         </Card>
       } />
 
-      <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-2xl md:max-w-3xl max-h-[85vh] overflow-y-auto overflow-x-hidden px-6 py-4 sm:px-8 sm:py-6 rounded-2xl">
-        <DialogHeader className="pb-3 sm:pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              Upcoming Dues
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-2xl md:max-w-3xl max-h-[90vh] sm:max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border border-border/70 shadow-2xl bg-background">
+        <DialogHeader className="p-4 sm:p-5 pb-3 sm:pb-4 border-b border-border/60 bg-muted/20 shrink-0 gap-3 text-left">
+          <div className="flex items-center justify-between gap-3 pr-8 sm:pr-10">
+            <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2.5 text-foreground">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Calendar className="w-4 h-4" />
+              </div>
+              <span>Upcoming Dues</span>
             </DialogTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-semibold text-[10px] sm:text-xs px-2 py-0.5 rounded-lg shrink-0">
+                {dues.length} {dues.length === 1 ? "Due" : "Dues"}
+              </Badge>
+              <span className="font-bold text-xs sm:text-sm text-foreground shrink-0">{format(totalAmount)}</span>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
+
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search by name, amount, date, or type..."
-                className="pl-9 bg-background w-full h-9 text-xs sm:text-sm rounded-xl"
+                placeholder="Search by name, amount, date..."
+                className="pl-9 bg-background w-full h-9 text-xs sm:text-sm rounded-xl border-border/60"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -120,7 +136,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[220px] h-9 shrink-0 bg-background text-foreground text-xs sm:text-sm rounded-xl">
+              <SelectTrigger className="w-full sm:w-[210px] h-9 shrink-0 bg-background text-foreground text-xs sm:text-sm rounded-xl border-border/60">
                 <SelectValue placeholder="All Categories">
                   {selectedCategory === "all" ? "All Categories" : CATEGORY_CONFIG[selectedCategory]?.label}
                 </SelectValue>
@@ -135,21 +151,21 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
           </div>
         </DialogHeader>
 
-        {/* Grouped by category */}
-        <div className="space-y-4 sm:space-y-6 mt-3 sm:mt-4">
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 space-y-4 sm:space-y-5 custom-scrollbar min-h-0">
           {groupedDues.map(([type, items]) => {
             const config = CATEGORY_CONFIG[type] || { label: type, icon: Calendar, color: "text-muted-foreground", bgColor: "bg-secondary" };
             const CategoryIcon = config.icon;
             const groupTotal = items.reduce((acc: number, d: any) => acc + d.amount, 0);
 
             return (
-              <div key={type} className="min-w-0">
+              <div key={type} className="min-w-0 space-y-2">
                 {/* Category Header */}
-                <div className={`flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl ${config.bgColor} mb-2 min-w-0 gap-2`}>
+                <div className={`flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl ${config.bgColor} min-w-0 gap-2 border border-border/20`}>
                   <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
                     <CategoryIcon className={`w-4 h-4 shrink-0 ${config.color}`} />
                     <span className={`text-xs sm:text-sm font-bold truncate ${config.color}`}>{config.label}</span>
-                    <Badge variant="outline" className="text-[10px] h-4.5 sm:h-5 px-1.5 shrink-0">{items.length}</Badge>
+                    <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 shrink-0 font-semibold bg-background/50">{items.length}</Badge>
                   </div>
                   <span className={`text-xs sm:text-sm font-bold shrink-0 ${config.color}`}>{format(groupTotal)}</span>
                 </div>
@@ -162,23 +178,23 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
                     return (
                       <div 
                         key={idx} 
-                        className="p-2.5 sm:p-3 hover:bg-muted/50 transition-colors rounded-xl border border-border/40 bg-card/60 flex items-center justify-between gap-2.5 min-w-0"
+                        className="p-2.5 sm:p-3 hover:bg-muted/50 transition-colors rounded-xl border border-border/50 bg-card flex items-center justify-between gap-3 min-w-0 shadow-2xs"
                       >
                         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                           <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${config.bgColor} ${config.color}`}>
                             <CategoryIcon className="w-4 h-4" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="font-semibold text-xs sm:text-sm truncate text-foreground" title={due.title}>
+                            <h4 className="font-semibold text-xs sm:text-sm truncate text-foreground leading-snug" title={due.title}>
                               {due.title}
                             </h4>
                             <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground mt-0.5 flex-wrap">
-                              <span className={`flex items-center gap-1 ${isOverdue ? "text-destructive font-medium" : ""}`}>
+                              <span className={`flex items-center gap-1 ${isOverdue ? "text-destructive font-semibold" : ""}`}>
                                 <CalendarDays className="w-3 h-3 shrink-0" />
                                 Due: {formatDateString(due.dueDate, "DD-MM-YYYY")}
                               </span>
                               {isOverdue && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-destructive/10 text-destructive border border-destructive/20">
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-destructive/10 text-destructive border border-destructive/20 uppercase tracking-wider">
                                   Overdue
                                 </span>
                               )}
@@ -186,14 +202,22 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-1 shrink-0">
-                          <span className="font-bold text-xs sm:text-sm text-foreground">{format(due.amount)}</span>
+                        <div className="flex flex-col items-end gap-1 shrink-0 min-w-[72px] sm:min-w-[85px]">
+                          <span className="font-bold text-xs sm:text-sm text-foreground whitespace-nowrap text-right">
+                            {format(due.amount)}
+                          </span>
                           <Button 
                             size="sm" 
-                            variant={isOverdue ? "destructive" : "secondary"} 
-                            className="h-6 sm:h-7 px-2 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-lg shadow-2xs"
+                            variant={isOverdue ? "destructive" : "default"} 
+                            className="h-6 sm:h-7 px-2 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-lg shadow-2xs cursor-pointer gap-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDue(due);
+                              setIsPayModalOpen(true);
+                            }}
                           >
-                            <CheckCircle2 className="w-3 h-3 mr-1" /> Pay
+                            <CheckCircle2 className="w-3 h-3 shrink-0" />
+                            <span>{due.type === "loan_emi_receive" ? "Receive" : "Pay"}</span>
                           </Button>
                         </div>
                       </div>
@@ -209,21 +233,32 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
           )}
         </div>
         
-        {/* Pagination */}
+        {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4 border-t mt-4">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 sm:py-3 border-t border-border/60 bg-muted/20 shrink-0">
             <span className="text-xs text-muted-foreground">Page {currentPage} of {totalPages}</span>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
+            <div className="flex gap-1.5">
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0 rounded-lg" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0 rounded-lg" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
         )}
       </DialogContent>
+
+      <PayDueModal
+        open={isPayModalOpen}
+        onOpenChange={setIsPayModalOpen}
+        due={selectedDue}
+        accounts={accounts}
+        onSuccess={() => {
+          setIsPayModalOpen(false);
+          setIsOpen(false);
+        }}
+      />
     </Dialog>
   );
 }

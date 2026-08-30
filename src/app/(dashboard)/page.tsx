@@ -76,16 +76,17 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   const userTimezone = (session.user as any).timezone || "UTC";
 
-  const [accounts, transactions, people, cards, investments, policies, loans, missingBudgets, nwHistory] = await Promise.all([
+  const [accounts, transactions, people, cards, investments, policies, loans, missingBudgets, nwHistory, recurringBills] = await Promise.all([
     getAccounts(),
     getTransactions(200), // Fetch enough for 7/15/30 days
     getPeople(),
     getCreditCards(),
-    import("@/actions/investment").then(m => m.getInvestments()),
-    import("@/actions/insurance").then(m => m.getInsurancePolicies()),
-    import("@/actions/loan").then(m => m.getLoans()),
+    import("@/actions/investment").then(m => m.getInvestments()).catch(() => []),
+    import("@/actions/insurance").then(m => m.getInsurancePolicies()).catch(() => []),
+    import("@/actions/loan").then(m => m.getLoans()).catch(() => []),
     getMissingBudgets(),
-    getNetWorthHistory(daysFilter)
+    getNetWorthHistory(daysFilter),
+    import("@/actions/recurringBill").then(m => m.getRecurringBills()).catch(() => [])
   ]);
 
   // Fire and forget net worth snapshot
@@ -183,7 +184,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   const upcomingDues: any[] = [];
   const nextXDays = getCurrentDate();
-  nextXDays.setDate(now.getDate() + 365);
+  nextXDays.setDate(now.getDate() + Math.max(30, daysFilter));
 
   // Parse credit cards
   cards.forEach((c: any) => {
@@ -191,7 +192,16 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       let dd = parseToDate(c.dueDate);
       if (dd.getMonth() < now.getMonth() && dd.getFullYear() <= now.getFullYear()) dd.setMonth(now.getMonth());
       if (dd <= nextXDays && dd >= now) {
-        upcomingDues.push({ title: `${c.bankName} CC Bill`, amount: c.currentOutstanding, dueDate: dd, type: 'credit_card' });
+        upcomingDues.push({
+          title: `${c.bankName || 'Credit Card'}${c.last4Digits ? ` (*${c.last4Digits})` : ''} Bill`,
+          amount: c.currentOutstanding,
+          dueDate: dd,
+          type: 'credit_card',
+          entityId: c._id?.toString(),
+          linkedAccountId: c.linkedAccountId?.toString(),
+          bankName: c.bankName,
+          last4Digits: c.last4Digits,
+        });
       }
     }
   });
@@ -199,12 +209,32 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   // Parse investments (SIPs)
   investments.forEach((inv: any) => {
     if (inv.status === 'active' && inv.frequency === 'Monthly' && inv.startDate) {
-      let nextDue = parseToDate(inv.startDate);
-      nextDue.setMonth(now.getMonth());
-      nextDue.setFullYear(now.getFullYear());
-      if (nextDue < now) nextDue.setMonth(now.getMonth() + 1);
+      let nextDue: Date;
+      if (inv.nextDueDate) {
+        nextDue = parseToDate(inv.nextDueDate);
+      } else {
+        nextDue = parseToDate(inv.startDate);
+        nextDue.setMonth(now.getMonth());
+        nextDue.setFullYear(now.getFullYear());
+        if (nextDue < now) nextDue.setMonth(now.getMonth() + 1);
+
+        if (inv.lastPaidDate) {
+          const lp = parseToDate(inv.lastPaidDate);
+          if (lp.getMonth() === now.getMonth() && lp.getFullYear() === now.getFullYear()) {
+            nextDue.setMonth(nextDue.getMonth() + 1);
+          }
+        }
+      }
+
       if (nextDue <= nextXDays && nextDue >= now) {
-        upcomingDues.push({ title: `${inv.name} SIP`, amount: inv.investedAmount, dueDate: nextDue, type: 'sip' });
+        upcomingDues.push({
+          title: `${inv.name} SIP`,
+          amount: inv.investedAmount,
+          dueDate: nextDue,
+          type: 'sip',
+          entityId: inv._id?.toString(),
+          linkedAccountId: inv.linkedAccountId?.toString(),
+        });
       }
     }
   });
@@ -214,7 +244,14 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     if (pol.status === 'active' && pol.renewalDate) {
       let rd = parseToDate(pol.renewalDate);
       if (rd >= now && rd <= nextXDays) {
-        upcomingDues.push({ title: `${pol.policyName} Premium`, amount: pol.premiumAmount, dueDate: rd, type: 'insurance' });
+        upcomingDues.push({
+          title: `${pol.policyName} Premium`,
+          amount: pol.premiumAmount,
+          dueDate: rd,
+          type: 'insurance',
+          entityId: pol._id?.toString(),
+          linkedAccountId: pol.linkedAccountId?.toString(),
+        });
       }
     }
   });
@@ -222,10 +259,53 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   // Parse active loans (EMIs)
   activeLoans.forEach((loan: any) => {
     if (loan.status === 'active' && loan.emiDate && loan.emiAmount > 0) {
-      let emiDate = parseToDate(`${now.getFullYear()}-${now.getMonth() + 1}-${loan.emiDate}`);
-      if (emiDate < now) emiDate.setMonth(now.getMonth() + 1);
+      let emiDate: Date;
+      if (loan.nextDueDate) {
+        emiDate = parseToDate(loan.nextDueDate);
+      } else {
+        emiDate = parseToDate(`${now.getFullYear()}-${now.getMonth() + 1}-${loan.emiDate}`);
+        if (emiDate < now) emiDate.setMonth(now.getMonth() + 1);
+
+        // Check if an EMI has been paid for this loan in the last 28 days
+        const recentEmiTx = transactions.find((t: any) =>
+          (t.loanId?.toString() === loan._id?.toString() || t.loanId === loan._id?.toString()) &&
+          (!t.status || t.status === "completed")
+        );
+        if (recentEmiTx) {
+          const txDate = parseToDate(recentEmiTx.date || recentEmiTx.createdAt);
+          const daysAgo = (now.getTime() - txDate.getTime()) / (1000 * 3600 * 24);
+          if (daysAgo >= 0 && daysAgo < 28) {
+            emiDate.setMonth(emiDate.getMonth() + 1);
+          }
+        }
+      }
+
       if (emiDate <= nextXDays && emiDate >= now) {
-        upcomingDues.push({ title: `${loan.name} EMI`, amount: loan.emiAmount, dueDate: emiDate, type: loan.type === 'taken' ? 'loan_emi' : 'loan_emi_receive' });
+        upcomingDues.push({
+          title: `${loan.name} EMI`,
+          amount: loan.emiAmount,
+          dueDate: emiDate,
+          type: loan.type === 'taken' ? 'loan_emi' : 'loan_emi_receive',
+          entityId: loan._id?.toString(),
+          linkedAccountId: loan.linkedAccountId?.toString(),
+        });
+      }
+    }
+  });
+
+  // Parse recurring bills / subscriptions
+  (recurringBills || []).forEach((b: any) => {
+    if (b.isActive !== false && b.nextDueDate) {
+      let nd = parseToDate(b.nextDueDate);
+      if (nd <= nextXDays && nd >= now) {
+        upcomingDues.push({
+          title: `${b.name} Subscription`,
+          amount: b.amount,
+          dueDate: nd,
+          type: 'subscription',
+          entityId: b._id?.toString(),
+          linkedAccountId: b.accountId?._id ? b.accountId._id.toString() : (b.accountId ? b.accountId.toString() : undefined),
+        });
       }
     }
   });
@@ -246,7 +326,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     <div className="absolute inset-0 flex flex-col lg:relative lg:block lg:inset-auto lg:h-auto overflow-hidden lg:overflow-visible">
       {/* Static Header Container */}
       <div className="shrink-0 z-40 border-b lg:border-none bg-card/80 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none px-4 lg:px-8 py-3 lg:pt-8 shadow-sm lg:shadow-none">
-        <ActionCenterWrapper upcomingDues={upcomingDues} daysAhead={daysFilter} user={session.user} />
+        <ActionCenterWrapper upcomingDues={upcomingDues} daysAhead={daysFilter} user={session.user} accounts={accounts} />
       </div>
 
       {/* Scrollable Content Container */}
@@ -365,8 +445,13 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
                       )}
                     </div>
                     <div className="min-w-0 flex-1 pr-2">
-                      <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">{t.categoryId?.name || t.type}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}</p>
+                      <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                        {t.note || t.categoryId?.name || t.type}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {t.categoryId?.name && t.note ? `${t.categoryId.name} • ` : ""}
+                        {formatDate(t.date, 'short', userTimezone)} • {t.accountId?.name || 'Account'}
+                      </p>
                     </div>
                   </div>
                   <CurrencyDisplay

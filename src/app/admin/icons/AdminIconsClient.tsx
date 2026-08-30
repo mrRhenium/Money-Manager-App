@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Table, List, message, Tooltip as AntTooltip, Select as AntSelect } from "antd";
 import {
   Sparkles,
@@ -68,6 +68,13 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
   const [usageFilter, setUsageFilter] = useState<"all" | "inUse" | "unused">("all");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, usageFilter]);
 
   // Filtered Icons List
   const filteredIcons = useMemo(() => {
@@ -203,6 +210,16 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
 
   // Table Columns
   const tableColumns = [
+    {
+      title: "Sr. No.",
+      key: "srNo",
+      width: 70,
+      render: (_: any, __: any, index: number) => (
+        <span className="text-muted-foreground font-medium">
+          {(currentPage - 1) * pageSize + index + 1}
+        </span>
+      ),
+    },
     {
       title: "Icon",
       key: "icon",
@@ -403,7 +420,12 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
                         dataSource={filteredIcons}
                         rowKey="_id"
                         pagination={{
-                          defaultPageSize: 15,
+                          current: currentPage,
+                          pageSize: pageSize,
+                          onChange: (page, size) => {
+                            setCurrentPage(page);
+                            setPageSize(size);
+                          },
                           position: ["bottomRight"],
                           showSizeChanger: true,
                           pageSizeOptions: ["10", "15", "30", "50"],

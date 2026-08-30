@@ -28,6 +28,8 @@ export interface IInvestment extends Document {
   autoPriceUpdateEnabled: boolean;
   lastAutoUpdatedAt?: Date;
   status: "active" | "matured" | "closed" | "sold";
+  nextDueDate?: Date;
+  lastPaidDate?: Date;
   riskCategory?: "Low" | "Medium" | "High";
   notes?: string;
   currency: string;
@@ -68,6 +70,8 @@ const InvestmentSchema: Schema<IInvestment> = new Schema(
     autoPriceUpdateEnabled: { type: Boolean, default: true },
     lastAutoUpdatedAt: { type: Date },
     status: { type: String, enum: ["active", "matured", "closed", "sold"], default: "active" },
+    nextDueDate: { type: Date },
+    lastPaidDate: { type: Date },
     riskCategory: { type: String, enum: ["Low", "Medium", "High"] },
     notes: { type: String },
     currency: { type: String, default: "INR" },

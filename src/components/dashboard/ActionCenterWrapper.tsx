@@ -11,7 +11,7 @@ import { DashboardAdvancedFilter } from "@/components/dashboard/DashboardAdvance
 import { MasterFilterDrawer } from "@/components/layout/MasterView";
 import { Suspense } from "react";
 
-export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomingDues: any[], daysAhead: number, user: any }) {
+export function ActionCenterWrapper({ upcomingDues, daysAhead, user, accounts = [] }: { upcomingDues: any[], daysAhead: number, user: any, accounts?: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
@@ -90,7 +90,7 @@ export function ActionCenterWrapper({ upcomingDues, daysAhead, user }: { upcomin
       {/* Action Center Content */}
       <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 w-full transition-all duration-300 ${isOpen ? 'block animate-in fade-in slide-in-from-top-4' : 'hidden'}`}>
         <PendingConfirmationsWidget onCountChange={setPendingCount} />
-        <UpcomingDuesWidget dues={upcomingDues} daysAhead={daysAhead} />
+        <UpcomingDuesWidget dues={upcomingDues} daysAhead={daysAhead} accounts={accounts} />
       </div>
     </div>
   );

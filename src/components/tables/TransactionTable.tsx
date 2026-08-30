@@ -5,14 +5,61 @@ import { formatDate } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 import { TransactionForm } from "../forms/TransactionForm";
 import { deleteTransaction } from "@/actions/transaction";
-import { Trash, Search, RefreshCcw, User } from "lucide-react";
+import { Trash, Search, RefreshCcw, User, Landmark, TrendingUp, CreditCard, Shield, Receipt } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Input } from "@/components/ui/input";
 import { parseToDate } from "@/lib/dateTimeHelper";
-import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
-import { useMemo, useState, useRef } from "react";
+import { useMemo } from "react";
+
+function getFallbackTransactionMeta(record: any) {
+  const lowerNote = (record.note || "").toLowerCase();
+  const isLoan = !!record.loanId || lowerNote.includes("emi") || lowerNote.includes("loan");
+  const isSip = lowerNote.includes("sip") || lowerNote.includes("invest") || lowerNote.includes("mutual fund");
+  const isCard = !!record.creditCardId || lowerNote.includes("card") || lowerNote.includes("credit");
+  const isInsurance = lowerNote.includes("insurance") || lowerNote.includes("premium");
+  const isReversal = lowerNote.includes("reversal");
+
+  if (isLoan) {
+    return {
+      title: isReversal ? "EMI Reversal" : "Loan & EMI Payment",
+      icon: Landmark,
+      color: isReversal ? "#10b981" : "#3b82f6",
+      bgColor: isReversal ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500",
+    };
+  }
+  if (isSip) {
+    return {
+      title: "Investments & SIP",
+      icon: TrendingUp,
+      color: "#8b5cf6",
+      bgColor: "bg-purple-500/10 text-purple-500",
+    };
+  }
+  if (isCard) {
+    return {
+      title: "Credit Card Bill",
+      icon: CreditCard,
+      color: "#f59e0b",
+      bgColor: "bg-amber-500/10 text-amber-500",
+    };
+  }
+  if (isInsurance) {
+    return {
+      title: "Insurance Premium",
+      icon: Shield,
+      color: "#06b6d4",
+      bgColor: "bg-cyan-500/10 text-cyan-500",
+    };
+  }
+  return {
+    title: record.note?.trim() || "Other Transaction",
+    icon: Receipt,
+    color: record.type === "income" ? "#10b981" : "#f43f5e",
+    bgColor: "bg-muted/40 text-muted-foreground",
+  };
+}
 
 export function TransactionTable({
   transactions,
@@ -170,22 +217,16 @@ export function TransactionTable({
           );
         }
         if (!record.categoryId) {
-          if (record.note?.toLowerCase().includes("emi payment") || record.note?.toLowerCase().includes("emi reversal")) {
-            const isReversal = record.note.toLowerCase().includes("emi reversal");
-            return (
-              <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${isReversal ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                  {isReversal ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17 2 4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></svg>
-                  )}
-                </div>
-                <span>{isReversal ? "EMI Reversal" : "EMI Payment"}</span>
+          const fallback = getFallbackTransactionMeta(record);
+          const FallbackIcon = fallback.icon;
+          return (
+            <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${fallback.bgColor}`}>
+                <FallbackIcon className="w-3.5 h-3.5" />
               </div>
-            );
-          }
-          return <span className="text-muted-foreground">-</span>;
+              <span>{fallback.title}</span>
+            </div>
+          );
         }
         return (
           <div className="flex items-center gap-2 whitespace-nowrap font-medium text-foreground">
@@ -383,11 +424,11 @@ export function TransactionTable({
                         <div className="p-2 rounded-xl bg-muted/30 shrink-0 flex items-center justify-center" style={{ color: record.categoryId?.color || 'currentColor' }}>
                           {record.categoryId?.icon ? (
                             <CategoryIcon name={record.categoryId.icon} className="w-5 h-5" />
-                          ) : (record.note?.toLowerCase().includes("emi payment") || record.note?.toLowerCase().includes("emi reversal")) ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={record.note?.toLowerCase().includes("emi reversal") ? "text-emerald-500" : "text-red-500"}><path d="m17 2 4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="m7 22-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></svg>
-                          ) : (
-                            <span className="text-muted-foreground w-5 h-5" />
-                          )}
+                          ) : (() => {
+                            const fallback = getFallbackTransactionMeta(record);
+                            const FallbackIcon = fallback.icon;
+                            return <FallbackIcon className="w-5 h-5" style={{ color: fallback.color }} />;
+                          })()}
                         </div>
                       )}
                       <div className="flex flex-col min-w-0">
@@ -396,7 +437,7 @@ export function TransactionTable({
                             ? "Internal Transfer" 
                             : record.personId?.name
                             ? (record.categoryId?.name ? `${record.personId.name} • ${record.categoryId.name}` : `${record.personId.name} (${record.type})`)
-                            : (record.categoryId?.name || (record.note?.toLowerCase().includes("emi payment") ? "EMI Payment" : record.note?.toLowerCase().includes("emi reversal") ? "EMI Reversal" : "Uncategorized"))}
+                            : (record.categoryId?.name || getFallbackTransactionMeta(record).title)}
                         </span>
                         <span className="text-xs text-muted-foreground mt-0.5 font-medium">
                           {formatDate(record.date, "standard", userTimezone)}

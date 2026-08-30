@@ -16,6 +16,8 @@ export interface ILoan extends Document {
   interestType?: "simple" | "compound"; // User-selected calculation method
   calculationMode?: "manual" | "auto"; // How values were entered
   status: "active" | "completed";
+  nextDueDate?: Date;
+  lastEmiPaidDate?: Date;
   color: string;
   icon: string;
   currency?: string;
@@ -40,6 +42,8 @@ const LoanSchema: Schema<ILoan> = new Schema(
     interestType: { type: String, enum: ["simple", "compound"] },
     calculationMode: { type: String, enum: ["manual", "auto"], default: "manual" },
     status: { type: String, enum: ["active", "completed"], default: "active" },
+    nextDueDate: { type: Date },
+    lastEmiPaidDate: { type: Date },
     color: { type: String, default: "#3b82f6" },
     icon: { type: String, default: "Landmark" },
     currency: { type: String, default: "INR" }

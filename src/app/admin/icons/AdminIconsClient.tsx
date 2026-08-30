@@ -1,25 +1,17 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Table, Switch, message, Tooltip as AntTooltip, Select as AntSelect } from "antd";
+import { Table, List, message, Tooltip as AntTooltip, Select as AntSelect } from "antd";
 import {
   Sparkles,
-  Search,
-  Grid,
-  List as ListIcon,
   RotateCw,
-  FolderTree,
-  Tag,
   ShieldCheck,
   CheckCircle2,
-  XCircle,
   BarChart3,
   PieChartIcon,
-  Layers,
-  Check,
+  LayoutGrid,
 } from "lucide-react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +27,7 @@ import { KPICard } from "@/components/dashboard/KPICard";
 import { DynamicLucideIcon } from "@/components/ui/IconColorPicker";
 import { IconFormModal } from "@/components/admin/IconFormModal";
 import { IconDeleteModal } from "@/components/admin/IconDeleteModal";
-import { toggleIconStatus, reseedDefaultIcons } from "@/actions/icon";
+import { reseedDefaultIcons } from "@/actions/icon";
 import {
   ResponsiveContainer,
   PieChart,
@@ -71,7 +63,6 @@ interface AdminIconsClientProps {
 export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps) {
   const [icons, setIcons] = useState<any[]>(initialIcons);
   const [activeTab, setActiveTab] = useState("data");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [usageFilter, setUsageFilter] = useState<"all" | "inUse" | "unused">("all");
@@ -105,7 +96,7 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
     });
   }, [icons, selectedCategory, usageFilter, searchQuery]);
 
-  // Categories extraction for filter pills
+  // Categories extraction for filter
   const categories = useMemo(() => {
     const set = new Set<string>();
     icons.forEach((i) => {
@@ -124,9 +115,8 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
 
   // KPI Calculations
   const totalCount = icons.length;
-  const activeCount = icons.filter((i) => i.isActive).length;
-  const inactiveCount = totalCount - activeCount;
   const consumedCount = icons.filter((i) => i.usageCount > 0 || i.isConsumed).length;
+  const unusedCount = totalCount - consumedCount;
 
   // Chart data: Distribution by category
   const categoryChartData = useMemo(() => {
@@ -153,23 +143,6 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
         count: i.usageCount || 0,
       }));
   }, [icons]);
-
-  // Handle active status toggle
-  const handleToggleStatus = async (id: string, currentVal: boolean) => {
-    try {
-      const res = await toggleIconStatus(id);
-      if (res.success) {
-        setIcons((prev) =>
-          prev.map((i) => (i._id === id ? { ...i, isActive: res.isActive } : i))
-        );
-        message.success("Status updated");
-      } else {
-        message.error(res.error || "Failed to update status");
-      }
-    } catch (err: any) {
-      message.error(err.message || "Failed to update status");
-    }
-  };
 
   // Handle default icons sync
   const handleSyncDefaults = async () => {
@@ -221,7 +194,7 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
           options={[
             { label: `All Icons (${icons.length})`, value: "all" },
             { label: `In Use (${consumedCount})`, value: "inUse" },
-            { label: `Unused (${totalCount - consumedCount})`, value: "unused" },
+            { label: `Unused (${unusedCount})`, value: "unused" },
           ]}
         />
       </div>
@@ -347,18 +320,6 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
       },
     },
     {
-      title: "Status",
-      key: "isActive",
-      dataIndex: "isActive",
-      render: (isActive: boolean, record: any) => (
-        <Switch
-          size="small"
-          checked={isActive}
-          onChange={(checked) => handleToggleStatus(record._id, checked)}
-        />
-      ),
-    },
-    {
       title: "Actions",
       key: "actions",
       width: 90,
@@ -385,27 +346,9 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
     <>
       <MasterHeader
         title={
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary shrink-0" />
-            <span>System Icons</span>
-          </div>
+          <><Sparkles className="w-6 h-6 text-primary shrink-0" /> System Icons</>
         }
         subtitle="Manage master icon catalog, categories, search tags, and usage safety."
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={handleSyncDefaults}
-              disabled={syncing}
-              className="h-9 px-3 text-xs font-medium rounded-xl border-dashed"
-              title="Reseed & Sync standard icons"
-            >
-              <RotateCw className={`w-3.5 h-3.5 mr-1.5 ${syncing ? "animate-spin" : ""}`} />
-              Sync Defaults
-            </Button>
-            <IconFormModal onSuccess={() => window.location.reload()} />
-          </div>
-        }
       />
 
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
@@ -417,7 +360,25 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
             isFilterActive={isFilterActive}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            primaryAction={<IconFormModal onSuccess={() => window.location.reload()} />}
+            tabs={[
+              { value: "data", label: "Data View", icon: <LayoutGrid className="w-4 h-4 mr-2" /> },
+              { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
+            ]}
+            primaryAction={
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleSyncDefaults}
+                  disabled={syncing}
+                  className="h-9 px-3 text-xs font-medium rounded-xl border-dashed"
+                  title="Reseed & Sync standard icons"
+                >
+                  <RotateCw className={`w-3.5 h-3.5 mr-1.5 ${syncing ? "animate-spin" : ""}`} />
+                  Sync
+                </Button>
+                <IconFormModal onSuccess={() => window.location.reload()} />
+              </div>
+            }
           />
 
           <MasterViewLayout
@@ -432,184 +393,171 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
           >
             {/* DATA VIEW TAB */}
             <TabsContent value="data" className="h-full m-0">
-              <div className="pb-24 space-y-4">
-                {/* Secondary Bar: Category Pills & Grid/Table Switch */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-card border rounded-2xl shadow-xs">
-                  {/* Category Pills Bar */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 sm:pb-0 flex-1">
-                    {categories.map((cat) => {
-                      const isSelected = selectedCategory === cat;
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setSelectedCategory(cat)}
-                          className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0 ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                              : "bg-muted/40 text-muted-foreground hover:text-foreground border-border/60 hover:bg-muted"
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      );
-                    })}
-                  </div>
+              <div className="pb-24 pt-2 space-y-4">
+                {filteredIcons.length > 0 ? (
+                  <>
+                    {/* List View for Laptop / Desktop */}
+                    <div className="hidden lg:block rounded-xl border bg-card text-card-foreground shadow-xs overflow-hidden w-full">
+                      <Table
+                        columns={tableColumns}
+                        dataSource={filteredIcons}
+                        rowKey="_id"
+                        pagination={{
+                          defaultPageSize: 15,
+                          position: ["bottomRight"],
+                          showSizeChanger: true,
+                          pageSizeOptions: ["10", "15", "30", "50"],
+                        }}
+                        scroll={{ x: "max-content" }}
+                        className="w-full"
+                      />
+                    </div>
 
-                  {/* Grid/Table Switch */}
-                  <div className="flex items-center border rounded-xl p-0.5 bg-muted/40 shrink-0 self-end sm:self-auto">
-                    <Button
-                      variant={viewMode === "grid" ? "default" : "ghost"}
-                      size="icon"
-                      onClick={() => setViewMode("grid")}
-                      className="h-8 w-8 rounded-lg"
-                      title="Grid View"
-                    >
-                      <Grid className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === "table" ? "default" : "ghost"}
-                      size="icon"
-                      onClick={() => setViewMode("table")}
-                      className="h-8 w-8 rounded-lg"
-                      title="Table View"
-                    >
-                      <ListIcon className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                    {/* Cards View for Mobile and Tablet */}
+                    <div className="lg:hidden w-full">
+                      <List
+                        grid={{ gutter: 12, xs: 1, sm: 2, md: 2, lg: 2 }}
+                        dataSource={filteredIcons}
+                        pagination={{ pageSize: 12, align: "center", size: "small" }}
+                        renderItem={(icon: any) => {
+                          const catColor = CATEGORY_COLORS[icon.category] || "#64748b";
+                          const isUsed = icon.usageCount > 0 || icon.isConsumed;
 
-                {/* Grid or Table render */}
-                {viewMode === "grid" ? (
-                  filteredIcons.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5">
-                      {filteredIcons.map((icon) => {
-                        const catColor = CATEGORY_COLORS[icon.category] || "#64748b";
-                        const isUsed = icon.usageCount > 0 || icon.isConsumed;
-
-                        return (
-                          <div
-                            key={icon._id}
-                            className={`group relative p-4 rounded-2xl bg-card border transition-all duration-200 hover:shadow-md hover:border-primary/40 flex flex-col justify-between ${
-                              !icon.isActive ? "opacity-60 bg-muted/20" : ""
-                            }`}
-                          >
-                            <div>
-                              {/* Card Header: Icon & Actions */}
-                              <div className="flex items-start justify-between gap-2 mb-3">
+                          return (
+                            <List.Item className="border-none px-0 py-1.5">
+                              <div className="bg-card w-full h-full border shadow-2xs rounded-2xl p-4 flex flex-col justify-between gap-3 relative overflow-hidden">
+                                {/* Left accent indicator */}
                                 <div
-                                  className="w-11 h-11 rounded-2xl flex items-center justify-center border shadow-2xs transition-transform group-hover:scale-105"
-                                  style={{
-                                    backgroundColor: `${catColor}15`,
-                                    borderColor: `${catColor}30`,
-                                    color: catColor,
-                                  }}
-                                >
-                                  <DynamicLucideIcon name={icon.name} className="w-5 h-5" />
-                                </div>
+                                  className="absolute left-0 top-0 bottom-0 w-1"
+                                  style={{ backgroundColor: catColor }}
+                                />
 
-                                <div className="flex items-center gap-1">
-                                  <Switch
-                                    size="small"
-                                    checked={icon.isActive}
-                                    onChange={(checked) => handleToggleStatus(icon._id, checked)}
-                                  />
-                                  <IconFormModal
-                                    icon={icon}
-                                    onSuccess={() => window.location.reload()}
-                                  />
-                                  <IconDeleteModal
-                                    icon={icon}
-                                    onSuccess={() => {
-                                      setIcons((prev) => prev.filter((i) => i._id !== icon._id));
-                                    }}
-                                  />
-                                </div>
-                              </div>
+                                <div>
+                                  {/* Card Header: Icon, Label & Actions */}
+                                  <div className="flex justify-between items-start pl-1 mb-2">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                      <div
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center border shadow-2xs shrink-0"
+                                        style={{
+                                          backgroundColor: `${catColor}15`,
+                                          borderColor: `${catColor}30`,
+                                          color: catColor,
+                                        }}
+                                      >
+                                        <DynamicLucideIcon name={icon.name} className="w-5 h-5" />
+                                      </div>
 
-                              {/* Label & Technical Key */}
-                              <div className="space-y-0.5 mb-2.5">
-                                <div className="font-bold text-sm text-foreground truncate" title={icon.label}>
-                                  {icon.label}
-                                </div>
-                                <div className="text-xs text-muted-foreground font-mono">{icon.name}</div>
-                              </div>
-
-                              {/* Category & Tags */}
-                              <div className="flex flex-wrap items-center gap-1.5 mb-3">
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] font-medium py-0 px-1.5 border"
-                                  style={{
-                                    backgroundColor: `${catColor}10`,
-                                    color: catColor,
-                                    borderColor: `${catColor}30`,
-                                  }}
-                                >
-                                  {icon.category || "General"}
-                                </Badge>
-
-                                {icon.tags &&
-                                  icon.tags.slice(0, 2).map((t: string) => (
-                                    <span
-                                      key={t}
-                                      className="text-[9px] px-1.5 py-0.2 rounded bg-muted/60 text-muted-foreground border"
-                                    >
-                                      #{t}
-                                    </span>
-                                  ))}
-                              </div>
-                            </div>
-
-                            {/* Card Footer: Usage Status Indicator */}
-                            <div className="pt-2 border-t flex items-center justify-between text-xs">
-                              {isUsed ? (
-                                <AntTooltip
-                                  title={
-                                    <div className="text-xs space-y-1">
-                                      {icon.usages?.map((u: any) => (
-                                        <div key={u.entity}>
-                                          {u.entity}: {u.count}
+                                      <div className="flex flex-col min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                          <span
+                                            className="font-semibold text-foreground text-sm truncate leading-none"
+                                            title={icon.label}
+                                          >
+                                            {icon.label}
+                                          </span>
+                                          {icon.isDefault && (
+                                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-muted text-muted-foreground font-normal shrink-0">
+                                              Default
+                                            </span>
+                                          )}
                                         </div>
-                                      ))}
+                                        <span className="text-xs text-muted-foreground font-mono mt-1 truncate">
+                                          {icon.name}
+                                        </span>
+                                      </div>
                                     </div>
-                                  }
-                                >
-                                  <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold text-[11px] cursor-pointer">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    In Use ({icon.usageCount || 0})
-                                  </span>
-                                </AntTooltip>
-                              ) : (
-                                <span className="text-muted-foreground text-[10px]">Unused</span>
-                              )}
 
-                              <span className="text-[10px] text-muted-foreground">
-                                {icon.isDefault ? "System" : "Custom"}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                                    <div className="flex items-center gap-0.5 shrink-0">
+                                      <IconFormModal
+                                        icon={icon}
+                                        onSuccess={() => window.location.reload()}
+                                      />
+                                      <IconDeleteModal
+                                        icon={icon}
+                                        onSuccess={() => {
+                                          setIcons((prev) =>
+                                            prev.filter((i) => i._id !== icon._id)
+                                          );
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Category & Tags Row */}
+                                  <div className="pl-1 flex flex-wrap items-center gap-1.5 mt-2">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px] font-medium py-0.5 px-2 border"
+                                      style={{
+                                        backgroundColor: `${catColor}10`,
+                                        color: catColor,
+                                        borderColor: `${catColor}30`,
+                                      }}
+                                    >
+                                      {icon.category || "General"}
+                                    </Badge>
+
+                                    {icon.tags &&
+                                      icon.tags.length > 0 &&
+                                      icon.tags.slice(0, 3).map((t: string) => (
+                                        <span
+                                          key={t}
+                                          className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/60 text-muted-foreground border"
+                                        >
+                                          #{t}
+                                        </span>
+                                      ))}
+                                    {icon.tags && icon.tags.length > 3 && (
+                                      <span className="text-[9px] text-muted-foreground">
+                                        +{icon.tags.length - 3}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Card Footer: Usage Status Indicator */}
+                                <div className="pl-1 pt-2.5 border-t flex items-center justify-between text-xs">
+                                  {isUsed ? (
+                                    <AntTooltip
+                                      title={
+                                        <div className="text-xs space-y-1">
+                                          {icon.usages?.map((u: any) => (
+                                            <div key={u.entity}>
+                                              {u.entity}: {u.count}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      }
+                                    >
+                                      <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold text-[11px] cursor-pointer">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        In Use ({icon.usageCount || 0})
+                                      </span>
+                                    </AntTooltip>
+                                  ) : (
+                                    <span className="text-muted-foreground text-[10px]">
+                                      Unused
+                                    </span>
+                                  )}
+
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {icon.isDefault ? "System" : "Custom"}
+                                  </span>
+                                </div>
+                              </div>
+                            </List.Item>
+                          );
+                        }}
+                      />
                     </div>
-                  ) : (
-                    <div className="text-center py-16 px-4 bg-card border border-dashed rounded-2xl">
-                      <Sparkles className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-                      <h3 className="text-base font-bold text-foreground">No Icons Found</h3>
-                      <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                        No icons match your search or filter criteria. Try adjusting your search keywords.
-                      </p>
-                    </div>
-                  )
+                  </>
                 ) : (
-                  <div className="bg-card border rounded-2xl overflow-hidden shadow-xs">
-                    <Table
-                      dataSource={filteredIcons}
-                      columns={tableColumns}
-                      rowKey="_id"
-                      pagination={{ pageSize: 12, showSizeChanger: true }}
-                      className="custom-table"
-                    />
+                  <div className="text-center py-16 px-4 bg-card border border-dashed rounded-2xl">
+                    <Sparkles className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+                    <h3 className="text-base font-bold text-foreground">No Icons Found</h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                      No icons match your search or filter criteria. Try adjusting your search keywords.
+                    </p>
                   </div>
                 )}
               </div>
@@ -619,7 +567,7 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
             <TabsContent value="insights" className="h-full m-0">
               <div className="pb-24 space-y-6">
                 {/* 1. KPI Cards Row */}
-                <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
                   <KPICard
                     label="Total Icons"
                     value={totalCount}
@@ -627,23 +575,18 @@ export function AdminIconsClient({ icons: initialIcons }: AdminIconsClientProps)
                     themeColor="indigo"
                   />
                   <KPICard
-                    label="Active In Forms"
-                    value={activeCount}
-                    icon={CheckCircle2}
-                    themeColor="emerald"
-                  />
-                  <KPICard
-                    label="Inactive"
-                    value={inactiveCount}
-                    icon={XCircle}
-                    themeColor="amber"
-                  />
-                  <KPICard
                     label="In Active Use"
                     value={consumedCount}
                     icon={ShieldCheck}
-                    themeColor="primary"
+                    themeColor="emerald"
                     trend={<span className="text-[11px] text-muted-foreground">Delete Protected</span>}
+                  />
+                  <KPICard
+                    label="Unused"
+                    value={unusedCount}
+                    icon={CheckCircle2}
+                    themeColor="amber"
+                    className="col-span-2 sm:col-span-1"
                   />
                 </div>
 

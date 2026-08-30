@@ -369,8 +369,15 @@ function SettingsContent() {
     return (
       <Card className="rounded-xl shadow-xs">
         <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
-          <CardTitle className="text-base font-bold">Profile Information</CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">Update your account details here.</CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <User className="w-4.5 h-4.5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-base font-bold">Profile Information</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Update your account details here.</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
@@ -436,8 +443,15 @@ function SettingsContent() {
     return (
       <Card className="rounded-xl shadow-xs">
         <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
-          <CardTitle className="text-base font-bold">Preferences</CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">Customize your Money Manager experience.</CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
+              <Palette className="w-4.5 h-4.5 text-indigo-500" />
+            </div>
+            <div>
+              <CardTitle className="text-base font-bold">Preferences</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Customize your Money Manager experience.</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
@@ -454,8 +468,15 @@ function SettingsContent() {
     return (
       <Card className="rounded-xl shadow-xs">
         <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
-          <CardTitle className="text-base font-bold">UPI & Payment Apps</CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">Select which UPI apps are active on your device and set your default app for Scan & Pay.</CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+              <Smartphone className="w-4.5 h-4.5 text-amber-500" />
+            </div>
+            <div>
+              <CardTitle className="text-base font-bold">UPI & Payment Apps</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Select which UPI apps are active on your device and set your default app for Scan & Pay.</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
@@ -472,8 +493,15 @@ function SettingsContent() {
     return (
       <Card className="rounded-xl shadow-xs">
         <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
-          <CardTitle className="text-base font-bold">Global Timezone</CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">All transactions and dates will be displayed according to this timezone.</CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <Globe className="w-4.5 h-4.5 text-emerald-500" />
+            </div>
+            <div>
+              <CardTitle className="text-base font-bold">Global Timezone</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">All transactions and dates will be displayed according to this timezone.</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
@@ -524,8 +552,15 @@ function SettingsContent() {
     return (
       <Card className="rounded-xl shadow-xs">
         <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
-          <CardTitle className="text-base font-bold">Notifications</CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">Receive web push notifications for bill reminders and alerts.</CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+              <Bell className="w-4.5 h-4.5 text-blue-500" />
+            </div>
+            <div>
+              <CardTitle className="text-base font-bold">Notifications</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Receive web push notifications for bill reminders and alerts.</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
@@ -534,10 +569,15 @@ function SettingsContent() {
 
   const renderLogoutCard = (isMobileView = false) => {
     const content = (
-      <div className="flex items-center justify-between p-3.5">
-        <div>
-          <p className="font-semibold text-xs sm:text-sm text-foreground">Sign Out</p>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Sign out of your account on this device.</p>
+      <div className="flex items-center justify-between p-3.5 sm:p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
+            <LogOut className="w-4.5 h-4.5 text-red-500" />
+          </div>
+          <div>
+            <p className="font-semibold text-xs sm:text-sm text-foreground">Sign Out</p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Sign out of your account on this device.</p>
+          </div>
         </div>
         <Button variant="destructive" size="sm" className="h-8 px-3 text-xs font-semibold" onClick={() => signOut({ callbackUrl: "/login" })}>
           <LogOut className="w-3.5 h-3.5 mr-1.5" />
@@ -576,12 +616,12 @@ function SettingsContent() {
         {isSearching ? (
           <MasterViewLayout sidebar={null}>
             <div className="pb-24 pt-2 w-full max-w-4xl space-y-4">
-              {showProfile && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Profile Information</h3>{renderProfileCard(isMobile)}</div>}
-              {showPreferences && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Preferences</h3>{renderPreferencesCard(isMobile)}</div>}
-              {showPaymentApps && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">UPI & Payment Apps</h3>{renderPaymentAppsCard(isMobile)}</div>}
-              {showTimezone && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Global Timezone</h3>{renderTimezoneCard(isMobile)}</div>}
-              {showNotifications && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Notifications</h3>{renderNotificationsCard(isMobile)}</div>}
-              {showLogout && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Sign Out</h3>{renderLogoutCard(isMobile)}</div>}
+              {showProfile && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><User className="w-3.5 h-3.5 text-primary" /></div> Profile Information</h3>{renderProfileCard(true)}</div>}
+              {showPreferences && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> Preferences</h3>{renderPreferencesCard(true)}</div>}
+              {showPaymentApps && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</h3>{renderPaymentAppsCard(true)}</div>}
+              {showTimezone && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0"><Globe className="w-3.5 h-3.5 text-emerald-500" /></div> Global Timezone</h3>{renderTimezoneCard(true)}</div>}
+              {showNotifications && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</h3>{renderNotificationsCard(true)}</div>}
+              {showLogout && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0"><LogOut className="w-3.5 h-3.5 text-red-500" /></div> Sign Out</h3>{renderLogoutCard(true)}</div>}
 
               {!showProfile && !showPreferences && !showPaymentApps && !showTimezone && !showNotifications && !showLogout && (
                 <div className="p-10 text-center text-xs sm:text-sm text-muted-foreground border rounded-xl border-dashed">

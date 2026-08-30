@@ -77,8 +77,8 @@ export function IconFormModal({ icon, onSuccess, trigger }: IconFormModalProps) 
     try {
       const tags = tagsInput
         .split(",")
-        .map((t) => t.trim().toLowerCase())
-        .filter((t) => t.length > 0);
+        .map((t: string) => t.trim().toLowerCase())
+        .filter((t: string) => t.length > 0);
 
       if (isEditing) {
         const res = await updateIcon(icon._id, {
@@ -122,25 +122,29 @@ export function IconFormModal({ icon, onSuccess, trigger }: IconFormModalProps) 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger ? (
-        <DialogTrigger asChild>{trigger}</DialogTrigger>
+        <DialogTrigger render={trigger as any} />
       ) : isEditing ? (
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:text-primary transition-colors text-muted-foreground hover:bg-muted"
-            title="Edit Icon"
-          >
-            <Pencil className="w-4 h-4" />
-          </Button>
-        </DialogTrigger>
+        <DialogTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:text-primary transition-colors text-muted-foreground hover:bg-muted"
+              title="Edit Icon"
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          }
+        />
       ) : (
-        <DialogTrigger asChild>
-          <Button className="h-9 px-4 text-xs sm:text-sm font-semibold rounded-xl shadow-xs">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add Icon
-          </Button>
-        </DialogTrigger>
+        <DialogTrigger
+          render={
+            <Button className="h-9 px-4 text-xs sm:text-sm font-semibold rounded-xl shadow-xs">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add Icon
+            </Button>
+          }
+        />
       )}
 
       <DialogContent className="w-[95vw] sm:max-w-md overflow-x-hidden p-4 sm:p-6 rounded-2xl">

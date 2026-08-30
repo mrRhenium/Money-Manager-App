@@ -11,7 +11,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Trash2, AlertTriangle, ShieldCheck, Ban } from "lucide-react";
+import { Trash, AlertTriangle, ShieldCheck, Ban } from "lucide-react";
 import { deleteIcon } from "@/actions/icon";
 import { message } from "antd";
 import { DynamicLucideIcon } from "@/components/ui/IconColorPicker";
@@ -52,16 +52,18 @@ export function IconDeleteModal({ icon, onSuccess }: IconDeleteModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-          title={isConsumed ? "Cannot delete (In Use)" : "Delete Icon"}
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            title={isConsumed ? "Cannot delete (In Use)" : "Delete Icon"}
+          >
+            <Trash className="w-4 h-4" />
+          </Button>
+        }
+      />
 
       <DialogContent className="w-[95vw] sm:max-w-md overflow-x-hidden p-4 sm:p-6 rounded-2xl">
         <DialogHeader>
@@ -70,10 +72,10 @@ export function IconDeleteModal({ icon, onSuccess }: IconDeleteModalProps) {
               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                 isConsumed
                   ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                  : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
+                  : "bg-red-500/10 text-red-500 border border-red-500/20"
               }`}
             >
-              {isConsumed ? <AlertTriangle className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />}
+              {isConsumed ? <AlertTriangle className="w-5 h-5" /> : <Trash className="w-5 h-5" />}
             </div>
             <div>
               <DialogTitle className="text-base sm:text-lg font-bold">

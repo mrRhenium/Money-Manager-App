@@ -7,12 +7,24 @@ import { Button as UiButton } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatDate } from "@/lib/helpers";
-import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search, Filter } from "lucide-react";
+import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search } from "lucide-react";
 import { MasterToolbar, MasterViewLayout, MasterFilterSidebar, MasterFilterDrawer, MasterSearchField } from "@/components/layout/MasterView";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 
-export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezone: string }) {
+export function AuditLogsList({
+  logs,
+  userTimezone,
+  categories = [],
+  accounts = [],
+}: {
+  logs: any[];
+  userTimezone: string;
+  categories?: any[];
+  accounts?: any[];
+}) {
+  const { format } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -21,6 +33,18 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
   const [typeFilter, setTypeFilter] = useState<string[]>(searchParams.get("types") ? searchParams.get("types")!.split(",") : []);
   const [actionFilter, setActionFilter] = useState<string[]>(searchParams.get("actions") ? searchParams.get("actions")!.split(",") : []);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    (categories || []).forEach((c: any) => map.set(String(c._id), c.name));
+    return map;
+  }, [categories]);
+
+  const accountMap = useMemo(() => {
+    const map = new Map<string, string>();
+    (accounts || []).forEach((a: any) => map.set(String(a._id), a.name));
+    return map;
+  }, [accounts]);
 
   useEffect(() => {
     const current = new URLSearchParams(window.location.search);
@@ -48,9 +72,41 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
   };
 
   const getFriendlyEntityName = (log: any) => {
-    if (log.entityName) return log.entityName;
     const data = log.currentValue || log.previousValue || {};
-    return data.name || data.title || data.policyName || data.cardName || data.bankName || data.description || data.note || `ID: ${log.entityId}`;
+
+    if (log.entityName && !log.entityName.startsWith("ID: ") && !log.entityName.startsWith("Transaction (₹")) {
+      return log.entityName;
+    }
+
+    if (log.entityType === "Transaction") {
+      if (data.note?.trim()) return data.note;
+      const catId = data.categoryId ? String(data.categoryId) : undefined;
+      const catName = catId ? (categoryMap.get(catId) || "Categorized") : "Uncategorized";
+      const typeLabel = data.type ? (data.type.charAt(0).toUpperCase() + data.type.slice(1)) : "Transaction";
+      if (data.amount !== undefined) {
+        return `${typeLabel} of ${format(data.amount)} • ${catName}`;
+      }
+      return `${typeLabel} • ${catName}`;
+    }
+
+    if (log.entityType === "Budget") {
+      const catName = data.categoryId ? categoryMap.get(String(data.categoryId)) : undefined;
+      if (catName) {
+        return `${catName} Budget${data.period ? ` (${data.period})` : ""}`;
+      }
+      return data.name || data.period || "Budget";
+    }
+
+    return (
+      data.name ||
+      data.title ||
+      data.policyName ||
+      data.cardName ||
+      data.bankName ||
+      data.description ||
+      data.note ||
+      `${log.entityType || "Record"} (${String(log.entityId || "").slice(-6)})`
+    );
   };
 
   const getChangedProperties = (prev: any, curr: any) => {
@@ -79,9 +135,25 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
     return changes;
   };
 
-  const renderValue = (val: any) => {
+  const renderValue = (val: any, key?: string) => {
     if (val === undefined || val === null) {
+      if (key === "categoryId") {
+        return <span className="text-muted-foreground italic font-medium">Uncategorized</span>;
+      }
       return <span className="text-muted-foreground italic">None</span>;
+    }
+    if (key === "categoryId") {
+      const catName = categoryMap.get(String(val));
+      if (catName) {
+        return <span className="font-semibold text-primary">{catName}</span>;
+      }
+      return <span className="text-muted-foreground italic font-medium">Uncategorized</span>;
+    }
+    if (key === "accountId" || key === "linkedAccountId" || key === "toAccountId") {
+      const accName = accountMap.get(String(val));
+      if (accName) {
+        return <span className="font-semibold text-foreground">{accName}</span>;
+      }
     }
     if (typeof val === "boolean") {
       return (
@@ -89,6 +161,14 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           {val ? "True" : "False"}
         </span>
       );
+    }
+    if (typeof val === "string" && (key?.toLowerCase().includes("date") || /^\d{4}-\d{2}-\d{2}T/.test(val))) {
+      try {
+        const d = parseToDate(val);
+        if (!isNaN(d.getTime())) {
+          return <span className="font-medium text-foreground">{formatDate(val, "standard", userTimezone)}</span>;
+        }
+      } catch {}
     }
     if (typeof val === "object") {
       return <pre className="text-xs bg-muted p-1.5 rounded overflow-x-auto max-w-[200px]">{JSON.stringify(val, null, 2)}</pre>;
@@ -161,6 +241,11 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
         { text: "CREATE", value: "CREATE" },
         { text: "UPDATE", value: "UPDATE" },
         { text: "DELETE", value: "DELETE" },
+        { text: "EMI_PAID", value: "EMI_PAID" },
+        { text: "SIP_PAID", value: "SIP_PAID" },
+        { text: "BILL_PAID", value: "BILL_PAID" },
+        { text: "PREMIUM_PAID", value: "PREMIUM_PAID" },
+        { text: "SUBSCRIPTION_PAID", value: "SUBSCRIPTION_PAID" },
       ],
       onFilter: (value: any, record: any) => record.action === value,
     },
@@ -175,11 +260,16 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
       ),
       filters: [
         { text: "Transaction", value: "Transaction" },
+        { text: "Loan", value: "Loan" },
+        { text: "Investment", value: "Investment" },
+        { text: "CreditCard", value: "CreditCard" },
+        { text: "InsurancePolicy", value: "InsurancePolicy" },
+        { text: "RecurringBill", value: "RecurringBill" },
         { text: "Category", value: "Category" },
         { text: "Account", value: "Account" },
-        { text: "Person", value: "Person" },
-        { text: "CreditCard", value: "CreditCard" },
         { text: "Budget", value: "Budget" },
+        { text: "Person", value: "Person" },
+        { text: "Goal", value: "Goal" },
       ],
       onFilter: (value: any, record: any) => record.entityType === value,
     },
@@ -211,7 +301,10 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
 
   const getActionStyle = (action: string) => {
     if (action === "CREATE") return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-    if (action === "DELETE") return "bg-red-500/10 text-red-600 border-red-500/20";
+    if (action === "DELETE" || action === "DELETE_HARD") return "bg-red-500/10 text-red-600 border-red-500/20";
+    if (action === "DELETE_SOFT") return "bg-amber-500/10 text-amber-600 border-amber-500/20";
+    if (action.includes("PAID") || action.includes("RECEIVED")) return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    if (action.includes("REVERSED")) return "bg-purple-500/10 text-purple-600 border-purple-500/20";
     return "bg-blue-500/10 text-blue-600 border-blue-500/20";
   };
 
@@ -248,7 +341,19 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           onChange={setTypeFilter} 
           className="w-full min-h-10" 
           popupMatchSelectWidth={false}
-          options={[{label: "Transaction", value: "Transaction"}, {label: "Category", value: "Category"}, {label: "Account", value: "Account"}, {label: "Person", value: "Person"}, {label: "CreditCard", value: "CreditCard"}, {label: "Budget", value: "Budget"}]} 
+          options={[
+            { label: "Transaction", value: "Transaction" },
+            { label: "Loan", value: "Loan" },
+            { label: "Investment", value: "Investment" },
+            { label: "Credit Card", value: "CreditCard" },
+            { label: "Insurance", value: "InsurancePolicy" },
+            { label: "Subscription", value: "RecurringBill" },
+            { label: "Category", value: "Category" },
+            { label: "Account", value: "Account" },
+            { label: "Budget", value: "Budget" },
+            { label: "Person", value: "Person" },
+            { label: "Goal", value: "Goal" },
+          ]} 
         />
       </div>
       <div>
@@ -262,7 +367,19 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
           onChange={setActionFilter} 
           className="w-full min-h-10" 
           popupMatchSelectWidth={false}
-          options={[{label: "Create", value: "CREATE"}, {label: "Update", value: "UPDATE"}, {label: "Delete", value: "DELETE"}]} 
+          options={[
+            { label: "Create", value: "CREATE" },
+            { label: "Update", value: "UPDATE" },
+            { label: "Delete", value: "DELETE" },
+            { label: "EMI Paid", value: "EMI_PAID" },
+            { label: "EMI Received", value: "EMI_RECEIVED" },
+            { label: "EMI Reversed", value: "EMI_REVERSED" },
+            { label: "SIP Paid", value: "SIP_PAID" },
+            { label: "Bill Paid", value: "BILL_PAID" },
+            { label: "Premium Paid", value: "PREMIUM_PAID" },
+            { label: "Subscription Paid", value: "SUBSCRIPTION_PAID" },
+            { label: "Soft Delete", value: "DELETE_SOFT" },
+          ]} 
         />
       </div>
     </div>
@@ -426,10 +543,12 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                             <div className="flex-1 flex flex-col min-w-0">
                               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5 block">Previous</span>
                               {c.prev === undefined || c.prev === null ? (
-                                <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">None</span>
+                                <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">
+                                  {c.key === "categoryId" ? "Uncategorized" : "None"}
+                                </span>
                               ) : (
                                 <div className="p-2.5 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 text-xs font-mono break-all line-through decoration-rose-500/40 flex-1">
-                                  {c.prev === "" ? <span className="opacity-50 italic">Empty</span> : (typeof c.prev === "object" ? JSON.stringify(c.prev) : String(c.prev))}
+                                  {c.prev === "" ? <span className="opacity-50 italic">Empty</span> : renderValue(c.prev, c.key)}
                                 </div>
                               )}
                             </div>
@@ -441,10 +560,12 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                             <div className="flex-1 flex flex-col min-w-0">
                               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5 block">Current</span>
                               {c.curr === undefined || c.curr === null ? (
-                                <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">None</span>
+                                <span className="text-muted-foreground/50 italic text-xs h-full flex items-center">
+                                  {c.key === "categoryId" ? "Uncategorized" : "None"}
+                                </span>
                               ) : (
                                 <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-mono break-all flex-1">
-                                  {c.curr === "" ? <span className="opacity-50 italic">Empty</span> : (typeof c.curr === "object" ? JSON.stringify(c.curr) : String(c.curr))}
+                                  {c.curr === "" ? <span className="opacity-50 italic">Empty</span> : renderValue(c.curr, c.key)}
                                 </div>
                               )}
                             </div>
@@ -462,7 +583,7 @@ export function AuditLogsList({ logs, userTimezone }: { logs: any[]; userTimezon
                       return (
                         <div key={key} className="bg-card border border-border/60 p-3.5 rounded-xl shadow-sm flex flex-col gap-1">
                           <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{key}</div>
-                          <div className="text-sm font-medium text-foreground break-all">{renderValue(val)}</div>
+                          <div className="text-sm font-medium text-foreground break-all">{renderValue(val, key)}</div>
                         </div>
                       );
                     })}

@@ -16,14 +16,14 @@ import { Select } from "antd";
 import { TimezonePicker } from "@/components/settings/TimezonePicker";
 import { PaymentAppsSettings } from "@/components/settings/PaymentAppsSettings";
 import { useToast } from "@/hooks/useToast";
-import { Plus, Trash, UploadCloud, Loader2, Search, Download, Copy, PenLine, ChevronRight } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import { Plus, Trash, UploadCloud, Loader2, Copy, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getAllCurrencies } from "@/actions/currency";
 import { MasterLayout } from "@/components/layout/MasterLayout";
 import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout } from "@/components/layout/MasterView";
 import { Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -59,6 +59,7 @@ function SettingsContent() {
   useEffect(() => {
     async function loadCurrencies() {
       try {
+        setIsCurrencyLoading(true);
         const data = await getAllCurrencies(true);
         if (data.length > 0) {
           setCurrencyOptions(data.map((c: any) => ({
@@ -66,8 +67,10 @@ function SettingsContent() {
             value: c.code
           })));
         }
-      } catch (err) {
+      } catch {
         // fallback to default
+      } finally {
+        setIsCurrencyLoading(false);
       }
     }
     loadCurrencies();
@@ -385,6 +388,104 @@ function SettingsContent() {
   };
 
   const renderPreferencesCard = (isMobileView = false) => {
+    if (isMobileView) {
+      return (
+        <div className="flex flex-col items-center text-center p-3 sm:p-5 pt-1 space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 shadow-xs">
+            <Palette className="w-7 h-7" />
+          </div>
+          <div className="space-y-1.5 max-w-[280px]">
+            <h4 className="font-bold text-base text-foreground">Preferences</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Personalize your visual theme and primary accent colors.
+            </p>
+          </div>
+
+          <div className="w-full space-y-3 pt-1 text-left">
+            {/* Primary Accent Color Card */}
+            <div className="p-3.5 rounded-xl border bg-card space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-xs sm:text-sm text-foreground">Primary Accent Color</p>
+                  <p className="text-[11px] text-muted-foreground">Customize buttons and visual highlights</p>
+                </div>
+                <div
+                  className="w-8 h-8 rounded-full border-2 border-background shadow-xs cursor-pointer overflow-hidden flex-shrink-0 hover:scale-105 transition-transform relative ring-1 ring-border/50"
+                  onClick={() => document.getElementById('mobile-theme-color-picker')?.click()}
+                  style={{ backgroundColor: themeColor }}
+                >
+                  <input
+                    id="mobile-theme-color-picker"
+                    type="color"
+                    value={themeColor}
+                    onChange={(e) => handleThemeColorChange(e.target.value)}
+                    disabled={isThemeLoading}
+                    className="opacity-0 w-full h-full cursor-pointer absolute inset-0"
+                  />
+                </div>
+              </div>
+
+              {/* Color Preset Palette */}
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <div className="flex items-center gap-2">
+                  {[
+                    { label: "Sky (Default)", color: "#0ea5e9" },
+                    { label: "Violet", color: "#8b5cf6" },
+                    { label: "Emerald", color: "#10b981" },
+                    { label: "Amber", color: "#f59e0b" },
+                    { label: "Rose", color: "#f43f5e" },
+                  ].map((preset) => (
+                    <button
+                      key={preset.color}
+                      type="button"
+                      onClick={() => handleThemeColorChange(preset.color)}
+                      className={cn(
+                        "w-6 h-6 rounded-full border border-background shadow-2xs hover:scale-110 transition-transform",
+                        themeColor.toLowerCase() === preset.color.toLowerCase() ? "ring-2 ring-primary ring-offset-1" : ""
+                      )}
+                      style={{ backgroundColor: preset.color }}
+                      title={preset.label}
+                    />
+                  ))}
+                </div>
+                {themeColor !== "#0ea5e9" && (
+                  <button
+                    type="button"
+                    onClick={() => handleThemeColorChange(null)}
+                    disabled={isThemeLoading}
+                    className="text-[11px] font-medium text-muted-foreground hover:text-foreground underline transition-colors"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Display Theme Card */}
+            <div className="p-3.5 rounded-xl border bg-card flex items-center justify-between shadow-2xs">
+              <div>
+                <p className="font-semibold text-xs sm:text-sm text-foreground">Display Theme</p>
+                <p className="text-[11px] text-muted-foreground">Toggle between light and dark visual themes</p>
+              </div>
+              <div className="p-0.5 rounded-full bg-background border shadow-2xs">
+                <ThemeToggle />
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full pt-2">
+            <Button
+              type="button"
+              className="w-full h-11 rounded-xl text-sm font-semibold shadow-xs"
+              onClick={() => setMobileOpen(false)}
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     const content = (
       <div className="flex flex-col rounded-xl border bg-card shadow-2xs divide-y">
 
@@ -485,7 +586,11 @@ function SettingsContent() {
 
   const renderTimezoneCard = (isMobileView = false) => {
     const content = (
-      <TimezonePicker initialTimezone={(session?.user as any)?.timezone || "UTC"} noBorder={isMobileView} />
+      <TimezonePicker
+        initialTimezone={(session?.user as any)?.timezone || "UTC"}
+        noBorder={isMobileView}
+        onDone={() => setMobileOpen(false)}
+      />
     );
 
     if (isMobileView) return content;
@@ -567,30 +672,68 @@ function SettingsContent() {
     );
   };
 
-  const renderLogoutCard = (isMobileView = false) => {
-    const content = (
-      <div className="flex items-center justify-between p-3.5 sm:p-4">
+  const renderLogoutCard = (isMobileView = false, isSearch = false) => {
+    if (isMobileView) {
+      return (
+        <div className="flex flex-col items-center text-center p-3 sm:p-5 pt-1 space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 shadow-xs">
+            <LogOut className="w-7 h-7" />
+          </div>
+          <div className="space-y-1.5 max-w-[280px]">
+            <h4 className="font-bold text-base text-foreground">Sign out of your account?</h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              You will be signed out of your current session on this device. You can sign back in anytime.
+            </p>
+          </div>
+          <div className="w-full flex flex-col gap-2.5 pt-2">
+            <Button
+              variant="destructive"
+              className="w-full h-11 rounded-xl text-sm font-semibold shadow-xs flex items-center justify-center gap-2"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-11 rounded-xl text-sm font-medium border-border/70 hover:bg-muted"
+              onClick={() => setMobileOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    const rowContent = (
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3.5 sm:p-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
-            <LogOut className="w-4.5 h-4.5 text-red-500" />
+          <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
+            <LogOut className="w-5 h-5 text-red-500" />
           </div>
           <div>
             <p className="font-semibold text-xs sm:text-sm text-foreground">Sign Out</p>
             <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Sign out of your account on this device.</p>
           </div>
         </div>
-        <Button variant="destructive" size="sm" className="h-8 px-3 text-xs font-semibold" onClick={() => signOut({ callbackUrl: "/login" })}>
+        <Button
+          variant="destructive"
+          className="w-full sm:w-auto h-9 px-4 text-xs font-semibold rounded-xl"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+        >
           <LogOut className="w-3.5 h-3.5 mr-1.5" />
           Sign Out
         </Button>
       </div>
     );
 
-    if (isMobileView) return content;
+    if (isSearch) return rowContent;
 
     return (
       <Card className="rounded-xl border-red-500/20 shadow-xs">
-        <CardContent className="p-0">{content}</CardContent>
+        <CardContent className="p-0">{rowContent}</CardContent>
       </Card>
     );
   };
@@ -621,7 +764,7 @@ function SettingsContent() {
               {showPaymentApps && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</h3>{renderPaymentAppsCard(true)}</div>}
               {showTimezone && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0"><Globe className="w-3.5 h-3.5 text-emerald-500" /></div> Global Timezone</h3>{renderTimezoneCard(true)}</div>}
               {showNotifications && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</h3>{renderNotificationsCard(true)}</div>}
-              {showLogout && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0"><LogOut className="w-3.5 h-3.5 text-red-500" /></div> Sign Out</h3>{renderLogoutCard(true)}</div>}
+              {showLogout && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0"><LogOut className="w-3.5 h-3.5 text-red-500" /></div> Sign Out</h3>{renderLogoutCard(false, true)}</div>}
 
               {!showProfile && !showPreferences && !showPaymentApps && !showTimezone && !showNotifications && !showLogout && (
                 <div className="p-10 text-center text-xs sm:text-sm text-muted-foreground border rounded-xl border-dashed">
@@ -814,7 +957,7 @@ function SettingsContent() {
         }}>
           <DialogContent
             initialFocus={false}
-            className="w-[95vw] max-w-lg p-5 rounded-2xl max-h-[85vh] overflow-y-auto"
+            className={`w-[92vw] rounded-2xl max-h-[88vh] overflow-y-auto ${["logout", "timezone", "preferences"].includes(activeTab) ? "max-w-sm sm:max-w-md p-4 sm:p-5" : "max-w-lg p-5"}`}
           >
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">

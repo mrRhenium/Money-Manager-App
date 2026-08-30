@@ -71,7 +71,8 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
   if (!dues || dues.length === 0) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger render={
         <Card className="cursor-pointer border border-blue-500/20 bg-blue-500/5 shadow-sm hover:bg-blue-500/10 transition-all duration-200 h-full">
           <CardContent className="p-4 sm:p-5 flex flex-col justify-between gap-4 h-full">
@@ -248,17 +249,18 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
           </div>
         )}
       </DialogContent>
-
-      <PayDueModal
-        open={isPayModalOpen}
-        onOpenChange={setIsPayModalOpen}
-        due={selectedDue}
-        accounts={accounts}
-        onSuccess={() => {
-          setIsPayModalOpen(false);
-          setIsOpen(false);
-        }}
-      />
     </Dialog>
-  );
+
+    <PayDueModal
+      open={isPayModalOpen}
+      onOpenChange={setIsPayModalOpen}
+      due={selectedDue}
+      accounts={accounts}
+      onSuccess={() => {
+        setIsPayModalOpen(false);
+        setIsOpen(false);
+      }}
+    />
+  </>
+);
 }

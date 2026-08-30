@@ -4,9 +4,7 @@ import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -224,185 +222,188 @@ export function PayDueModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg p-4 sm:p-6 rounded-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden custom-scrollbar">
-        <DialogHeader className="pb-3 border-b">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeConfig.bgColor} ${typeConfig.color}`}>
-              <DueIcon className="w-5 h-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <DialogTitle className="text-base sm:text-lg font-bold text-foreground truncate">
-                {typeConfig.actionLabel}
-              </DialogTitle>
-              <p className="text-xs text-muted-foreground truncate">{typeConfig.label}</p>
-            </div>
+      <DialogContent className="w-[92vw] sm:max-w-lg p-0 gap-0 overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[85vh] rounded-2xl border bg-card shadow-2xl z-[60]">
+        {/* Fixed Header */}
+        <div className="p-4 sm:p-5 border-b shrink-0 flex items-center gap-3 pr-12 bg-muted/20">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeConfig.bgColor} ${typeConfig.color}`}>
+            <DueIcon className="w-5 h-5" />
           </div>
-        </DialogHeader>
-
-        {/* Due Item Overview Banner */}
-        <div className="p-3 sm:p-4 rounded-xl bg-muted/40 border border-border/50 space-y-1.5 mt-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-semibold text-sm sm:text-base text-foreground truncate">{due.title}</span>
-            <span className="font-bold text-sm sm:text-base text-foreground">{format(due.amount)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-            <span className="flex items-center gap-1">
-              <CalendarDays className="w-3.5 h-3.5" />
-              Due: {due.dueDate ? formatDateString(due.dueDate, "DD-MM-YYYY") : "N/A"}
-            </span>
-            {isOverdue && (
-              <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
-                Overdue
-              </Badge>
-            )}
+          <div className="min-w-0 flex-1">
+            <DialogTitle className="text-base sm:text-lg font-bold text-foreground truncate">
+              {typeConfig.actionLabel}
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground truncate">{typeConfig.label}</p>
           </div>
         </div>
 
-        {errorMessage && (
-          <div className="p-3 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-          {/* Amount Field */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="due-amount" className="text-xs font-semibold">
-                {isReceivable ? "Amount to Receive" : "Amount to Pay"}
-              </Label>
-              {numericAmount !== due.amount && (
-                <button
-                  type="button"
-                  onClick={() => setAmount(due.amount.toString())}
-                  className="text-[11px] text-primary hover:underline font-medium"
-                >
-                  Reset to {format(due.amount)}
-                </button>
-              )}
+        {/* Scrollable Form Body */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-5 custom-scrollbar space-y-4 min-h-0">
+            {/* Due Item Overview Banner */}
+            <div className="p-3 sm:p-4 rounded-xl bg-muted/40 border border-border/50 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold text-sm sm:text-base text-foreground truncate">{due.title}</span>
+                <span className="font-bold text-sm sm:text-base text-foreground">{format(due.amount)}</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                <span className="flex items-center gap-1">
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  Due: {due.dueDate ? formatDateString(due.dueDate, "DD-MM-YYYY") : "N/A"}
+                </span>
+                {isOverdue && (
+                  <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
+                    Overdue
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-muted-foreground font-semibold text-sm">
-                {currencySymbol || "₹"}
-              </span>
-              <Input
-                id="due-amount"
-                type="number"
-                step="any"
-                min="0.01"
-                required
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pl-8 text-sm font-semibold rounded-xl"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
 
-          {/* Account Picker */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">
-              {isReceivable ? "Deposit Into Account" : "Pay From Account"}
-            </Label>
-            <Select value={accountId} onValueChange={(val) => setAccountId(val || "")}>
-              <SelectTrigger className="w-full h-10 text-xs sm:text-sm rounded-xl">
-                <SelectValue placeholder="Select an account">
-                  {selectedAccount ? selectedAccount.name : undefined}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {accounts.map((acc: any) => {
-                  const isAccActive = acc.isActive !== false && acc.status !== "inactive";
-                  const accId = String(acc._id);
-                  return (
-                    <SelectItem key={accId} value={accId}>
-                      <div className="flex items-center justify-between w-full gap-4">
-                        <span className="truncate">{acc.name}</span>
-                        <span className="text-muted-foreground font-medium text-xs">
-                          {format(acc.balance || 0)} {!isAccActive ? " [Inactive]" : ""}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-
-            {isInsufficient && (
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1">
-                <AlertTriangle className="w-3 h-3 shrink-0" />
-                Note: Selected account balance ({format(selectedAccount?.balance || 0)}) is lower than payment amount.
-              </p>
+            {errorMessage && (
+              <div className="p-3 text-xs bg-destructive/10 border border-destructive/20 text-destructive rounded-xl flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
             )}
-          </div>
 
-          {/* Payment Date & Mode */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Amount Field */}
             <div className="space-y-1.5">
-              <Label htmlFor="payment-date" className="text-xs font-semibold">
-                Payment Date
-              </Label>
-              <Input
-                id="payment-date"
-                type="date"
-                required
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
-                className="h-10 text-xs sm:text-sm rounded-xl"
-              />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="due-amount" className="text-xs font-semibold">
+                  {isReceivable ? "Amount to Receive" : "Amount to Pay"}
+                </Label>
+                {numericAmount !== due.amount && (
+                  <button
+                    type="button"
+                    onClick={() => setAmount(due.amount.toString())}
+                    className="text-[11px] text-primary hover:underline font-medium"
+                  >
+                    Reset to {format(due.amount)}
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-muted-foreground font-semibold text-sm">
+                  {currencySymbol || "₹"}
+                </span>
+                <Input
+                  id="due-amount"
+                  type="number"
+                  step="any"
+                  min="0.01"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="pl-8 text-sm font-semibold rounded-xl"
+                  placeholder="0.00"
+                />
+              </div>
             </div>
 
+            {/* Account Picker */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Payment Mode</Label>
-              <Select
-                value={paymentMode}
-                onValueChange={(val: any) => setPaymentMode(val)}
-              >
+              <Label className="text-xs font-semibold">
+                {isReceivable ? "Deposit Into Account" : "Pay From Account"}
+              </Label>
+              <Select value={accountId} onValueChange={(val) => setAccountId(val || "")}>
                 <SelectTrigger className="w-full h-10 text-xs sm:text-sm rounded-xl">
-                  <SelectValue placeholder="Mode">
-                    {PAYMENT_MODE_LABELS[paymentMode] || paymentMode}
+                  <SelectValue placeholder="Select an account">
+                    {selectedAccount ? selectedAccount.name : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="bank">Bank Transfer / UPI</SelectItem>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="credit_card">Credit Card</SelectItem>
-                  <SelectItem value="wallet">Wallet</SelectItem>
+                  {accounts.map((acc: any) => {
+                    const isAccActive = acc.isActive !== false && acc.status !== "inactive";
+                    const accId = String(acc._id);
+                    return (
+                      <SelectItem key={accId} value={accId}>
+                        <div className="flex items-center justify-between w-full gap-4">
+                          <span className="truncate">{acc.name}</span>
+                          <span className="text-muted-foreground font-medium text-xs">
+                            {format(acc.balance || 0)} {!isAccActive ? " [Inactive]" : ""}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
+
+              {isInsufficient && (
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1">
+                  <AlertTriangle className="w-3 h-3 shrink-0" />
+                  Note: Selected account balance ({format(selectedAccount?.balance || 0)}) is lower than payment amount.
+                </p>
+              )}
+            </div>
+
+            {/* Payment Date & Mode */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="payment-date" className="text-xs font-semibold">
+                  Payment Date
+                </Label>
+                <Input
+                  id="payment-date"
+                  type="date"
+                  required
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="h-10 text-xs sm:text-sm rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Payment Mode</Label>
+                <Select
+                  value={paymentMode}
+                  onValueChange={(val: any) => setPaymentMode(val)}
+                >
+                  <SelectTrigger className="w-full h-10 text-xs sm:text-sm rounded-xl">
+                    <SelectValue placeholder="Mode">
+                      {PAYMENT_MODE_LABELS[paymentMode] || paymentMode}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bank">Bank Transfer / UPI</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="credit_card">Credit Card</SelectItem>
+                    <SelectItem value="wallet">Wallet</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Note / Description */}
+            <div className="space-y-1.5">
+              <Label htmlFor="payment-note" className="text-xs font-semibold">
+                Note / Reference
+              </Label>
+              <Input
+                id="payment-note"
+                type="text"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g. Loan installment payment"
+                className="text-xs sm:text-sm rounded-xl"
+              />
             </div>
           </div>
 
-          {/* Note / Description */}
-          <div className="space-y-1.5">
-            <Label htmlFor="payment-note" className="text-xs font-semibold">
-              Note / Reference
-            </Label>
-            <Input
-              id="payment-note"
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Loan installment payment"
-              className="text-xs sm:text-sm rounded-xl"
-            />
-          </div>
-
-          <DialogFooter className="pt-3 gap-2 sm:gap-0">
+          {/* Fixed Sticky Footer */}
+          <div className="p-3.5 sm:p-4 border-t bg-muted/20 shrink-0 flex flex-col sm:flex-row sm:justify-end gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="rounded-xl text-xs sm:text-sm"
+              className="w-full sm:w-auto rounded-xl text-xs sm:text-sm h-10 order-2 sm:order-1"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={loading || !numericAmount || !accountId}
-              className="rounded-xl text-xs sm:text-sm font-semibold gap-1.5"
+              className="w-full sm:w-auto rounded-xl text-xs sm:text-sm font-semibold gap-1.5 h-10 order-1 sm:order-2"
             >
               {loading ? (
                 <>
@@ -415,7 +416,7 @@ export function PayDueModal({
                 </>
               )}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

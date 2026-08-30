@@ -2,7 +2,7 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, FilterIcon, XCircle, LayoutGrid, PieChartIcon, X } from "lucide-react";
+import { FilterIcon, LayoutGrid, PieChartIcon, X, RotateCcw } from "lucide-react";
 import { Drawer } from "antd";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -80,14 +80,16 @@ export function MasterToolbar({
           </div>
           {onFilterClick && (
             <Button
-              variant={isFilterActive ? "default" : "outline"}
+              variant="outline"
               onClick={onFilterClick}
               className={cn(
-                "h-9 shrink-0 text-xs font-semibold px-3 shadow-2xs rounded-lg",
-                !isFilterActive && "bg-card text-foreground hover:bg-card/80 hover:text-foreground border-slate-200 dark:border-slate-800"
+                "h-9 shrink-0 text-xs font-semibold px-3 shadow-2xs rounded-lg transition-colors",
+                isFilterActive
+                  ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:text-primary"
+                  : "bg-card text-foreground hover:bg-card/80 hover:text-foreground border-slate-200 dark:border-slate-800"
               )}
             >
-              <FilterIcon className="w-3.5 h-3.5 mr-1.5" />
+              <FilterIcon className={cn("w-3.5 h-3.5 mr-1.5", isFilterActive ? "text-primary" : "text-muted-foreground")} />
               Advance Filter {isFilterActive && " (Active)"}
             </Button>
           )}
@@ -141,20 +143,23 @@ export function MasterFilterSidebar({ isFilterActive, onClearFilters, children }
             </div>
             Filters & Sort
           </div>
-          {isFilterActive && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onClearFilters}
-              className="h-7 text-xs px-2.5 rounded-md font-medium shadow-xs hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all"
-            >
-              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear All
-            </Button>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 flex flex-col gap-4 [&_h3]:text-[11px] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_.ant-select]:text-xs [&_.ant-select-selector]:!min-h-[34px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-xs [&_.ant-select-selection-placeholder]:!text-xs [&_label]:text-[11px] [&_label]:font-semibold [&_input]:h-8.5 [&_input]:text-xs">
         {children}
+
+        {isFilterActive && (
+          <div className="pt-2 border-t border-border/50 mt-1">
+            <Button
+              variant="outline"
+              onClick={onClearFilters}
+              className="w-full h-9 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-red-500" />
+              Clear All Filters
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -185,23 +190,11 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
         </Button>
       }
       title={
-        <div className="flex items-center justify-between w-full pr-2">
-          <div className="flex items-center gap-2 font-semibold text-sm tracking-tight text-foreground">
-            <div className="p-1.5 rounded-md bg-primary/10 text-primary">
-              <FilterIcon className="w-4 h-4" />
-            </div>
-            Filters & Sort
+        <div className="flex items-center gap-2 font-semibold text-sm tracking-tight text-foreground">
+          <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+            <FilterIcon className="w-4 h-4" />
           </div>
-          {isFilterActive && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onClearFilters}
-              className="h-7 text-xs px-2.5 rounded-md font-medium shadow-xs hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all mr-2"
-            >
-              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear
-            </Button>
-          )}
+          Filters & Sort
         </div>
       }
       placement="right"
@@ -220,6 +213,19 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
     >
       <div className="flex flex-col gap-4 [&_h3]:text-[11px] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_.ant-select]:text-xs [&_.ant-select-selector]:!min-h-[34px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-xs [&_.ant-select-selection-placeholder]:!text-xs [&_label]:text-[11px] [&_label]:font-semibold [&_input]:h-8.5 [&_input]:text-xs">
         {children}
+
+        {isFilterActive && (
+          <div className="pt-2 border-t border-border/50 mt-1">
+            <Button
+              variant="outline"
+              onClick={onClearFilters}
+              className="w-full h-9 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-red-500" />
+              Clear All Filters
+            </Button>
+          </div>
+        )}
       </div>
     </Drawer>
   );

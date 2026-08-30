@@ -46,6 +46,7 @@ export async function createAuditLog(params: CreateAuditLogParams) {
           "loan": "Loan",
           "investment": "Investment",
           "insurance": "InsurancePolicy",
+          "insurancepolicy": "InsurancePolicy",
           "goal": "Goal",
           "person": "Person",
           "creditcard": "CreditCard"
@@ -53,9 +54,28 @@ export async function createAuditLog(params: CreateAuditLogParams) {
         const modelName = typeMap[params.entityType.toLowerCase()] || params.entityType;
         const Model = mongoose.models[modelName];
         if (Model && mongoose.Types.ObjectId.isValid(params.entityId)) {
-          const doc = await Model.findById(params.entityId).lean();
+          const doc: any = await Model.findById(params.entityId).lean();
           if (doc) {
-            params.entityName = doc.name || doc.title || doc.policyName || doc.cardName || doc.bankName || doc.note || doc.description;
+            if (modelName === "Transaction") {
+              const amountStr = doc.amount !== undefined ? `₹${doc.amount}` : "";
+              const typeStr = doc.type ? (doc.type.charAt(0).toUpperCase() + doc.type.slice(1)) : "Transaction";
+              params.entityName = doc.note?.trim() || `${typeStr} (${amountStr})`;
+            } else {
+              params.entityName = doc.name || doc.title || doc.policyName || doc.cardName || doc.bankName || doc.note || doc.description;
+            }
+          }
+        }
+
+        if (!params.entityName) {
+          const snap = params.currentValue || params.previousValue;
+          if (snap) {
+            if (modelName === "Transaction") {
+              const amountStr = snap.amount !== undefined ? `₹${snap.amount}` : "";
+              const typeStr = snap.type ? (snap.type.charAt(0).toUpperCase() + snap.type.slice(1)) : "Transaction";
+              params.entityName = snap.note?.trim() || `${typeStr} (${amountStr})`;
+            } else {
+              params.entityName = snap.name || snap.title || snap.policyName || snap.cardName || snap.bankName || snap.note || snap.description;
+            }
           }
         }
       } catch (e) {

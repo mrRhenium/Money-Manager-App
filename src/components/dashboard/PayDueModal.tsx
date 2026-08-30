@@ -293,7 +293,7 @@ export function PayDueModal({
                   required
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="pl-8 text-sm font-semibold rounded-xl"
+                  className="pl-8 text-sm font-semibold rounded-xl placeholder:font-normal placeholder:text-muted-foreground/35 dark:placeholder:text-muted-foreground/30"
                   placeholder="0.00"
                 />
               </div>

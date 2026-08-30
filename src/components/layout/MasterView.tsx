@@ -37,11 +37,16 @@ export function MasterToolbar({
   ],
   primaryAction
 }: MasterToolbarProps) {
+  const hasTabs = Boolean(tabs && tabs.length > 0);
+
   return (
-    <div className="shrink-0 flex flex-col-reverse lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-4 border-b border-border/50">
+    <div className={cn(
+      "shrink-0 flex flex-col-reverse lg:flex-row items-stretch lg:items-center justify-between",
+      hasTabs ? "gap-4 pb-4 border-b border-border/50" : "gap-0 pb-2 sm:pb-3 border-b border-border/40"
+    )}>
 
       {/* Tabs */}
-      {tabs.length > 0 ? (
+      {hasTabs ? (
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full lg:w-[450px]">
           <TabsList className="w-full h-12 bg-slate-100/80 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 p-1 flex rounded-full shadow-inner">
             {tabs.map((tab) => (
@@ -59,10 +64,10 @@ export function MasterToolbar({
             ))}
           </TabsList>
         </Tabs>
-      ) : <div />}
+      ) : null}
 
       {/* Right Side: Actions & Search */}
-      <div className="shrink-0 flex gap-2 w-full lg:w-auto justify-between lg:justify-end">
+      <div className={cn("shrink-0 flex gap-2 w-full lg:w-auto justify-between lg:justify-end", !hasTabs && "w-full")}>
         {primaryAction && (
           <div className="hidden lg:block">
             {primaryAction}
@@ -108,7 +113,7 @@ interface MasterViewLayoutProps {
 
 export function MasterViewLayout({ children, sidebar }: MasterViewLayoutProps) {
   return (
-    <div className="flex-1 flex flex-col lg:flex-row gap-4 mt-4 overflow-hidden">
+    <div className="flex-1 flex flex-col lg:flex-row gap-4 mt-2 sm:mt-4 overflow-hidden">
       <div className="flex-1 min-w-0 overflow-y-auto pb-24 custom-scrollbar">
         {children}
       </div>

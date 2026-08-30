@@ -93,7 +93,7 @@ function SettingsContent() {
   };
 
   const showProfile = searchMatch("Profile Information", ["name", "email", "mobile", "phone", "upi", "vpa", "qr code"]);
-  const showPreferences = searchMatch("Preferences", ["theme", "color", "appearance"]);
+  const showPreferences = searchMatch("App Theme", ["preferences", "theme", "color", "appearance"]);
   const showPaymentApps = searchMatch("UPI & Payment Apps", ["upi", "gpay", "google pay", "phonepe", "paytm", "amazon pay", "bhim", "cred", "payment apps", "scan and pay", "active", "apps"]);
   const showTimezone = searchMatch("Global Timezone", ["time", "zone", "utc", "gmt", "region"]);
   const showNotifications = searchMatch("Notifications", ["push", "alerts", "reminders", "test"]);
@@ -198,7 +198,7 @@ function SettingsContent() {
     try {
       await navigator.clipboard.writeText(text);
       toast.success(`${label} copied to clipboard!`);
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy to clipboard.");
     }
   };
@@ -395,7 +395,7 @@ function SettingsContent() {
             <Palette className="w-7 h-7" />
           </div>
           <div className="space-y-1.5 max-w-[280px]">
-            <h4 className="font-bold text-base text-foreground">Preferences</h4>
+            <h4 className="font-bold text-base text-foreground">App Theme</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Personalize your visual theme and primary accent colors.
             </p>
@@ -549,8 +549,8 @@ function SettingsContent() {
               <Palette className="w-4.5 h-4.5 text-indigo-500" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold">Preferences</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Customize your Money Manager experience.</CardDescription>
+              <CardTitle className="text-base font-bold">App Theme</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">Customize your Money Manager appearance.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -745,7 +745,7 @@ function SettingsContent() {
         subtitle="Manage your account settings and preferences."
       />
 
-      <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
+      <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-2 sm:pt-4 overflow-hidden">
         <MasterToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -758,9 +758,9 @@ function SettingsContent() {
 
         {isSearching ? (
           <MasterViewLayout sidebar={null}>
-            <div className="pb-24 pt-2 w-full max-w-4xl space-y-4">
+            <div className="pb-24 pt-1 w-full max-w-4xl space-y-3">
               {showProfile && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><User className="w-3.5 h-3.5 text-primary" /></div> Profile Information</h3>{renderProfileCard(true)}</div>}
-              {showPreferences && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> Preferences</h3>{renderPreferencesCard(true)}</div>}
+              {showPreferences && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> App Theme</h3>{renderPreferencesCard(true)}</div>}
               {showPaymentApps && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</h3>{renderPaymentAppsCard(true)}</div>}
               {showTimezone && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0"><Globe className="w-3.5 h-3.5 text-emerald-500" /></div> Global Timezone</h3>{renderTimezoneCard(true)}</div>}
               {showNotifications && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</h3>{renderNotificationsCard(true)}</div>}
@@ -799,7 +799,7 @@ function SettingsContent() {
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "preferences" && !isMobile ? "bg-white/20 text-white" : "bg-indigo-500/10 text-indigo-500"}`}>
                     <Palette className="w-3.5 h-3.5" />
                   </div>
-                  Preferences
+                  App Theme
                 </button>
                 <button
                   onClick={() => handleTabChange("payment_apps")}
@@ -853,7 +853,7 @@ function SettingsContent() {
             }
           >
             {isMobile ? (
-              <div className="pb-24 pt-2 w-full max-w-4xl flex flex-col gap-2.5">
+              <div className="pb-24 pt-1 w-full max-w-4xl flex flex-col gap-2.5">
                 <button onClick={() => handleTabChange("profile")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -873,7 +873,7 @@ function SettingsContent() {
                       <Palette className="w-4.5 h-4.5 text-indigo-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-xs sm:text-sm text-foreground">Preferences</p>
+                      <p className="font-semibold text-xs sm:text-sm text-foreground">App Theme</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">App theme & appearance</p>
                     </div>
                   </div>
@@ -962,7 +962,7 @@ function SettingsContent() {
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
                 {activeTab === "profile" && <><div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><User className="w-3.5 h-3.5 text-primary" /></div> Profile Information</>}
-                {activeTab === "preferences" && <><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> Preferences</>}
+                {activeTab === "preferences" && <><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> App Theme</>}
                 {activeTab === "payment_apps" && <><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</>}
                 {activeTab === "timezone" && <><div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0"><Globe className="w-3.5 h-3.5 text-emerald-500" /></div> Global Timezone</>}
                 {activeTab === "notifications" && <><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</>}

@@ -565,7 +565,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
               <div>
                 <Label htmlFor="amount">Amount ({currencyCode})</Label>
                 <div className="relative mt-1">
-                  <span className="absolute left-3 top-2.5 font-bold text-muted-foreground">{currencyCode}</span>
+                  <span className="absolute left-3 top-2.5 font-bold text-muted-foreground/70 pointer-events-none select-none">{currencyCode}</span>
                   <Input
                     id="amount"
                     type="text"
@@ -573,7 +573,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                     value={amount}
                     onChange={e => setAmount(formatIndianNumber(e.target.value))}
                     disabled={isAmountReadOnly}
-                    className="pl-12 font-bold text-lg"
+                    className="pl-12 font-bold text-lg placeholder:font-normal placeholder:text-muted-foreground/35 dark:placeholder:text-muted-foreground/30"
                   />
                 </div>
                 {isAmountReadOnly && (

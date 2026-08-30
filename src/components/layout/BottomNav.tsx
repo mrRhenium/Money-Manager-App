@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PieChart, QrCode, ScanLine, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target, Shield, LayoutDashboard, Database, Banknote } from "lucide-react";
+import { PieChart, QrCode, ScanLine, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target, Shield, LayoutDashboard, Database, Banknote } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
@@ -10,6 +10,7 @@ import { ScanAndPayModal } from "../upi/ScanAndPayModal";
 export function BottomNav({ role }: { role?: string }) {
   const pathname = usePathname();
   const [scanOpen, setScanOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   let navItems = [
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -77,7 +78,7 @@ export function BottomNav({ role }: { role?: string }) {
           if (item.isMenu) {
             return (
               <li key="menu" className="flex-1 flex justify-center h-full">
-                <Dialog>
+                <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
                   <DialogTrigger className="w-full h-full outline-none">
                     {NavItemContent}
                   </DialogTrigger>
@@ -90,6 +91,7 @@ export function BottomNav({ role }: { role?: string }) {
                         <Link
                           key={menuItem.href}
                           href={menuItem.href}
+                          onClick={() => setMenuOpen(false)}
                           className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl hover:bg-muted/50 transition-colors"
                         >
                           <div className={`p-3 rounded-full ${pathname === menuItem.href ? "bg-primary text-primary-foreground shadow-md scale-110" : "bg-secondary text-secondary-foreground"}`}>

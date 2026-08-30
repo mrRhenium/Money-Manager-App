@@ -216,7 +216,7 @@ export function InsuranceClient({
             isFilterActive={isFilterActive}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            primaryAction={<InsuranceForm accounts={accounts} triggerClassName="h-10 px-6 text-base font-semibold" />}
+            primaryAction={<InsuranceForm accounts={accounts} triggerClassName="h-9 px-4 text-xs sm:text-sm font-semibold" />}
           />
 
           <MasterViewLayout

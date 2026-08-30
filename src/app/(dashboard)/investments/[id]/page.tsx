@@ -13,6 +13,8 @@ import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import { KPICard } from "@/components/dashboard/KPICard";
 
+import { MasterHeader } from "@/components/layout/MasterHeader";
+
 export default async function InvestmentDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -35,26 +37,17 @@ export default async function InvestmentDetailsPage({ params }: { params: Promis
   return (
     <div className="absolute inset-0 flex flex-col bg-slate-50/50 dark:bg-background overflow-hidden">
 
-      {/* HEADER SECTION */}
-      <div className="shrink-0 h-20 z-40 dark:text-white bg-card/80 backdrop-blur-md shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] border-b py-4 px-4 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link href="/investments">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-xl font-bold">{investment.name}</h1>
-              <p className="text-xs text-muted-foreground capitalize flex items-center gap-2">
-                <span>{investment.investmentType}</span>
-                <span>•</span>
-                <span className={investment.status === 'active' ? 'text-emerald-500 font-medium' : 'text-muted-foreground'}>{investment.status}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MasterHeader
+        backHref="/investments"
+        title={investment.name}
+        subtitle={
+          <span className="capitalize flex items-center gap-2">
+            <span>{investment.investmentType}</span>
+            <span>•</span>
+            <span className={investment.status === 'active' ? 'text-emerald-500 font-medium' : 'text-muted-foreground'}>{investment.status}</span>
+          </span>
+        }
+      />
 
       {/* CONTENT SECTION */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-2 pt-4 px-4 sm:px-6 lg:px-8">

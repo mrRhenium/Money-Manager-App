@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Drawer, Tag } from "antd";
+import { Drawer, Tag, Select as AntSelect } from "antd";
 import { 
   User, 
   Phone, 
@@ -24,7 +24,6 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { getPersonTransactions, toggleFavoritePerson } from "@/actions/person";
 import { formatDate } from "@/lib/helpers";
 import { useToast } from "@/hooks/useToast";
-import { TransactionForm } from "@/components/forms/TransactionForm";
 import { KPICard } from "@/components/dashboard/KPICard";
 
 interface PersonDetailDrawerProps {
@@ -143,9 +142,9 @@ export function PersonDetailDrawer({
         body: { padding: 0 }
       }}
     >
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full overflow-x-hidden">
         {/* Profile Card Header */}
-        <div className="p-6 bg-gradient-to-b from-card via-card to-background border-b border-border/50">
+        <div className="p-4 sm:p-6 bg-gradient-to-b from-card via-card to-background border-b border-border/50">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
               <div
@@ -174,16 +173,6 @@ export function PersonDetailDrawer({
                 </div>
               </div>
             </div>
-
-            {/* Quick Action Button */}
-            <TransactionForm 
-              accounts={accounts} 
-              categories={categories} 
-              people={[person]} 
-              creditCards={creditCards}
-              transaction={{ personId: person._id }}
-              triggerClassName="h-9 px-3 text-xs font-semibold"
-            />
           </div>
 
           {/* Contact Details (Phones & VPAs) */}
@@ -270,34 +259,26 @@ export function PersonDetailDrawer({
         </div>
 
         {/* Transaction History Statement */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4 custom-scrollbar">
           <div className="flex items-center justify-between pb-2 border-b border-border/40">
             <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
               <FileText className="w-4 h-4 text-primary" />
               Full Transaction History ({displayTransactions.length})
             </h3>
 
-            {/* Filter Pills */}
-            <div className="flex gap-1 bg-muted/60 p-0.5 rounded-lg border border-border/40 text-xs">
-              <button
-                onClick={() => setFilterType("all")}
-                className={`px-2.5 py-1 rounded-md font-medium transition-all ${filterType === "all" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"}`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilterType("given")}
-                className={`px-2.5 py-1 rounded-md font-medium transition-all ${filterType === "given" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"}`}
-              >
-                Given
-              </button>
-              <button
-                onClick={() => setFilterType("received")}
-                className={`px-2.5 py-1 rounded-md font-medium transition-all ${filterType === "received" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"}`}
-              >
-                Received
-              </button>
-            </div>
+            {/* Filter Dropdown */}
+            <AntSelect
+              value={filterType}
+              onChange={setFilterType}
+              size="small"
+              className="w-28 text-xs font-medium"
+              popupMatchSelectWidth={false}
+              options={[
+                { label: "All", value: "all" },
+                { label: "Given", value: "given" },
+                { label: "Received", value: "received" },
+              ]}
+            />
           </div>
 
           {loading ? (

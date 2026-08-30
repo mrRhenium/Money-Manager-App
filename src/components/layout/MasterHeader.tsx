@@ -15,13 +15,18 @@ interface MasterHeaderProps {
 export function MasterHeader({ title, subtitle, backHref, actions, className }: MasterHeaderProps) {
   return (
     <div className={cn(
-      "h-20 z-40 dark:text-white bg-card/80 backdrop-blur-md shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] border-b py-4 px-4 lg:px-8",
+      "h-20 z-40 dark:text-white",
+      // Mobile & tablet view: same bg and blur as bottom navigator
+      "bg-card/80 backdrop-blur-md border-b border-border/50",
+      // Laptop view: same bg and blur as desktop sidebar
+      "lg:bg-background/95 dark:lg:bg-card/95 lg:backdrop-blur-2xl",
+      "shadow-[1px_0_40px_rgba(0,0,0,0.02)] dark:shadow-[1px_0_40px_rgba(0,0,0,0.1)] py-4 px-4 lg:px-8",
       className
     )}>
-      <div className="flex flex-row items-center justify-between gap-2 sm:gap-4 h-full w-full">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-row items-center justify-between gap-3 sm:gap-4 h-full w-full min-w-0">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           {backHref && (
-            <Link href={backHref}>
+            <Link href={backHref} className="shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
@@ -31,20 +36,20 @@ export function MasterHeader({ title, subtitle, backHref, actions, className }: 
               </Button>
             </Link>
           )}
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2 truncate max-w-[200px] sm:max-w-full">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate w-full" title={typeof title === "string" ? title : undefined}>
               {title}
             </h1>
             {subtitle && (
-              <p className="text-[10px] sm:text-sm text-muted-foreground mt-0.5 flex items-center gap-2 truncate max-w-[200px] sm:max-w-full">
+              <div className="text-[11px] sm:text-sm text-muted-foreground mt-0.5 truncate w-full">
                 {subtitle}
-              </p>
+              </div>
             )}
           </div>
         </div>
 
         {actions && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {actions}
           </div>
         )}

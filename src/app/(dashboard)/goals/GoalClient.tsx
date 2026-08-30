@@ -220,7 +220,7 @@ export function GoalClient({ initialGoals, accounts }: { initialGoals: any[], ac
             isFilterActive={isFilterActive}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            primaryAction={<GoalForm triggerClassName="h-10 px-6 text-base font-semibold" />}
+            primaryAction={<GoalForm triggerClassName="h-9 px-4 text-xs sm:text-sm font-semibold" />}
           />
 
           <MasterViewLayout

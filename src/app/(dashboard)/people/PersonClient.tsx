@@ -233,7 +233,7 @@ export function PersonClient({
               { value: "data", label: "All Contacts", icon: <LayoutGrid className="w-4 h-4 mr-2" /> },
               { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
             ]}
-            primaryAction={<PersonForm triggerClassName="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold" />}
+            primaryAction={<PersonForm triggerClassName="h-9 px-4 text-xs sm:text-sm font-semibold" />}
           />
 
           <MasterViewLayout

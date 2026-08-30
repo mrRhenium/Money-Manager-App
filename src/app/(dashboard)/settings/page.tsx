@@ -279,18 +279,18 @@ function SettingsContent() {
 
   const renderProfileCard = (isMobileView = false) => {
     const content = (
-      <div className="space-y-4">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative w-16 h-16 shrink-0 group">
-            <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center text-secondary-foreground text-2xl overflow-hidden border">
+      <div className="space-y-3.5">
+        <div className="flex items-center gap-3.5 mb-4">
+          <div className="relative w-14 h-14 shrink-0 group">
+            <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center text-secondary-foreground text-xl overflow-hidden border">
               {image ? (
                 <img src={image} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                <User className="w-8 h-8" />
+                <User className="w-7 h-7" />
               )}
               {!image && (
                 <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer rounded-full">
-                  {isAvatarUploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <UploadCloud className="w-5 h-5 text-white" />}
+                  {isAvatarUploading ? <Loader2 className="w-3.5 h-3.5 text-white animate-spin" /> : <UploadCloud className="w-4 h-4 text-white" />}
                   <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
                 </label>
               )}
@@ -303,62 +303,62 @@ function SettingsContent() {
                 onClick={handleDeleteAvatar}
                 disabled={isAvatarUploading}
                 title="Delete profile picture"
-                className="absolute bottom-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform"
+                className="absolute bottom-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform"
               >
-                {isAvatarUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash className="w-3 h-3" />}
+                {isAvatarUploading ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Trash className="w-2.5 h-2.5" />}
               </button>
             ) : (
               <label
                 title="Upload profile picture"
-                className="absolute bottom-0 right-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform"
+                className="absolute bottom-0 right-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform"
               >
-                {isAvatarUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                {isAvatarUploading ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Plus className="w-2.5 h-2.5" />}
                 <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
               </label>
             )}
           </div>
           <div>
-            <p className="font-medium text-lg">{session?.user?.name}</p>
-            <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
+            <p className="font-semibold text-sm sm:text-base text-foreground">{session?.user?.name}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{session?.user?.email}</p>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
-          <Input id="name" value={name} onChange={e => setName(e.target.value)} />
+        <div className="space-y-1.5">
+          <Label htmlFor="name" className="text-xs font-semibold">Name</Label>
+          <Input id="name" className="h-9 text-xs sm:text-sm" value={name} onChange={e => setName(e.target.value)} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="mobile">Mobile Phone (Optional)</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="mobile" className="text-xs font-semibold">Mobile Phone (Optional)</Label>
           <div className="flex gap-2">
-            <Input id="mobile" placeholder="e.g. +1 234 567 8900" value={mobile} onChange={e => setMobile(e.target.value)} />
-            <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(mobile, "Mobile number")} disabled={!mobile}>
-              <Copy className="w-4 h-4" />
+            <Input id="mobile" className="h-9 text-xs sm:text-sm" placeholder="e.g. +1 234 567 8900" value={mobile} onChange={e => setMobile(e.target.value)} />
+            <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => copyToClipboard(mobile, "Mobile number")} disabled={!mobile}>
+              <Copy className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
           <div className="flex gap-2">
-            <Input id="email" defaultValue={session?.user?.email || ""} disabled />
-            <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(session?.user?.email || "", "Email")}>
-              <Copy className="w-4 h-4" />
+            <Input id="email" className="h-9 text-xs sm:text-sm" defaultValue={session?.user?.email || ""} disabled />
+            <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => copyToClipboard(session?.user?.email || "", "Email")}>
+              <Copy className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
+          <p className="text-[11px] text-muted-foreground">Email cannot be changed.</p>
         </div>
-        <div className="space-y-2 pt-2">
-          <Label>Base Currency</Label>
+        <div className="space-y-1.5 pt-1">
+          <Label className="text-xs font-semibold">Base Currency</Label>
           <Select
             value={currency}
             onChange={handleCurrencyChange}
             disabled={isCurrencyLoading}
-            className="w-full h-10"
+            className="w-full h-9 text-xs"
             options={currencyOptions}
           />
-          <p className="text-xs text-muted-foreground">This sets the default symbol and formatting everywhere in the app.</p>
+          <p className="text-[11px] text-muted-foreground">This sets the default symbol and formatting everywhere in the app.</p>
         </div>
 
-        <Button className="mt-4 w-full md:w-auto" onClick={handleProfileSave} disabled={isProfileLoading || isAvatarUploading}>
+        <Button className="mt-3 w-full md:w-auto h-9 px-4 text-xs font-semibold" onClick={handleProfileSave} disabled={isProfileLoading || isAvatarUploading}>
           {isProfileLoading ? "Saving..." : "Save Changes"}
         </Button>
       </div>
@@ -367,30 +367,30 @@ function SettingsContent() {
     if (isMobileView) return content;
 
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Update your account details here.</CardDescription>
+      <Card className="rounded-xl shadow-xs">
+        <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
+          <CardTitle className="text-base font-bold">Profile Information</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">Update your account details here.</CardDescription>
         </CardHeader>
-        <CardContent>{content}</CardContent>
+        <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
     );
   };
 
   const renderPreferencesCard = (isMobileView = false) => {
     const content = (
-      <div className="flex flex-col rounded-xl border bg-card shadow-sm divide-y">
+      <div className="flex flex-col rounded-xl border bg-card shadow-2xs divide-y">
 
         {/* Portal Theme Color Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 gap-3">
           <div className="flex flex-col">
-            <h4 className="text-sm font-semibold text-foreground">Primary Accent Color</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">Select your favorite color to personalize the portal.</p>
+            <h4 className="text-xs sm:text-sm font-semibold text-foreground">Primary Accent Color</h4>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Select your favorite color to personalize the portal.</p>
           </div>
 
-          <div className="flex items-center gap-3 self-start sm:self-auto">
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
             <div
-              className="w-10 h-10 rounded-full border-2 border-background shadow-md cursor-pointer overflow-hidden flex-shrink-0 hover:scale-105 transition-transform relative ring-1 ring-border/50"
+              className="w-8 h-8 rounded-full border-2 border-background shadow-sm cursor-pointer overflow-hidden flex-shrink-0 hover:scale-105 transition-transform relative ring-1 ring-border/50"
               onClick={() => document.getElementById('theme-color-picker')?.click()}
               style={{ backgroundColor: themeColor }}
             >
@@ -407,7 +407,7 @@ function SettingsContent() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 px-3 text-xs"
+                className="h-8 px-2.5 text-xs font-medium"
                 onClick={() => handleThemeColorChange(null)}
                 disabled={isThemeLoading}
               >
@@ -418,12 +418,12 @@ function SettingsContent() {
         </div>
 
         {/* Display Theme Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 gap-4 bg-muted/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 gap-3 bg-muted/20">
           <div className="flex flex-col">
-            <h4 className="text-sm font-semibold text-foreground">Dark Mode</h4>
-            <p className="text-xs text-muted-foreground mt-0.5">Toggle between light and dark visual themes.</p>
+            <h4 className="text-xs sm:text-sm font-semibold text-foreground">Dark Mode</h4>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Toggle between light and dark visual themes.</p>
           </div>
-          <div className="self-start sm:self-auto flex items-center justify-center p-1 rounded-full bg-background border shadow-sm">
+          <div className="self-start sm:self-auto flex items-center justify-center p-0.5 rounded-full bg-background border shadow-2xs">
             <ThemeToggle />
           </div>
         </div>
@@ -434,12 +434,12 @@ function SettingsContent() {
     if (isMobileView) return content;
 
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Preferences</CardTitle>
-          <CardDescription>Customize your Money Manager experience.</CardDescription>
+      <Card className="rounded-xl shadow-xs">
+        <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
+          <CardTitle className="text-base font-bold">Preferences</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">Customize your Money Manager experience.</CardDescription>
         </CardHeader>
-        <CardContent>{content}</CardContent>
+        <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
     );
   };
@@ -452,12 +452,12 @@ function SettingsContent() {
     if (isMobileView) return content;
 
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>UPI & Payment Apps</CardTitle>
-          <CardDescription>Select which UPI apps are active on your device and set your default app for Scan & Pay.</CardDescription>
+      <Card className="rounded-xl shadow-xs">
+        <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
+          <CardTitle className="text-base font-bold">UPI & Payment Apps</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">Select which UPI apps are active on your device and set your default app for Scan & Pay.</CardDescription>
         </CardHeader>
-        <CardContent>{content}</CardContent>
+        <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
     );
   };
@@ -470,47 +470,47 @@ function SettingsContent() {
     if (isMobileView) return content;
 
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Global Timezone</CardTitle>
-          <CardDescription>All transactions and dates will be displayed according to this timezone.</CardDescription>
+      <Card className="rounded-xl shadow-xs">
+        <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
+          <CardTitle className="text-base font-bold">Global Timezone</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">All transactions and dates will be displayed according to this timezone.</CardDescription>
         </CardHeader>
-        <CardContent>{content}</CardContent>
+        <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
     );
   };
 
   const renderNotificationsCard = (isMobileView = false) => {
     const content = (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border">
+      <div className="space-y-3.5">
+        <div className="flex items-center justify-between p-3.5 bg-muted/30 rounded-xl border">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSubscribed ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
-              <Bell className="w-5 h-5" />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isSubscribed ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
+              <Bell className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-medium text-sm">Push Notifications</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-semibold text-xs sm:text-sm text-foreground">Push Notifications</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 {isSubscribed ? 'You will receive bill reminders and alerts' : 'Enable to receive important reminders'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isSubscribed ? 'bg-emerald-500/15 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
+          <div className="flex items-center gap-2.5">
+            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSubscribed ? 'bg-emerald-500/15 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>
               {isSubscribed ? 'Enabled' : 'Disabled'}
             </span>
             <button
               onClick={handleSubscribe}
               disabled={isSubscribed}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isSubscribed ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`}
+              className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isSubscribed ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${isSubscribed ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-xs transition-transform ${isSubscribed ? 'translate-x-5' : 'translate-x-1'}`} />
             </button>
           </div>
         </div>
         {isSubscribed && (
           <div className="flex items-center justify-end">
-            <Button onClick={() => sendTestNotification()} variant="secondary" size="sm">
+            <Button onClick={() => sendTestNotification()} variant="secondary" size="sm" className="h-8 px-3 text-xs font-medium">
               <Bell className="w-3.5 h-3.5 mr-1.5" />
               Send Test Notification
             </Button>
@@ -522,25 +522,25 @@ function SettingsContent() {
     if (isMobileView) return content;
 
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>Receive web push notifications for bill reminders and alerts.</CardDescription>
+      <Card className="rounded-xl shadow-xs">
+        <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
+          <CardTitle className="text-base font-bold">Notifications</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">Receive web push notifications for bill reminders and alerts.</CardDescription>
         </CardHeader>
-        <CardContent>{content}</CardContent>
+        <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">{content}</CardContent>
       </Card>
     );
   };
 
   const renderLogoutCard = (isMobileView = false) => {
     const content = (
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between p-3.5">
         <div>
-          <p className="font-semibold text-foreground">Sign Out</p>
-          <p className="text-sm text-muted-foreground mt-0.5">Sign out of your account on this device.</p>
+          <p className="font-semibold text-xs sm:text-sm text-foreground">Sign Out</p>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Sign out of your account on this device.</p>
         </div>
-        <Button variant="destructive" onClick={() => signOut({ callbackUrl: "/login" })}>
-          <LogOut className="w-4 h-4 mr-2" />
+        <Button variant="destructive" size="sm" className="h-8 px-3 text-xs font-semibold" onClick={() => signOut({ callbackUrl: "/login" })}>
+          <LogOut className="w-3.5 h-3.5 mr-1.5" />
           Sign Out
         </Button>
       </div>
@@ -549,8 +549,8 @@ function SettingsContent() {
     if (isMobileView) return content;
 
     return (
-      <Card className="border-red-500/20">
-        <CardContent className="p-6">{content}</CardContent>
+      <Card className="rounded-xl border-red-500/20 shadow-xs">
+        <CardContent className="p-0">{content}</CardContent>
       </Card>
     );
   };
@@ -575,16 +575,16 @@ function SettingsContent() {
 
         {isSearching ? (
           <MasterViewLayout sidebar={null}>
-            <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
-              {showProfile && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Profile Information</h3>{renderProfileCard(isMobile)}</div>}
-              {showPreferences && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Preferences</h3>{renderPreferencesCard(isMobile)}</div>}
-              {showPaymentApps && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">UPI & Payment Apps</h3>{renderPaymentAppsCard(isMobile)}</div>}
-              {showTimezone && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Global Timezone</h3>{renderTimezoneCard(isMobile)}</div>}
-              {showNotifications && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Notifications</h3>{renderNotificationsCard(isMobile)}</div>}
-              {showLogout && <div className="bg-card rounded-2xl border shadow-sm p-4 md:p-6"><h3 className="text-lg font-bold mb-4">Sign Out</h3>{renderLogoutCard(isMobile)}</div>}
+            <div className="pb-24 pt-2 w-full max-w-4xl space-y-4">
+              {showProfile && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Profile Information</h3>{renderProfileCard(isMobile)}</div>}
+              {showPreferences && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Preferences</h3>{renderPreferencesCard(isMobile)}</div>}
+              {showPaymentApps && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">UPI & Payment Apps</h3>{renderPaymentAppsCard(isMobile)}</div>}
+              {showTimezone && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Global Timezone</h3>{renderTimezoneCard(isMobile)}</div>}
+              {showNotifications && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Notifications</h3>{renderNotificationsCard(isMobile)}</div>}
+              {showLogout && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3">Sign Out</h3>{renderLogoutCard(isMobile)}</div>}
 
               {!showProfile && !showPreferences && !showPaymentApps && !showTimezone && !showNotifications && !showLogout && (
-                <div className="p-12 text-center text-muted-foreground border rounded-xl border-dashed">
+                <div className="p-10 text-center text-xs sm:text-sm text-muted-foreground border rounded-xl border-dashed">
                   No settings match your search.
                 </div>
               )}
@@ -593,76 +593,76 @@ function SettingsContent() {
         ) : (
           <MasterViewLayout
             sidebar={
-              <div className="w-full shrink-0 flex flex-col gap-2">
+              <div className="w-full shrink-0 flex flex-col gap-1.5">
                 <button
                   onClick={() => handleTabChange("profile")}
-                  className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${activeTab === "profile" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-sm"
+                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "profile" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-xs"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                     }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "profile" && !isMobile ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>
-                    <User className="w-4 h-4" />
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "profile" && !isMobile ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>
+                    <User className="w-3.5 h-3.5" />
                   </div>
                   Profile Information
                 </button>
                 <button
                   onClick={() => handleTabChange("preferences")}
-                  className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${activeTab === "preferences" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-sm"
+                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "preferences" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-xs"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                     }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "preferences" && !isMobile ? "bg-white/20 text-white" : "bg-indigo-500/10 text-indigo-500"}`}>
-                    <Palette className="w-4 h-4" />
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "preferences" && !isMobile ? "bg-white/20 text-white" : "bg-indigo-500/10 text-indigo-500"}`}>
+                    <Palette className="w-3.5 h-3.5" />
                   </div>
                   Preferences
                 </button>
                 <button
                   onClick={() => handleTabChange("payment_apps")}
-                  className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${activeTab === "payment_apps" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-sm"
+                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "payment_apps" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-xs"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                     }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "payment_apps" && !isMobile ? "bg-white/20 text-white" : "bg-amber-500/10 text-amber-500"}`}>
-                    <Smartphone className="w-4 h-4" />
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "payment_apps" && !isMobile ? "bg-white/20 text-white" : "bg-amber-500/10 text-amber-500"}`}>
+                    <Smartphone className="w-3.5 h-3.5" />
                   </div>
                   Payment Apps
                 </button>
                 <button
                   onClick={() => handleTabChange("timezone")}
-                  className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${activeTab === "timezone" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-sm"
+                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "timezone" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-xs"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                     }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "timezone" && !isMobile ? "bg-white/20 text-white" : "bg-emerald-500/10 text-emerald-500"}`}>
-                    <Globe className="w-4 h-4" />
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "timezone" && !isMobile ? "bg-white/20 text-white" : "bg-emerald-500/10 text-emerald-500"}`}>
+                    <Globe className="w-3.5 h-3.5" />
                   </div>
                   Global Timezone
                 </button>
                 <button
                   onClick={() => handleTabChange("notifications")}
-                  className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${activeTab === "notifications" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-sm"
+                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "notifications" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-xs"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                     }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "notifications" && !isMobile ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-500"}`}>
-                    <Bell className="w-4 h-4" />
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "notifications" && !isMobile ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-500"}`}>
+                    <Bell className="w-3.5 h-3.5" />
                   </div>
                   Notifications
                 </button>
                 <button
                   onClick={() => handleTabChange("logout")}
-                  className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-xl transition-all text-left w-full border ${activeTab === "logout" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-sm"
+                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "logout" && !isMobile
+                    ? "bg-primary text-white border-primary shadow-xs"
                     : "text-muted-foreground bg-card hover:bg-muted border-border/50"
                     }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${activeTab === "logout" && !isMobile ? "bg-white/20 text-white" : "bg-red-500/10 text-red-500"}`}>
-                    <LogOut className="w-4 h-4" />
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "logout" && !isMobile ? "bg-white/20 text-white" : "bg-red-500/10 text-red-500"}`}>
+                    <LogOut className="w-3.5 h-3.5" />
                   </div>
                   Sign Out
                 </button>
@@ -670,87 +670,87 @@ function SettingsContent() {
             }
           >
             {isMobile ? (
-              <div className="pb-24 pt-2 w-full max-w-4xl flex flex-col gap-3">
-                <button onClick={() => handleTabChange("profile")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="w-6 h-6 text-primary" />
+              <div className="pb-24 pt-2 w-full max-w-4xl flex flex-col gap-2.5">
+                <button onClick={() => handleTabChange("profile")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <User className="w-4.5 h-4.5 text-primary" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-base text-foreground">Profile Information</p>
-                      <p className="text-sm text-muted-foreground">Update your account details</p>
+                      <p className="font-semibold text-xs sm:text-sm text-foreground">Profile Information</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Update your account details</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => handleTabChange("preferences")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center">
-                      <Palette className="w-6 h-6 text-indigo-500" />
+                <button onClick={() => handleTabChange("preferences")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                      <Palette className="w-4.5 h-4.5 text-indigo-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-base text-foreground">Preferences</p>
-                      <p className="text-sm text-muted-foreground">App theme</p>
+                      <p className="font-semibold text-xs sm:text-sm text-foreground">Preferences</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">App theme & appearance</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => handleTabChange("payment_apps")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
-                      <Smartphone className="w-6 h-6 text-amber-500" />
+                <button onClick={() => handleTabChange("payment_apps")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                      <Smartphone className="w-4.5 h-4.5 text-amber-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-base text-foreground">UPI & Payment Apps</p>
-                      <p className="text-sm text-muted-foreground">Manage active apps and default</p>
+                      <p className="font-semibold text-xs sm:text-sm text-foreground">UPI & Payment Apps</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Manage active apps and default</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => handleTabChange("timezone")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                      <Globe className="w-6 h-6 text-emerald-500" />
+                <button onClick={() => handleTabChange("timezone")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                      <Globe className="w-4.5 h-4.5 text-emerald-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-base text-foreground">Global Timezone</p>
-                      <p className="text-sm text-muted-foreground">Set default times for tracking</p>
+                      <p className="font-semibold text-xs sm:text-sm text-foreground">Global Timezone</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Set default times for tracking</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => handleTabChange("notifications")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                      <Bell className="w-6 h-6 text-blue-500" />
+                <button onClick={() => handleTabChange("notifications")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                      <Bell className="w-4.5 h-4.5 text-blue-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-base text-foreground">Notifications</p>
-                      <p className="text-sm text-muted-foreground">Push alerts and reminders</p>
+                      <p className="font-semibold text-xs sm:text-sm text-foreground">Notifications</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Push alerts and reminders</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
 
-                <button onClick={() => handleTabChange("logout")} className="w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:bg-red-500/5 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                      <LogOut className="w-6 h-6 text-red-500" />
+                <button onClick={() => handleTabChange("logout")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-red-500/5 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
+                      <LogOut className="w-4.5 h-4.5 text-red-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-base text-foreground">Sign Out</p>
-                      <p className="text-sm text-muted-foreground">End your current session</p>
+                      <p className="font-semibold text-xs sm:text-sm text-foreground">Sign Out</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">End your current session</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
             ) : (
-              <div className="pb-24 pt-2 w-full max-w-4xl space-y-6">
+              <div className="pb-24 pt-2 w-full max-w-4xl space-y-4">
                 {activeTab === "profile" && renderProfileCard()}
                 {activeTab === "preferences" && renderPreferencesCard()}
                 {activeTab === "payment_apps" && renderPaymentAppsCard()}

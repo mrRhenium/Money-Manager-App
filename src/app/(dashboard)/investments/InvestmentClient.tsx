@@ -230,7 +230,7 @@ export function InvestmentClient({ initialInvestments, accounts }: { initialInve
             isFilterActive={isFilterActive}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            primaryAction={<InvestmentForm accounts={accounts} triggerClassName="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold" />}
+            primaryAction={<InvestmentForm accounts={accounts} triggerClassName="h-9 px-4 text-xs sm:text-sm font-semibold" />}
           />
 
           <MasterViewLayout

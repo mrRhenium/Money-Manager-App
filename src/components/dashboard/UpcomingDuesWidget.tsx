@@ -91,21 +91,21 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
         </Card>
       } />
 
-      <DialogContent className="sm:max-w-2xl md:max-w-3xl max-h-[80vh] overflow-y-auto p-6 rounded-2xl">
-        <DialogHeader className="pb-4 border-b">
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-2xl md:max-w-3xl max-h-[85vh] overflow-y-auto overflow-x-hidden px-6 py-4 sm:px-8 sm:py-6 rounded-2xl">
+        <DialogHeader className="pb-3 sm:pb-4 border-b">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+            <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary" />
               Upcoming Dues
             </DialogTitle>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search by name, amount, date, or type..."
-                className="pl-9 bg-background w-full h-9"
+                className="pl-9 bg-background w-full h-9 text-xs sm:text-sm rounded-xl"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -120,7 +120,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[220px] h-9 shrink-0 bg-background text-foreground">
+              <SelectTrigger className="w-full sm:w-[220px] h-9 shrink-0 bg-background text-foreground text-xs sm:text-sm rounded-xl">
                 <SelectValue placeholder="All Categories">
                   {selectedCategory === "all" ? "All Categories" : CATEGORY_CONFIG[selectedCategory]?.label}
                 </SelectValue>
@@ -136,52 +136,64 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30 }: { dues: any[], days
         </DialogHeader>
 
         {/* Grouped by category */}
-        <div className="space-y-6 mt-4">
+        <div className="space-y-4 sm:space-y-6 mt-3 sm:mt-4">
           {groupedDues.map(([type, items]) => {
             const config = CATEGORY_CONFIG[type] || { label: type, icon: Calendar, color: "text-muted-foreground", bgColor: "bg-secondary" };
             const CategoryIcon = config.icon;
             const groupTotal = items.reduce((acc: number, d: any) => acc + d.amount, 0);
 
             return (
-              <div key={type}>
+              <div key={type} className="min-w-0">
                 {/* Category Header */}
-                <div className={`flex items-center justify-between px-4 py-2.5 rounded-xl ${config.bgColor} mb-2`}>
-                  <div className="flex items-center gap-2">
-                    <CategoryIcon className={`w-4 h-4 ${config.color}`} />
-                    <span className={`text-sm font-bold ${config.color}`}>{config.label}</span>
-                    <Badge variant="outline" className="text-[10px] h-5 ml-1">{items.length}</Badge>
+                <div className={`flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl ${config.bgColor} mb-2 min-w-0 gap-2`}>
+                  <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                    <CategoryIcon className={`w-4 h-4 shrink-0 ${config.color}`} />
+                    <span className={`text-xs sm:text-sm font-bold truncate ${config.color}`}>{config.label}</span>
+                    <Badge variant="outline" className="text-[10px] h-4.5 sm:h-5 px-1.5 shrink-0">{items.length}</Badge>
                   </div>
-                  <span className={`text-sm font-bold ${config.color}`}>{format(groupTotal)}</span>
+                  <span className={`text-xs sm:text-sm font-bold shrink-0 ${config.color}`}>{format(groupTotal)}</span>
                 </div>
 
                 {/* Items */}
-                <div className="divide-y divide-border/50">
+                <div className="space-y-2">
                   {items.map((due: any, idx: number) => {
                     const isOverdue = parseToDate(due.dueDate) < getCurrentDate();
 
                     return (
-                      <div key={idx} className="flex items-center justify-between py-3 px-2 hover:bg-muted/50 transition-colors rounded-lg">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${config.bgColor} ${config.color}`}>
+                      <div 
+                        key={idx} 
+                        className="p-2.5 sm:p-3 hover:bg-muted/50 transition-colors rounded-xl border border-border/40 bg-card/60 flex items-center justify-between gap-2.5 min-w-0"
+                      >
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${config.bgColor} ${config.color}`}>
                             <CategoryIcon className="w-4 h-4" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="font-semibold text-sm truncate">{due.title}</h4>
-                            <div className="flex items-center gap-1 text-[10px] sm:text-xs">
-                              <CalendarDays className="w-3 h-3 text-muted-foreground" />
-                              <span className={isOverdue ? "text-destructive font-medium" : "text-muted-foreground"}>
+                            <h4 className="font-semibold text-xs sm:text-sm truncate text-foreground" title={due.title}>
+                              {due.title}
+                            </h4>
+                            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground mt-0.5 flex-wrap">
+                              <span className={`flex items-center gap-1 ${isOverdue ? "text-destructive font-medium" : ""}`}>
+                                <CalendarDays className="w-3 h-3 shrink-0" />
                                 Due: {formatDateString(due.dueDate, "DD-MM-YYYY")}
                               </span>
-                              {isOverdue && <AlertCircle className="w-3 h-3 text-destructive" />}
+                              {isOverdue && (
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-destructive/10 text-destructive border border-destructive/20">
+                                  Overdue
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <div className="text-right">
-                            <div className="font-bold text-sm">{format(due.amount)}</div>
-                          </div>
-                          <Button size="sm" variant={isOverdue ? "destructive" : "secondary"} className="h-8 shadow-sm">
-                            <CheckCircle2 className="w-4 h-4 mr-1" /> Pay
+
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <span className="font-bold text-xs sm:text-sm text-foreground">{format(due.amount)}</span>
+                          <Button 
+                            size="sm" 
+                            variant={isOverdue ? "destructive" : "secondary"} 
+                            className="h-6 sm:h-7 px-2 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-lg shadow-2xs"
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" /> Pay
                           </Button>
                         </div>
                       </div>

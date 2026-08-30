@@ -236,6 +236,14 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       setCategoryId(categories[0]._id);
     }
 
+    // Auto-detect if payee already exists to preload relation, otherwise default to Merchant
+    const existingPerson = people.find(p => (p.vpas && p.vpas.includes(parsed.pa)) || (p.name && p.name.toLowerCase() === (parsed.pn || "").toLowerCase()));
+    if (existingPerson && existingPerson.relation) {
+      setSavePayeeRelation(existingPerson.relation as RelationType);
+    } else {
+      setSavePayeeRelation("Merchant");
+    }
+
     toast.success("QR Code parsed successfully!");
     setStep("confirm");
   };
@@ -274,6 +282,14 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
       setCategoryId(categories[0]._id);
     }
 
+    // Auto-detect existing person relation or default to Merchant
+    const existingPerson = people.find(p => (p.vpas && p.vpas.includes(vpa)) || (p.name && p.name.toLowerCase() === payeeName.toLowerCase()));
+    if (existingPerson && existingPerson.relation) {
+      setSavePayeeRelation(existingPerson.relation as RelationType);
+    } else {
+      setSavePayeeRelation("Merchant");
+    }
+
     setStep("confirm");
   };
 
@@ -296,8 +312,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
     try {
       setLoading(true);
 
-      // Save payee VPA unconditionally
-      await savePersonVpa(payeeName, vpa, "Merchant");
+      // Save payee VPA with user-selected person type
+      await savePersonVpa(payeeName, vpa, savePayeeRelation);
 
       // Create transaction immediately with awaiting_confirmation status
       const txnRes = await createTransaction({
@@ -467,6 +483,9 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                       const person = people.find(p => p._id === val);
                       if (person) {
                         setPayeeName(person.name);
+                        if (person.relation) {
+                          setSavePayeeRelation(person.relation as RelationType);
+                        }
                         if (person.vpas && person.vpas.length === 1) {
                           setVpa(person.vpas[0]);
                         } else {
@@ -580,17 +599,36 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <Label>Category</Label>
-                <Select
-                  value={categoryId}
-                  onChange={setCategoryId}
-                  className="w-full h-10 mt-1"
-                  options={categories.map(c => ({
-                    label: c.name,
-                    value: c._id
-                  }))}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <Label>Category</Label>
+                  <Select
+                    value={categoryId}
+                    onChange={setCategoryId}
+                    className="w-full h-10 mt-1"
+                    options={categories.map(c => ({
+                      label: c.name,
+                      value: c._id
+                    }))}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <Label>Person Type</Label>
+                  <Select
+                    value={savePayeeRelation}
+                    onChange={setSavePayeeRelation}
+                    className="w-full h-10 mt-1"
+                    options={[
+                      { label: "Merchant", value: "Merchant" },
+                      { label: "Shopkeeper", value: "Shopkeeper" },
+                      { label: "Friend", value: "Friend" },
+                      { label: "Family", value: "Family" },
+                      { label: "Colleague", value: "Colleague" },
+                      { label: "Other", value: "Other" },
+                    ]}
+                  />
+                </div>
               </div>
 
               <div>

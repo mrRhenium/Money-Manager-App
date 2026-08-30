@@ -2,7 +2,7 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, FilterIcon, XCircle, LayoutGrid, PieChartIcon } from "lucide-react";
+import { Search, FilterIcon, XCircle, LayoutGrid, PieChartIcon, X } from "lucide-react";
 import { Drawer } from "antd";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -39,7 +39,7 @@ export function MasterToolbar({
 }: MasterToolbarProps) {
   return (
     <div className="shrink-0 flex flex-col-reverse lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-4 border-b border-border/50">
-      
+
       {/* Tabs */}
       {tabs.length > 0 ? (
         <Tabs value={activeTab} onValueChange={onTabChange} className="w-full lg:w-[450px]">
@@ -70,13 +70,12 @@ export function MasterToolbar({
         )}
 
         <div className="flex lg:hidden gap-2 w-full">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="flex-1">
             <Input
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-9 h-10 bg-card text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 border-slate-200 dark:border-slate-800 shadow-sm"
+              className="w-full h-9 text-xs px-3 bg-card text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-2xs placeholder:text-xs text-left"
             />
           </div>
           {onFilterClick && (
@@ -84,11 +83,11 @@ export function MasterToolbar({
               variant={isFilterActive ? "default" : "outline"}
               onClick={onFilterClick}
               className={cn(
-                "h-10 shrink-0 text-sm shadow-sm",
+                "h-9 shrink-0 text-xs font-semibold px-3 shadow-2xs rounded-lg",
                 !isFilterActive && "bg-card text-foreground hover:bg-card/80 hover:text-foreground border-slate-200 dark:border-slate-800"
               )}
             >
-              <FilterIcon className="w-4 h-4 mr-2" />
+              <FilterIcon className="w-3.5 h-3.5 mr-1.5" />
               Advance Filter {isFilterActive && " (Active)"}
             </Button>
           )}
@@ -112,7 +111,7 @@ export function MasterViewLayout({ children, sidebar }: MasterViewLayoutProps) {
         {children}
       </div>
       {sidebar && (
-        <div className="hidden lg:block w-80 shrink-0 overflow-y-auto pb-24 custom-scrollbar pr-1">
+        <div className="hidden lg:block w-80 shrink-0 overflow-y-auto custom-scrollbar">
           {sidebar}
         </div>
       )}
@@ -134,27 +133,27 @@ export function MasterFilterSidebar({ isFilterActive, onClearFilters, children }
       "shadow-sm bg-card border-slate-200/60 dark:border-slate-800 transition-colors",
       isFilterActive ? "border-primary/50 ring-1 ring-primary/20" : ""
     )}>
-      <CardHeader className="pb-3 border-b border-border/40 bg-gradient-to-b from-muted/30 to-transparent">
+      <CardHeader className="py-3 px-4 border-b border-border/40 bg-gradient-to-b from-muted/30 to-transparent">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-semibold text-sm tracking-tight text-foreground">
-            <div className="p-1 rounded-md bg-primary/10 text-primary">
-              <FilterIcon className="w-3.5 h-3.5" />
+            <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+              <FilterIcon className="w-4 h-4" />
             </div>
             Filters & Sort
           </div>
           {isFilterActive && (
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              onClick={onClearFilters} 
-              className="h-8 text-xs px-3.5 rounded-lg font-semibold shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all"
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onClearFilters}
+              className="h-7 text-xs px-2.5 rounded-md font-medium shadow-xs hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all"
             >
-              <XCircle className="w-3.5 h-3.5 mr-1.5" /> Clear All
+              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear All
             </Button>
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-5 flex flex-col gap-5">
+      <CardContent className="p-4 flex flex-col gap-4 [&_h3]:text-[11px] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_.ant-select]:text-xs [&_.ant-select-selector]:!min-h-[34px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-xs [&_.ant-select-selection-placeholder]:!text-xs [&_label]:text-[11px] [&_label]:font-semibold [&_input]:h-8.5 [&_input]:text-xs">
         {children}
       </CardContent>
     </Card>
@@ -174,22 +173,33 @@ interface MasterFilterDrawerProps {
 export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFilters, children }: MasterFilterDrawerProps) {
   return (
     <Drawer
+      closable={false}
+      extra={
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 -mr-1"
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      }
       title={
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between w-full pr-2">
           <div className="flex items-center gap-2 font-semibold text-sm tracking-tight text-foreground">
-            <div className="p-1 rounded-md bg-primary/10 text-primary">
-              <FilterIcon className="w-3.5 h-3.5" />
+            <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+              <FilterIcon className="w-4 h-4" />
             </div>
             Filters & Sort
           </div>
           {isFilterActive && (
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              onClick={onClearFilters} 
-              className="h-8 text-xs px-3.5 rounded-lg font-semibold shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all"
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onClearFilters}
+              className="h-7 text-xs px-2.5 rounded-md font-medium shadow-xs hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all mr-2"
             >
-              <XCircle className="w-3.5 h-3.5 mr-1.5" /> Clear
+              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear
             </Button>
           )}
         </div>
@@ -203,12 +213,12 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
         header: "bg-card text-foreground border-b dark:border-slate-800",
         content: "bg-card text-foreground border-l dark:border-slate-800"
       }}
-      styles={{ 
-        header: { padding: '16px 20px', borderBottom: '1px solid hsl(var(--border-hsl) / 0.4)', background: 'linear-gradient(to bottom, hsl(var(--muted-hsl) / 0.3), transparent)' },
-        body: { padding: '20px' } 
+      styles={{
+        header: { padding: '14px 16px', borderBottom: '1px solid hsl(var(--border-hsl) / 0.4)', background: 'linear-gradient(to bottom, hsl(var(--muted-hsl) / 0.3), transparent)' },
+        body: { padding: '16px' }
       }}
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4 [&_h3]:text-[11px] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_.ant-select]:text-xs [&_.ant-select-selector]:!min-h-[34px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-xs [&_.ant-select-selection-placeholder]:!text-xs [&_label]:text-[11px] [&_label]:font-semibold [&_input]:h-8.5 [&_input]:text-xs">
         {children}
       </div>
     </Drawer>
@@ -225,16 +235,13 @@ interface MasterSearchFieldProps {
 
 export function MasterSearchField({ searchQuery, onSearchChange, placeholder = "Search..." }: MasterSearchFieldProps) {
   return (
-    <div className="space-y-2">
-      <div className="relative w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder={placeholder}
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-9 h-10 bg-background text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-sm transition-all"
-        />
-      </div>
+    <div className="w-full">
+      <Input
+        placeholder={placeholder}
+        value={searchQuery}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className="w-full h-8.5 text-xs px-3 bg-background text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-2xs transition-all placeholder:text-xs text-left"
+      />
     </div>
   );
 }

@@ -142,8 +142,16 @@ export async function savePersonVpa(name: string, vpa: string, relation: "Friend
 
   if (person) {
     if (!person.vpas) person.vpas = [];
+    let updated = false;
     if (!person.vpas.includes(vpa)) {
       person.vpas.push(vpa);
+      updated = true;
+    }
+    if (relation && person.relation !== relation) {
+      person.relation = relation;
+      updated = true;
+    }
+    if (updated) {
       await person.save();
       await logAuditEvent("Person", person._id.toString(), "UPDATE", oldPersonSnapshot, person);
     }

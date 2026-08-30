@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/useToast";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 import { Button } from "@/components/ui/button";
 
-export function PersonList({ 
+export function PersonList({
   people,
   hideToolbar = false,
   externalSearch = "",
@@ -22,7 +22,7 @@ export function PersonList({
   accounts = [],
   categories = [],
   creditCards = []
-}: { 
+}: {
   people: any[];
   hideToolbar?: boolean;
   externalSearch?: string;
@@ -87,11 +87,11 @@ export function PersonList({
     return localPeople.filter((person) => {
       if (hiddenIds.has(person._id)) return false;
       const q = searchQuery.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         person.name?.toLowerCase().includes(q) ||
         person.phones?.some((p: string) => p.includes(q)) ||
         person.vpas?.some((v: string) => v.toLowerCase().includes(q));
-      
+
       const matchesRelation = relationFilter === "All" || person.relation === relationFilter;
       return matchesSearch && matchesRelation;
     });
@@ -124,12 +124,12 @@ export function PersonList({
 
     return (
       <List.Item>
-        <div 
+        <div
           onClick={() => handleCardClick(person)}
           className="rounded-2xl border bg-card text-card-foreground shadow-2xs hover:shadow-md transition-all p-5 flex flex-col justify-between h-full group relative overflow-hidden cursor-pointer hover:border-primary/40"
         >
           {/* Decorative background circle */}
-          <div 
+          <div
             className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full opacity-5 pointer-events-none transition-transform group-hover:scale-110"
             style={{ backgroundColor: person.color || '#0ea5e9' }}
           />
@@ -137,12 +137,12 @@ export function PersonList({
           <div className="flex items-start justify-between mb-4 gap-2">
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
-              <div 
-                className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs border transition-transform group-hover:scale-105" 
-                style={{ 
-                  backgroundColor: `${person.color || '#0ea5e9'}20`, 
+              <div
+                className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs border transition-transform group-hover:scale-105"
+                style={{
+                  backgroundColor: `${person.color || '#0ea5e9'}20`,
                   borderColor: `${person.color || '#0ea5e9'}40`,
-                  color: person.color || '#0ea5e9' 
+                  color: person.color || '#0ea5e9'
                 }}
               >
                 {person.avatarUrl ? (
@@ -164,11 +164,10 @@ export function PersonList({
             <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={(e) => handleToggleFavorite(e, person)}
-                className={`p-1.5 rounded-lg transition-colors ${
-                  isFav 
-                    ? "text-amber-500 hover:bg-amber-500/10" 
+                className={`p-1.5 rounded-lg transition-colors ${isFav
+                    ? "text-amber-500 hover:bg-amber-500/10"
                     : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted"
-                }`}
+                  }`}
                 title={isFav ? "Remove Favorite" : "Mark Favorite"}
               >
                 <Star className={`w-4 h-4 ${isFav ? "fill-amber-500" : ""}`} />
@@ -177,9 +176,9 @@ export function PersonList({
               {person.transactionCount > 0 ? (
                 <PersonDeleteModal person={person} />
               ) : (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
                   onClick={() => {
                     triggerDelete({
@@ -218,16 +217,15 @@ export function PersonList({
               )}
             </div>
 
-            <span className={`text-sm font-extrabold px-2.5 py-0.5 rounded-full border ${
-              isPositive 
-                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" 
-                : isNegative 
-                  ? "bg-red-500/10 text-red-500 border-red-500/20" 
+            <span className={`text-sm font-extrabold px-2.5 py-0.5 rounded-full border ${isPositive
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                : isNegative
+                  ? "bg-red-500/10 text-red-500 border-red-500/20"
                   : "bg-secondary/60 text-muted-foreground border-border/40"
-            }`}>
-              {isPositive ? `+${format(person.netBalance)}` : 
-               isNegative ? `-${format(Math.abs(person.netBalance))}` : 
-               "All Settled (₹0)"}
+              }`}>
+              {isPositive ? `+${format(person.netBalance)}` :
+                isNegative ? `-${format(Math.abs(person.netBalance))}` :
+                  "All Settled (₹0)"}
             </span>
           </div>
         </div>
@@ -237,10 +235,10 @@ export function PersonList({
 
   const activePeople = activeTab === "favorites"
     ? filteredFavorites
-    : activeTab === "merchants" 
-      ? filteredMerchants 
-      : activeTab === "personal" 
-        ? filteredPersonal 
+    : activeTab === "merchants"
+      ? filteredMerchants
+      : activeTab === "personal"
+        ? filteredPersonal
         : filteredPeople;
 
   return (
@@ -267,7 +265,7 @@ export function PersonList({
       </div>
 
       {/* Person Full Statement & Ledger Drawer */}
-      <PersonDetailDrawer 
+      <PersonDetailDrawer
         person={selectedPerson}
         isOpen={drawerOpen}
         onClose={() => {

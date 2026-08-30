@@ -203,7 +203,7 @@ export function CreditCardClient({ initialCards }: { initialCards: any[] }) {
             isFilterActive={isFilterActive}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            primaryAction={<CreditCardForm triggerClassName="h-10 px-6 text-base font-semibold" />}
+            primaryAction={<CreditCardForm triggerClassName="h-9 px-4 text-xs sm:text-sm font-semibold" />}
           />
 
           <MasterViewLayout

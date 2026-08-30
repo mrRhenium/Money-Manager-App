@@ -257,15 +257,15 @@ export function TransactionClient({
               { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
             ]}
             primaryAction={
-              <div className="flex items-center gap-2 lg:gap-3">
+              <div className="flex items-center gap-2">
                 <Link href="/import" className="hidden lg:block">
-                  <Button variant="secondary" className="h-9 lg:h-10 px-4">
-                    <UploadCloud className="w-4 h-4 mr-2" />
+                  <Button variant="secondary" className="h-9 px-3 text-xs sm:text-sm font-semibold">
+                    <UploadCloud className="w-4 h-4 mr-1.5" />
                     Import
                   </Button>
                 </Link>
                 <div className="hidden lg:block"><ExportButton /></div>
-                <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} triggerClassName="h-9 lg:h-10 px-4 lg:px-6 text-sm lg:text-base font-semibold" />
+                <TransactionForm accounts={accounts} categories={categories} people={people} creditCards={creditCards} triggerClassName="h-9 px-4 text-xs sm:text-sm font-semibold" />
               </div>
             }
           />

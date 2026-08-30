@@ -25,6 +25,7 @@ import { getPersonTransactions, toggleFavoritePerson } from "@/actions/person";
 import { formatDate } from "@/lib/helpers";
 import { useToast } from "@/hooks/useToast";
 import { TransactionForm } from "@/components/forms/TransactionForm";
+import { KPICard } from "@/components/dashboard/KPICard";
 
 interface PersonDetailDrawerProps {
   person: any | null;
@@ -205,29 +206,20 @@ export function PersonDetailDrawer({
 
           {/* Financial KPI Summary Cards */}
           <div className="mt-5 grid grid-cols-2 gap-3">
-            {/* Total Money Given / Lent */}
-            <div className="p-3.5 rounded-xl border bg-card/80 flex flex-col justify-between shadow-sm">
-              <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-                <span>Total Given (Out)</span>
-                <ArrowUpRight className="w-4 h-4 text-red-500" />
-              </div>
-              <div className="text-lg font-extrabold text-foreground mt-1">
-                <CurrencyDisplay amount={totalGiven} />
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-0.5">Lent / Paid</span>
-            </div>
-
-            {/* Total Money Received / Borrowed */}
-            <div className="p-3.5 rounded-xl border bg-card/80 flex flex-col justify-between shadow-sm">
-              <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-                <span>Total Received (In)</span>
-                <ArrowDownLeft className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
-                <CurrencyDisplay amount={totalReceived} />
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-0.5">Received / Repaid</span>
-            </div>
+            <KPICard 
+              label="Total Given (Out)"
+              value={<CurrencyDisplay amount={totalGiven} />}
+              icon={ArrowUpRight}
+              themeColor="destructive"
+              trend={<span className="text-[10px] text-muted-foreground">Lent / Paid</span>}
+            />
+            <KPICard 
+              label="Total Received (In)"
+              value={<div className="text-emerald-600 dark:text-emerald-400"><CurrencyDisplay amount={totalReceived} /></div>}
+              icon={ArrowDownLeft}
+              themeColor="emerald"
+              trend={<span className="text-[10px] text-muted-foreground">Received / Repaid</span>}
+            />
           </div>
 
           {/* Remaining Net Balance Banner */}

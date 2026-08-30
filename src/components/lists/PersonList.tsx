@@ -5,7 +5,8 @@ import { User as UserIcon, Star, ArrowDownLeft, ArrowUpRight, CheckCircle2, Tras
 import { PersonForm } from "../forms/PersonForm";
 import { PersonDeleteModal } from "../forms/PersonDeleteModal";
 import { toggleFavoritePerson, deletePerson } from "@/actions/person";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCurrency } from "@/hooks/useCurrency";
 import { PersonDetailDrawer } from "@/components/people/PersonDetailDrawer";
 import { useToast } from "@/hooks/useToast";
@@ -33,15 +34,29 @@ export function PersonList({
 }) {
   const { format } = useCurrency();
   const { toast } = useToast();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { hiddenIds, triggerDelete } = useUndoableDelete();
   const [selectedPerson, setSelectedPerson] = useState<any | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [localPeople, setLocalPeople] = useState(people);
 
   // Sync if prop changes
-  useMemo(() => {
+  useEffect(() => {
     setLocalPeople(people);
   }, [people]);
+
+  // Open drawer automatically if personId query param exists on mount or URL change
+  useEffect(() => {
+    const personId = searchParams.get("personId");
+    if (personId && localPeople.length > 0) {
+      const found = localPeople.find(p => p._id === personId);
+      if (found) {
+        setSelectedPerson(found);
+        setDrawerOpen(true);
+      }
+    }
+  }, [searchParams, localPeople]);
 
   const searchQuery = externalSearch;
   const relationFilter = externalFilter;
@@ -62,6 +77,10 @@ export function PersonList({
   const handleCardClick = (person: any) => {
     setSelectedPerson(person);
     setDrawerOpen(true);
+    const current = new URLSearchParams(window.location.search);
+    current.set("personId", person._id);
+    const query = current.toString() ? `?${current.toString()}` : "";
+    window.history.replaceState(null, '', `${pathname}${query}`);
   };
 
   const filteredPeople = useMemo(() => {
@@ -254,6 +273,10 @@ export function PersonList({
         onClose={() => {
           setDrawerOpen(false);
           setSelectedPerson(null);
+          const current = new URLSearchParams(window.location.search);
+          current.delete("personId");
+          const query = current.toString() ? `?${current.toString()}` : "";
+          window.history.replaceState(null, '', `${pathname}${query}`);
         }}
         accounts={accounts}
         categories={categories}

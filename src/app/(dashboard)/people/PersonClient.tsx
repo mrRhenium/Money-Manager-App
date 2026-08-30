@@ -17,12 +17,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
 
-export function PersonClient({ 
+export function PersonClient({
   initialPeople,
   accounts = [],
   categories = [],
   creditCards = []
-}: { 
+}: {
   initialPeople: any[];
   accounts?: any[];
   categories?: any[];
@@ -131,7 +131,7 @@ export function PersonClient({
   const filterPanelContent = (
     <div className="space-y-6">
       <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Name, phone, or VPA..." />
-      
+
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Favorites</h3>
         <AntSelect
@@ -144,7 +144,7 @@ export function PersonClient({
           className="w-full min-h-10"
           popupMatchSelectWidth={false}
           options={[
-            { label: "⭐ Favorites Only", value: "yes" },
+            { label: "Favorites", value: "yes" },
             { label: "Non-Favorites", value: "no" },
           ]}
         />
@@ -231,7 +231,6 @@ export function PersonClient({
             onTabChange={setActiveTab}
             tabs={[
               { value: "data", label: "All Contacts", icon: <LayoutGrid className="w-4 h-4 mr-2" /> },
-              { value: "favorites", label: "Favorites", icon: <Star className="w-4 h-4 mr-2 fill-amber-500 text-amber-500" /> },
               { value: "insights", label: "Insights & Graphs", icon: <PieChartIcon className="w-4 h-4 mr-2" /> }
             ]}
             primaryAction={<PersonForm triggerClassName="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold" />}
@@ -254,20 +253,6 @@ export function PersonClient({
                   hideToolbar={true}
                   externalSearch={searchQuery}
                   externalTab="all"
-                  accounts={accounts}
-                  categories={categories}
-                  creditCards={creditCards}
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="favorites" className="h-full m-0">
-              <div className="pb-24">
-                <PersonList
-                  people={filteredPeople}
-                  hideToolbar={true}
-                  externalSearch={searchQuery}
-                  externalTab="favorites"
                   accounts={accounts}
                   categories={categories}
                   creditCards={creditCards}
@@ -304,24 +289,24 @@ export function PersonClient({
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} 
-                            axisLine={false} 
-                            tickLine={false} 
-                            dy={10} 
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                            axisLine={false}
+                            tickLine={false}
+                            dy={10}
                           />
-                          <YAxis 
+                          <YAxis
                             tickFormatter={(val: number) => formatCompact(val)}
-                            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} 
-                            axisLine={false} 
-                            tickLine={false} 
+                            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                            axisLine={false}
+                            tickLine={false}
                             dx={-10}
                           />
-                          <Tooltip 
+                          <Tooltip
                             cursor={{ fill: 'var(--muted)' }}
-                            contentStyle={{ 
-                              backgroundColor: 'var(--card)', 
+                            contentStyle={{
+                              backgroundColor: 'var(--card)',
                               borderColor: 'var(--border)',
                               borderRadius: '8px',
                               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',

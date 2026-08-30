@@ -39,6 +39,7 @@ import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
 import { ActionCenterWrapper } from "@/components/dashboard/ActionCenterWrapper";
 import { DashboardAdvancedFilter } from "@/components/dashboard/DashboardAdvancedFilter";
+import { KPICard } from "@/components/dashboard/KPICard";
 
 function getFallbackTransactionIcon(type: string) {
   const className = "w-5 h-5 text-white";
@@ -257,87 +258,66 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       {/* ZONE 2: MACRO OVERVIEW (KPIs) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Net Worth */}
-        <Link href="/accounts" className="block">
-          <Card className="hover:shadow-md transition-all border-none bg-gradient-to-br from-card to-card shadow-sm cursor-pointer hover:-translate-y-1 h-full relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <TrendingUp className="w-24 h-24 text-primary" />
-            </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
-              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Net Worth</CardTitle>
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Wallet className="w-4 h-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10">
-              <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalBalance} /></div>
-              <p className={`text-[10px] sm:text-xs mt-1 flex items-center gap-1 ${nwGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+        <Link href="/accounts" className="block h-full">
+          <KPICard 
+            label="Total Net Worth"
+            value={<CurrencyDisplay amount={totalBalance} />}
+            icon={Wallet}
+            themeColor="primary"
+            trend={
+              <p className={`text-[10px] sm:text-xs flex items-center gap-1 font-medium ${nwGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                 {nwGrowth >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {Math.abs(nwGrowth).toFixed(1)}% vs past {daysFilter} days
               </p>
-            </CardContent>
-          </Card>
+            }
+            className="h-full hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+          />
         </Link>
 
         {/* Investments */}
-        <Link href="/investments" className="block">
-          <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1 h-full relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Briefcase className="w-24 h-24 text-purple-500" />
-            </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
-              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Investments</CardTitle>
-              <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10">
-              <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalInvestmentValue} /></div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Across SIPs & FDs</p>
-            </CardContent>
-          </Card>
+        <Link href="/investments" className="block h-full">
+          <KPICard 
+            label="Total Investments"
+            value={<CurrencyDisplay amount={totalInvestmentValue} />}
+            icon={Briefcase}
+            themeColor="purple"
+            trend={<span className="text-[10px] sm:text-xs text-muted-foreground">Across SIPs & FDs</span>}
+            className="h-full hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+          />
         </Link>
 
         {/* Debt */}
-        <Link href="/loans" className="block">
-          <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm cursor-pointer hover:-translate-y-1 h-full relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <AlertCircle className="w-24 h-24 text-red-500" />
-            </div>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
-              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Total Debt</CardTitle>
-              <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
-                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10">
-              <div className="text-xl sm:text-2xl font-bold text-foreground"><CurrencyDisplay amount={totalDebtOwed} /></div>
-              <p className="text-[10px] sm:text-xs text-red-500 mt-1 flex items-center gap-1">
-                Cards & Loans
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/loans" className="block h-full">
+          <KPICard 
+            label="Total Debt"
+            value={<CurrencyDisplay amount={totalDebtOwed} />}
+            icon={AlertCircle}
+            themeColor="destructive"
+            trend={<span className="text-[10px] sm:text-xs text-red-500 font-medium">Cards & Loans</span>}
+            className="h-full hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
+          />
         </Link>
 
         {/* Cashflow Summary */}
-        <div className="block">
-          <Card className="hover:shadow-md transition-all border-none bg-card shadow-sm h-full relative overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2 relative z-10">
-              <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground uppercase tracking-wider sm:normal-case sm:tracking-normal">Period Cashflow</CardTitle>
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+        <div className="block h-full">
+          <KPICard 
+            label="Period Cashflow"
+            value={
+              <div className="flex flex-col gap-1 mt-0.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground flex items-center"><ArrowDownLeft className="w-3 h-3 text-emerald-500 mr-1" /> IN</span>
+                  <CurrencyDisplay amount={timeframeIncome} className="font-semibold text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground flex items-center"><ArrowUpRight className="w-3 h-3 text-red-500 mr-1" /> OUT</span>
+                  <CurrencyDisplay amount={timeframeExpense} className="font-semibold text-red-600 dark:text-red-400" />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 relative z-10 flex flex-col gap-1.5 mt-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center"><ArrowDownLeft className="w-3 h-3 text-emerald-500 mr-1" /> IN</span>
-                <CurrencyDisplay amount={timeframeIncome} className="text-sm font-semibold text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center"><ArrowUpRight className="w-3 h-3 text-red-500 mr-1" /> OUT</span>
-                <CurrencyDisplay amount={timeframeExpense} className="text-sm font-semibold text-red-600 dark:text-red-400" />
-              </div>
-            </CardContent>
-          </Card>
+            }
+            icon={Activity}
+            themeColor="emerald"
+            className="h-full hover:shadow-md"
+          />
         </div>
       </div>
 

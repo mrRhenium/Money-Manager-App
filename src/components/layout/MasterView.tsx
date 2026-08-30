@@ -136,9 +136,9 @@ export function MasterFilterSidebar({ isFilterActive, onClearFilters, children }
     )}>
       <CardHeader className="pb-3 border-b border-border/40 bg-gradient-to-b from-muted/30 to-transparent">
         <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5 font-semibold text-lg tracking-tight text-foreground">
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <FilterIcon className="w-4 h-4" />
+          <div className="flex items-center gap-2 font-semibold text-sm tracking-tight text-foreground">
+            <div className="p-1 rounded-md bg-primary/10 text-primary">
+              <FilterIcon className="w-3.5 h-3.5" />
             </div>
             Filters & Sort
           </div>
@@ -147,9 +147,9 @@ export function MasterFilterSidebar({ isFilterActive, onClearFilters, children }
               variant="secondary" 
               size="sm" 
               onClick={onClearFilters} 
-              className="h-7 text-xs px-2.5 rounded-full font-medium shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-transparent transition-all"
+              className="h-8 text-xs px-3.5 rounded-lg font-semibold shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all"
             >
-              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear All
+              <XCircle className="w-3.5 h-3.5 mr-1.5" /> Clear All
             </Button>
           )}
         </CardTitle>
@@ -176,9 +176,9 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
     <Drawer
       title={
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2.5 font-semibold text-lg tracking-tight text-foreground">
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <FilterIcon className="w-4 h-4" />
+          <div className="flex items-center gap-2 font-semibold text-sm tracking-tight text-foreground">
+            <div className="p-1 rounded-md bg-primary/10 text-primary">
+              <FilterIcon className="w-3.5 h-3.5" />
             </div>
             Filters & Sort
           </div>
@@ -187,9 +187,9 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
               variant="secondary" 
               size="sm" 
               onClick={onClearFilters} 
-              className="h-7 text-xs px-2.5 rounded-full font-medium shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-transparent transition-all"
+              className="h-8 text-xs px-3.5 rounded-lg font-semibold shadow-sm hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border border-border/40 transition-all"
             >
-              <XCircle className="w-3.5 h-3.5 mr-1" /> Clear
+              <XCircle className="w-3.5 h-3.5 mr-1.5" /> Clear
             </Button>
           )}
         </div>

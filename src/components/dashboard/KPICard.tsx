@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
-export type KPICardTheme = 'primary' | 'emerald' | 'indigo' | 'amber' | 'destructive' | 'default';
+export type KPICardTheme = 'primary' | 'emerald' | 'indigo' | 'amber' | 'destructive' | 'purple' | 'blue' | 'default';
 
 interface KPICardProps {
   label: string;
@@ -13,9 +13,10 @@ interface KPICardProps {
   trend?: React.ReactNode;
   className?: string;
   action?: React.ReactNode;
+  onClick?: () => void;
 }
 
-export function KPICard({ label, value, icon: Icon, themeColor = 'default', trend, className, action }: KPICardProps) {
+export function KPICard({ label, value, icon: Icon, themeColor = 'default', trend, className, action, onClick }: KPICardProps) {
 
   const themeStyles = {
     primary: {
@@ -32,6 +33,16 @@ export function KPICard({ label, value, icon: Icon, themeColor = 'default', tren
       hover: "hover:to-indigo-500/5 dark:hover:to-indigo-500/10",
       text: "text-indigo-500",
       border: "border-l-indigo-500"
+    },
+    purple: {
+      hover: "hover:to-purple-500/5 dark:hover:to-purple-500/10",
+      text: "text-purple-500",
+      border: "border-l-purple-500"
+    },
+    blue: {
+      hover: "hover:to-blue-500/5 dark:hover:to-blue-500/10",
+      text: "text-blue-500",
+      border: "border-l-blue-500"
     },
     amber: {
       hover: "hover:to-amber-500/5 dark:hover:to-amber-500/10",
@@ -53,11 +64,15 @@ export function KPICard({ label, value, icon: Icon, themeColor = 'default', tren
   const style = themeStyles[themeColor] || themeStyles.default;
 
   return (
-    <Card className={cn(
-      "shadow-sm bg-gradient-to-br from-card to-card border border-slate-200/60 dark:border-slate-800 transition-all duration-300 relative overflow-hidden",
-      style.hover,
-      className
-    )}>
+    <Card 
+      onClick={onClick}
+      className={cn(
+        "shadow-sm bg-gradient-to-br from-card to-card border border-slate-200/60 dark:border-slate-800 transition-all duration-300 relative overflow-hidden",
+        style.hover,
+        onClick && "cursor-pointer",
+        className
+      )}
+    >
       <div className={cn("absolute top-0 right-0 p-2 sm:p-3 opacity-50", style.text)}>
         <Icon className="w-4 h-4" />
       </div>

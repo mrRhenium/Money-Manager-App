@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Users, Banknote, UserCheck, UserX, Activity, Database } from "lucide-react";
+import { KPICard } from "@/components/dashboard/KPICard";
 
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 Bytes';
@@ -67,44 +68,24 @@ export function AdminDashboardClient({ stats }: { stats: any }) {
 
       {/* 2. 3-Column KPI Grid for Mobile & Desktop */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        {/* Total Users */}
-        <div className="p-3 sm:p-5 rounded-2xl border bg-card text-card-foreground shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 pb-1 sm:pb-2">
-            <h3 className="text-[10px] sm:text-xs md:text-sm font-medium text-muted-foreground truncate">Total Users</h3>
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
-              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
-            </div>
-          </div>
-          <div className="text-base sm:text-2xl md:text-3xl font-extrabold text-foreground truncate mt-1">
-            {stats.totalUsers}
-          </div>
-        </div>
-
-        {/* Active Users */}
-        <div className="p-3 sm:p-5 rounded-2xl border bg-card text-card-foreground shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 pb-1 sm:pb-2">
-            <h3 className="text-[10px] sm:text-xs md:text-sm font-medium text-muted-foreground truncate">Active Users</h3>
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
-            </div>
-          </div>
-          <div className="text-base sm:text-2xl md:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 truncate mt-1">
-            {stats.activeUsers}
-          </div>
-        </div>
-
-        {/* Inactive Users */}
-        <div className="p-3 sm:p-5 rounded-2xl border bg-card text-card-foreground shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between gap-1 pb-1 sm:pb-2">
-            <h3 className="text-[10px] sm:text-xs md:text-sm font-medium text-muted-foreground truncate">Inactive Users</h3>
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
-              <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
-            </div>
-          </div>
-          <div className="text-base sm:text-2xl md:text-3xl font-extrabold text-red-500 truncate mt-1">
-            {stats.inactiveUsers}
-          </div>
-        </div>
+        <KPICard 
+          label="Total Users" 
+          value={stats.totalUsers} 
+          icon={Users} 
+          themeColor="blue" 
+        />
+        <KPICard 
+          label="Active Users" 
+          value={<div className="text-emerald-600 dark:text-emerald-400">{stats.activeUsers}</div>} 
+          icon={UserCheck} 
+          themeColor="emerald" 
+        />
+        <KPICard 
+          label="Inactive Users" 
+          value={<div className="text-destructive">{stats.inactiveUsers}</div>} 
+          icon={UserX} 
+          themeColor="destructive" 
+        />
       </div>
 
       {/* 3. Registrations Chart and Secondary Cards */}
@@ -138,42 +119,31 @@ export function AdminDashboardClient({ stats }: { stats: any }) {
         {/* Side Cards: Global Transactions & Supported Currencies */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           {/* Global Transactions */}
-          <div className="p-4 sm:p-6 rounded-2xl border bg-card text-card-foreground shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between pb-2">
-              <div>
-                <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Global Transactions</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Total platform volume</p>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Activity className="w-4 h-4 text-primary" />
-              </div>
-            </div>
-            <div className="text-2xl sm:text-3xl font-extrabold mt-3">{stats.totalTransactions}</div>
-          </div>
+          <KPICard 
+            label="Global Transactions"
+            value={stats.totalTransactions}
+            icon={Activity}
+            themeColor="primary"
+            trend={<span className="text-[11px] text-muted-foreground">Total platform volume</span>}
+          />
 
           {/* Supported Currencies */}
-          <div className="p-4 sm:p-6 rounded-2xl border bg-card text-card-foreground shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between pb-2">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Supported Currencies</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Active multi-currency rates</p>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0">
-                  <Banknote className="w-4 h-4 text-orange-500" />
+          <KPICard 
+            label="Supported Currencies"
+            value={stats.totalCurrencies}
+            icon={Banknote}
+            themeColor="amber"
+            trend={<span className="text-[11px] text-muted-foreground">Active multi-currency rates</span>}
+            action={
+              <div className="pt-3 border-t border-border/50 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Platform Health</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">All systems normal</span>
                 </div>
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold mt-3">{stats.totalCurrencies}</div>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Platform Health</span>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">All systems normal</span>
-              </div>
-            </div>
-          </div>
+            }
+          />
         </div>
       </div>
     </div>

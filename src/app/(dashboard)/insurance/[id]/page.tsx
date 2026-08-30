@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { formatDateString } from "@/lib/dateTimeHelper";
 import { ArrowLeft, Shield, Calendar, Hash, Activity } from "lucide-react";
 import Link from "next/link";
-import { InsuranceForm } from "@/components/forms/InsuranceForm";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { KPICard } from "@/components/dashboard/KPICard";
 
 export default async function InsuranceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -43,9 +43,6 @@ export default async function InsuranceDetailsPage({ params }: { params: Promise
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <InsuranceForm policy={policy} accounts={accounts} triggerClassName="shadow-sm" />
-          </div>
         </div>
       </div>
 
@@ -53,36 +50,26 @@ export default async function InsuranceDetailsPage({ params }: { params: Promise
       <div className="flex-1 overflow-y-auto custom-scrollbar pb-8 pt-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto space-y-6">
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground font-medium">Coverage (Sum Assured)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold"><CurrencyDisplay amount={policy.coverageAmount || 0} /></div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground font-medium">Premium</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary"><CurrencyDisplay amount={policy.premiumAmount || 0} /></div>
-                <p className="text-xs text-muted-foreground">{policy.premiumFrequency}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground font-medium">Next Renewal</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {policy.renewalDate ? formatDateString(policy.renewalDate, "DD-MM-YYYY") : "-"}
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-3">
+            <KPICard 
+              label="Coverage (Sum Assured)" 
+              value={<CurrencyDisplay amount={policy.coverageAmount || 0} />} 
+              icon={Shield} 
+              themeColor="indigo" 
+            />
+            <KPICard 
+              label="Premium" 
+              value={<CurrencyDisplay amount={policy.premiumAmount || 0} />} 
+              icon={Activity} 
+              themeColor="primary" 
+              trend={<span className="text-xs text-muted-foreground capitalize">{policy.premiumFrequency}</span>}
+            />
+            <KPICard 
+              label="Next Renewal" 
+              value={policy.renewalDate ? formatDateString(policy.renewalDate, "DD-MM-YYYY") : "-"} 
+              icon={Calendar} 
+              themeColor="emerald" 
+            />
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">

@@ -45,6 +45,16 @@ function AppConfigurator({ children }: { children: React.ReactNode }) {
             colorPrimary: activeColor,
             borderRadius: 8,
             fontFamily: "var(--font-family-base, var(--font-sans))",
+            controlHeight: 40,
+          },
+          components: {
+            Select: {
+              controlHeight: 40,
+              singleItemHeightLG: 40,
+            },
+            Input: {
+              controlHeight: 40,
+            },
           },
           algorithm: resolvedTheme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}

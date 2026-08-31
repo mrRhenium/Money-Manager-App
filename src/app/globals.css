@@ -354,13 +354,69 @@ button, [data-slot="button"] {
 
 /* ─── Ant Design Inputs & Selects Typography ─── */
 .ant-input:not(textarea),
-.ant-select-single:not(.ant-select-customize-input) .ant-select-selector,
+.ant-select,
+.ant-select-content,
 .ant-picker {
   font-family: var(--font-family-base, var(--font-sans)) !important;
   font-size: var(--font-size-modal-input, 0.875rem) !important;
 }
 
-/* ─── Ant Design Single Select Vertical Centering ─── */
+/* ─── Ant Design 6 & 5 Select Global Vertical Centering ─── */
+.ant-select {
+  display: inline-flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Ant Design 6 Content Container */
+.ant-select .ant-select-content {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  line-height: normal !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.ant-select-single:not(.ant-select-customize) .ant-select-content-has-value {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  line-height: normal !important;
+}
+
+.ant-select .ant-select-placeholder {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  line-height: normal !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ant-select .ant-select-suffix {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.ant-select .ant-select-prefix {
+  display: flex !important;
+  align-items: center !important;
+  align-self: center !important;
+}
+
+.ant-select .ant-select-input {
+  align-self: center !important;
+}
+
+/* Ant Design 5 Legacy Classes Support */
 .ant-select-single .ant-select-selector {
   display: flex !important;
   align-items: center !important;
@@ -376,7 +432,6 @@ button, [data-slot="button"] {
   position: relative !important;
 }
 
-/* Clear Ant Design's `top: 0` pinning on search single select and vertically center text */
 .ant-select-single.ant-select-show-search:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-item,
 .ant-select-single:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-item,
 .ant-select-single .ant-select-selection-item {
@@ -415,7 +470,8 @@ button, [data-slot="button"] {
   height: 100% !important;
 }
 
-/* If option label has custom flex children (like icon + label) */
+/* Custom child divs (e.g. icon + text) */
+.ant-select-content > div,
 .ant-select-selection-item > div {
   display: flex !important;
   align-items: center !important;
@@ -654,6 +710,7 @@ button, [data-slot="button"] {
 
 
 /* Ant Design Dark Mode Overrides */
+html.dark .ant-select,
 html.dark .ant-select .ant-select-selector,
 html.dark .ant-select-selector,
 html.dark .ant-select-selection-search-input,
@@ -665,10 +722,12 @@ html.dark .ant-pagination-item {
   border-color: var(--border) !important;
 }
 
+html.dark .ant-select .ant-select-content,
 html.dark .ant-select-selection-item {
   color: var(--foreground) !important;
 }
 
+html.dark .ant-select.ant-select-disabled,
 html.dark .ant-select-disabled .ant-select-selector,
 html.dark .ant-select-disabled .ant-select-selection-item {
   color: var(--foreground) !important;

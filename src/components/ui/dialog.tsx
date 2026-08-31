@@ -136,6 +136,10 @@ function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
         // Scoped cascading tokens for all standard inputs inside any modal:
         "[&_input]:h-10 [&_input]:text-[length:var(--font-size-modal-input)]",
         "[&_textarea]:text-[length:var(--font-size-modal-input)]",
+        "[&_.ant-select]:!min-h-[40px] [&_.ant-select]:!h-10 [&_.ant-select]:!flex [&_.ant-select]:!items-center [&_.ant-select]:!text-[length:var(--font-size-modal-input)]",
+        "[&_.ant-select-content]:!flex [&_.ant-select-content]:!items-center [&_.ant-select-content]:!leading-normal",
+        "[&_.ant-select-placeholder]:!flex [&_.ant-select-placeholder]:!items-center [&_.ant-select-placeholder]:!leading-normal",
+        "[&_.ant-select-suffix]:!flex [&_.ant-select-suffix]:!items-center",
         "[&_.ant-select-selector]:!min-h-[40px] [&_.ant-select-selector]:!flex [&_.ant-select-selector]:!items-center [&_.ant-select-selector]:!text-[length:var(--font-size-modal-input)]",
         "[&_.ant-select-selection-item]:!flex [&_.ant-select-selection-item]:!items-center [&_.ant-select-selection-item]:!top-auto [&_.ant-select-selection-item]:!h-full [&_.ant-select-selection-item]:!leading-normal",
         "[&_.ant-select-selection-placeholder]:!flex [&_.ant-select-selection-placeholder]:!items-center [&_.ant-select-selection-placeholder]:!top-auto [&_.ant-select-selection-placeholder]:!h-full [&_.ant-select-selection-placeholder]:!leading-normal",

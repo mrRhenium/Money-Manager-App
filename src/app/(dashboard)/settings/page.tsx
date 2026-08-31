@@ -93,12 +93,12 @@ function SettingsContent() {
   const tabParam = searchParams.get("tab") as "profile" | "preferences" | "payment_apps" | "timezone" | "notifications" | "logout" | null;
   const activeTab = tabParam || "profile";
 
-  const [fontSizePreference, setFontSizePreference] = useState<string>("normal");
+  const [fontSizePreference, setFontSizePreference] = useState<string>("compact");
   const [fontFamilyPreference, setFontFamilyPreference] = useState<string>("noto");
 
   useEffect(() => {
     try {
-      const savedSize = localStorage.getItem("user-font-size") || "normal";
+      const savedSize = localStorage.getItem("user-font-size") || "compact";
       setFontSizePreference(savedSize);
       document.documentElement.style.removeProperty("--font-scale");
       document.documentElement.setAttribute("data-font-size", savedSize);

@@ -15,7 +15,7 @@ function AppConfigurator({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     try {
-      const savedFontSize = localStorage.getItem("user-font-size") || "normal";
+      const savedFontSize = localStorage.getItem("user-font-size") || "compact";
       document.documentElement.style.removeProperty("--font-scale");
       document.documentElement.setAttribute("data-font-size", savedFontSize);
       const savedFontFamily = localStorage.getItem("user-font-family");

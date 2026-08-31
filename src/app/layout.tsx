@@ -35,6 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-font-size="compact"
       className={`${notoSans.variable} ${notoSansMono.variable} antialiased`}
       suppressHydrationWarning
     >

@@ -80,7 +80,7 @@ export function MasterToolbar({
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full h-9 text-xs px-3 bg-card text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-2xs placeholder:text-xs text-left"
+              className="w-full h-9 text-[length:var(--font-size-filter-input)] px-3 bg-card text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-2xs placeholder:text-[length:var(--font-size-filter-input)] text-left"
             />
           </div>
           {onFilterClick && (
@@ -88,7 +88,7 @@ export function MasterToolbar({
               variant="outline"
               onClick={onFilterClick}
               className={cn(
-                "h-9 shrink-0 text-xs font-semibold px-3 shadow-2xs rounded-lg transition-colors",
+                "h-9 shrink-0 text-[length:var(--font-size-btn-sm)] font-semibold px-3 shadow-2xs rounded-lg transition-colors",
                 isFilterActive
                   ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:text-primary"
                   : "bg-card text-foreground hover:bg-card/80 hover:text-foreground border-slate-200 dark:border-slate-800"
@@ -150,7 +150,7 @@ export function MasterFilterSidebar({ isFilterActive, onClearFilters, children }
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 flex flex-col gap-4 [&_h3]:text-[11px] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_.ant-select]:text-xs [&_.ant-select-selector]:!min-h-[34px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-xs [&_.ant-select-selection-placeholder]:!text-xs [&_label]:text-[11px] [&_label]:font-semibold [&_input]:h-8.5 [&_input]:text-xs">
+      <CardContent className="p-4 flex flex-col gap-4 [&_h3]:text-[length:var(--font-size-filter-label)] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_label]:text-[length:var(--font-size-filter-label)] [&_label]:font-semibold [&_.ant-select]:text-[length:var(--font-size-filter-input)] [&_.ant-select-selector]:!min-h-[36px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-[length:var(--font-size-filter-input)] [&_.ant-select-selection-placeholder]:!text-[length:var(--font-size-filter-input)] [&_input]:h-9 [&_input]:text-[length:var(--font-size-filter-input)] [&_input]:placeholder:text-[length:var(--font-size-filter-input)]">
         {children}
 
         {isFilterActive && (
@@ -158,7 +158,7 @@ export function MasterFilterSidebar({ isFilterActive, onClearFilters, children }
             <Button
               variant="outline"
               onClick={onClearFilters}
-              className="w-full h-9 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              className="w-full h-9 rounded-xl text-[length:var(--font-size-btn-sm)] font-semibold text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5 text-red-500" />
               Clear All Filters
@@ -216,7 +216,7 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
         body: { padding: '16px' }
       }}
     >
-      <div className="flex flex-col gap-4 [&_h3]:text-[11px] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_.ant-select]:text-xs [&_.ant-select-selector]:!min-h-[34px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-xs [&_.ant-select-selection-placeholder]:!text-xs [&_label]:text-[11px] [&_label]:font-semibold [&_input]:h-8.5 [&_input]:text-xs">
+      <div className="flex flex-col gap-4 [&_h3]:text-[length:var(--font-size-filter-label)] [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:tracking-wider [&_label]:text-[length:var(--font-size-filter-label)] [&_label]:font-semibold [&_.ant-select]:text-[length:var(--font-size-filter-input)] [&_.ant-select-selector]:!min-h-[36px] [&_.ant-select-selector]:!h-auto [&_.ant-select-selector]:!py-0.5 [&_.ant-select-selection-item]:!text-[length:var(--font-size-filter-input)] [&_.ant-select-selection-placeholder]:!text-[length:var(--font-size-filter-input)] [&_input]:h-9 [&_input]:text-[length:var(--font-size-filter-input)] [&_input]:placeholder:text-[length:var(--font-size-filter-input)]">
         {children}
 
         {isFilterActive && (
@@ -224,7 +224,7 @@ export function MasterFilterDrawer({ isOpen, onClose, isFilterActive, onClearFil
             <Button
               variant="outline"
               onClick={onClearFilters}
-              className="w-full h-9 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              className="w-full h-9 rounded-xl text-[length:var(--font-size-btn-sm)] font-semibold text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5 text-red-500" />
               Clear All Filters
@@ -251,7 +251,7 @@ export function MasterSearchField({ searchQuery, onSearchChange, placeholder = "
         placeholder={placeholder}
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="w-full h-8.5 text-xs px-3 bg-background text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-2xs transition-all placeholder:text-xs text-left"
+        className="w-full h-9 text-[length:var(--font-size-filter-input)] px-3 bg-background text-foreground focus-visible:ring-1 focus-visible:ring-primary/50 border-slate-200 dark:border-slate-800 shadow-2xs transition-all placeholder:text-[length:var(--font-size-filter-input)] text-left"
       />
     </div>
   );

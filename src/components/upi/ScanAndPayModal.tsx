@@ -646,8 +646,8 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 />
               </div>
 
-              {/* UPI App Selection with Active/Inactive Badges */}
-              <div className="flex flex-col gap-1.5 p-3.5 rounded-xl border bg-muted/20">
+              {/* UPI App Selection */}
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Smartphone className="w-3.5 h-3.5 text-primary" />
@@ -666,7 +666,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                 <Select
                   value={selectedAppId}
                   onChange={setSelectedAppId}
-                  className="w-full h-10 mt-0.5"
+                  className="w-full h-10"
                   popupClassName="custom-scrollbar"
                   optionLabelProp="label"
                 >
@@ -677,12 +677,12 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                         key={app.id} 
                         value={app.id}
                         label={
-                          <div className="flex items-center justify-between w-full pr-1">
+                          <div className="flex items-center justify-between w-full h-full pr-1 gap-2">
                             <div className="flex items-center gap-2 min-w-0">
-                              <UpiAppLogo appId={app.id} size="sm" className="w-5 h-5 rounded-md" />
-                              <span className="font-semibold text-xs text-foreground truncate">{app.name}</span>
+                              <UpiAppLogo appId={app.id} size="sm" className="w-5 h-5 rounded-md shrink-0" />
+                              <span className="font-semibold text-xs text-foreground truncate leading-none">{app.name}</span>
                             </div>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 leading-none ${
                               isActive 
                                 ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
                                 : "bg-muted text-muted-foreground border border-border/40"
@@ -694,7 +694,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                       >
                         <div className="flex items-center justify-between w-full py-1">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <UpiAppLogo appId={app.id} size="md" className="w-7 h-7 rounded-lg" />
+                            <UpiAppLogo appId={app.id} size="md" className="w-7 h-7 rounded-lg shrink-0" />
                             <div className="min-w-0">
                               <p className="font-bold text-xs text-foreground leading-tight truncate">{app.name}</p>
                               <p className="text-[10px] text-muted-foreground">{app.shortName}</p>
@@ -715,29 +715,6 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                     );
                   })}
                 </Select>
-
-                {/* Quick App Badges (Active Apps) - Visible on desktop/tablet, hidden on mobile */}
-                <div className="hidden sm:flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-[10px] text-muted-foreground font-medium">Quick Pick:</span>
-                  {sortedUpiApps
-                    .filter(a => a.isActive !== false)
-                    .slice(0, 5)
-                    .map(app => (
-                      <button
-                        key={app.id}
-                        type="button"
-                        onClick={() => setSelectedAppId(app.id)}
-                        className={`px-2 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all border ${
-                          selectedAppId === app.id 
-                            ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/30" 
-                            : "bg-card hover:bg-muted text-foreground border-border/60"
-                        }`}
-                      >
-                        <UpiAppLogo appId={app.id} size="sm" className="w-3.5 h-3.5 rounded-xs" />
-                        <span>{app.shortName}</span>
-                      </button>
-                    ))}
-                </div>
               </div>
 
               <div className="text-[10px] text-muted-foreground italic text-center mt-2">

@@ -100,15 +100,15 @@ export function IconPicker({ value, onChange, color, disabled }: IconPickerProps
         const IconComp = getLucideIcon(item.name);
         return {
           label: (
-            <div className="flex items-center justify-between gap-2 py-0.5">
+            <div className="flex items-center justify-between gap-2 w-full h-full">
               <div className="flex items-center gap-2 min-w-0">
                 <IconComp 
                   className="w-4 h-4 shrink-0" 
                   style={{ color: color || "currentColor" }} 
                 />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate leading-none">{item.label}</span>
               </div>
-              <span className="text-[10px] text-muted-foreground font-mono opacity-60 shrink-0">
+              <span className="text-[10px] text-muted-foreground font-mono opacity-60 shrink-0 leading-none">
                 {item.name}
               </span>
             </div>
@@ -127,10 +127,11 @@ export function IconPicker({ value, onChange, color, disabled }: IconPickerProps
       </label>
       <Select
         disabled={disabled}
-        className="w-full h-[40px]"
+        className="w-full h-10"
         value={value}
         onChange={onChange}
         showSearch
+        optionLabelProp="label"
         filterOption={(input, option: any) => {
           if (!option || !option.searchTerms) return false;
           return (option.searchTerms as string).includes(input.toLowerCase());

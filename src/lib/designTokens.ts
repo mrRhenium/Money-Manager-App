@@ -51,6 +51,13 @@ export const TYPOGRAPHY = {
   navBottom: "text-[length:var(--font-size-nav-bottom)] font-medium",
   navMobileMenu: "text-[length:var(--font-size-nav-mobile-menu)] font-medium",
 
+  // Filter & Sort
+  filterTitle: "text-[length:var(--font-size-filter-label)] font-semibold uppercase tracking-wider text-muted-foreground",
+  filterLabel: "text-[length:var(--font-size-filter-label)] font-semibold text-foreground/80",
+  filterInput: "text-[length:var(--font-size-filter-input)]",
+  toolbarSearch: "text-[length:var(--font-size-filter-input)] placeholder:text-[length:var(--font-size-filter-input)]",
+  toolbarBtn: "text-[length:var(--font-size-btn-sm)] font-semibold",
+
   // Section & Chart Titles
   sectionTitle: "text-[length:var(--font-size-section-title)] font-bold text-foreground",
 } as const;

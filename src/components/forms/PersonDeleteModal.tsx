@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, Input } from "antd";
 import { Trash, AlertTriangle } from "lucide-react";
@@ -57,20 +57,30 @@ export function PersonDeleteModal({ person }: { person: any }) {
   if (!isUtilized) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger>
+        <DialogTrigger render={
           <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
             <Trash className="w-4 h-4" />
           </Button>
-        </DialogTrigger>
-        <DialogContent>
+        } />
+        <DialogContent initialFocus={false} size="sm">
           <DialogHeader>
-            <DialogTitle>Delete {person.name}</DialogTitle>
+            <DialogTitle>
+              <div className="w-8 h-8 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                <Trash className="w-4 h-4" />
+              </div>
+              <span>Delete {person.name}</span>
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this contact? They have no transactions recorded.
+            </DialogDescription>
           </DialogHeader>
-          <p className="text-muted-foreground">Are you sure you want to delete <strong>{person.name}</strong>? They have no transactions recorded.</p>
-          <DialogFooter className="sm:justify-center gap-2 pt-4">
-            <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+          <DialogFooter>
+            <Button variant="outline" className="h-9 px-4 text-[length:var(--font-size-modal-btn)]" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button 
-              className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+              variant="destructive"
+              className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" 
               onClick={handleDelete} 
               disabled={loading}
             >
@@ -85,21 +95,26 @@ export function PersonDeleteModal({ person }: { person: any }) {
   // Utilized subscription - Mandatory Reason
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger render={
         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
           <Trash className="w-4 h-4" />
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      } />
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-red-600">
-            <AlertTriangle className="w-5 h-5" />
-            Delete {person.name}
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <span>Delete {person.name}</span>
           </DialogTitle>
+          <DialogDescription>
+            You have {person.transactionCount} transactions associated with {person.name}. Transactions will remain intact.
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-2">
-          <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
+        <DialogBody className="space-y-4">
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs sm:text-sm text-amber-800 dark:text-amber-300">
             <p className="font-semibold mb-1">Warning: Deleting Utilized Contact</p>
             <p>You have <strong>{person.transactionCount}</strong> transactions associated with {person.name}. <strong>Your transactions will not be deleted</strong>, but the contact will be permanently removed.</p>
           </div>
@@ -136,21 +151,24 @@ export function PersonDeleteModal({ person }: { person: any }) {
               id="confirm-contact-deletion" 
               checked={confirmed}
               onChange={(e) => setConfirmed(e.target.checked)}
-              className="mt-1"
+              className="mt-1 accent-primary"
             />
             <label
               htmlFor="confirm-contact-deletion"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-xs sm:text-sm text-muted-foreground cursor-pointer leading-snug"
             >
               I confirm that I want to remove this contact and keep past transactions.
             </label>
           </div>
-        </div>
+        </DialogBody>
 
-        <DialogFooter className="mt-4 sm:justify-center gap-2">
-          <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+        <DialogFooter>
+          <Button variant="outline" className="h-9 px-4 text-[length:var(--font-size-modal-btn)]" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button 
-            className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+            variant="destructive"
+            className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" 
             onClick={handleDelete} 
             disabled={loading || !reason || !notes.trim() || !confirmed}
           >

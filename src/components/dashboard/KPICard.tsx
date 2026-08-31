@@ -2,6 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export type KPICardTheme = 'primary' | 'emerald' | 'indigo' | 'amber' | 'destructive' | 'purple' | 'blue' | 'default';
 
@@ -83,7 +84,7 @@ export function KPICard({ label, value, icon: Icon, themeColor = 'default', tren
     <Card 
       onClick={onClick}
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-card p-3.5 sm:p-4.5 border-l-[3.5px]",
+        "group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-card py-2.5 px-3.5 sm:py-3 sm:px-4 border-l-[3.5px]",
         "transition-all duration-300 ease-out shadow-xs",
         "hover:-translate-y-0.5 hover:shadow-md",
         style.border,
@@ -96,18 +97,18 @@ export function KPICard({ label, value, icon: Icon, themeColor = 'default', tren
       {/* Ambient Top-Right Radial Glow */}
       <div 
         className={cn(
-          "absolute -top-10 -right-10 w-28 h-28 rounded-full bg-gradient-to-bl to-transparent opacity-40 blur-2xl pointer-events-none transition-opacity duration-300 group-hover:opacity-75",
+          "absolute -top-8 -right-8 w-20 h-20 rounded-full bg-gradient-to-bl to-transparent opacity-35 blur-2xl pointer-events-none transition-opacity duration-300 group-hover:opacity-65",
           style.glow
         )} 
       />
 
       {/* Header: Label + Frosted Icon Badge */}
       <div className="flex items-center justify-between gap-2 relative z-10">
-        <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">
+        <span className={cn(TYPOGRAPHY.kpiLabel, "truncate")}>
           {label}
         </span>
         <div className={cn(
-          "w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-xl border flex items-center justify-center shrink-0 ring-2 transition-transform duration-300 group-hover:scale-105 shadow-2xs",
+          "w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-lg border flex items-center justify-center shrink-0 ring-1.5 transition-transform duration-300 group-hover:scale-105 shadow-2xs",
           style.badge
         )}>
           <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -115,19 +116,19 @@ export function KPICard({ label, value, icon: Icon, themeColor = 'default', tren
       </div>
 
       {/* Metric Value */}
-      <div className="mt-2 sm:mt-2.5 relative z-10">
-        <div className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight tabular-nums truncate">
+      <div className="mt-1 sm:mt-1.5 relative z-10">
+        <div className={cn(TYPOGRAPHY.cardAmount, "font-extrabold text-foreground tracking-tight tabular-nums truncate leading-tight")}>
           {value}
         </div>
 
         {trend && (
-          <div className="mt-2 flex items-center gap-1.5 flex-wrap text-[11px] sm:text-xs font-medium">
+          <div className={cn(TYPOGRAPHY.kpiSubtitle, "mt-1 flex items-center gap-1.5 flex-wrap [&_*]:!text-[length:inherit]")}>
             {trend}
           </div>
         )}
 
         {action && (
-          <div className="mt-2.5 pt-2 border-t border-border/40">
+          <div className="mt-1.5 pt-1.5 border-t border-border/40">
             {action}
           </div>
         )}

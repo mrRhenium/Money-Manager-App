@@ -74,7 +74,9 @@ export function TimezonePicker({
             } />
             <DialogContent
               showCloseButton={false}
-              className="w-[92vw] sm:max-w-md p-0 gap-0 overflow-hidden bg-card border rounded-2xl shadow-2xl z-[70]"
+              initialFocus={false}
+              size="md"
+              className="z-[70]"
             >
               <AdvancedTimezonePicker 
                 initialTimezone={selectedTimezone} 
@@ -117,7 +119,9 @@ export function TimezonePicker({
           } />
           <DialogContent
             showCloseButton={false}
-            className="w-[92vw] sm:max-w-md p-0 gap-0 overflow-hidden bg-card border rounded-2xl shadow-2xl z-[70]"
+            initialFocus={false}
+            size="md"
+            className="z-[70]"
           >
             <AdvancedTimezonePicker 
               initialTimezone={selectedTimezone} 

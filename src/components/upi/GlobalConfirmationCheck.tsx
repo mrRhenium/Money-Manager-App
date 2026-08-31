@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { getAwaitingTransactions, confirmTransaction } from "@/actions/transaction";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
 import { Smartphone, Loader2 } from "lucide-react";
@@ -113,22 +113,24 @@ export function GlobalConfirmationCheck() {
       }}
     >
       <DialogContent 
-        className="sm:max-w-md p-6 rounded-2xl z-[9999]" 
+        initialFocus={false}
+        size="sm" 
+        className="z-[9999]" 
         showCloseButton={true}
       >
         <DialogHeader className="text-center flex flex-col items-center">
           <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center animate-bounce mb-2">
             <Smartphone className="w-6 h-6" />
           </div>
-          <DialogTitle className="font-bold text-lg text-foreground">Confirm UPI Payment</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground mt-1 text-center">
+          <DialogTitle>Confirm UPI Payment</DialogTitle>
+          <DialogDescription className="mt-1 text-center">
             Did you complete the payment of <span className="font-bold text-primary">{format(activeTxn.amount)}</span> to <span className="font-bold">{activeTxn.note?.replace("UPI Payment to ", "") || "UPI Payment"}</span>?
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-2 pt-4">
+        <DialogBody className="space-y-2.5 pt-2">
           <Button 
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+            className="w-full h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
             onClick={() => handleConfirm(activeTxn._id, "completed")}
             disabled={isLoading}
           >
@@ -137,7 +139,7 @@ export function GlobalConfirmationCheck() {
           </Button>
           <Button 
             variant="destructive"
-            className="w-full font-bold"
+            className="w-full h-11 font-bold"
             onClick={() => handleConfirm(activeTxn._id, "cancelled")}
             disabled={isLoading}
           >
@@ -145,15 +147,15 @@ export function GlobalConfirmationCheck() {
             No, Failed / Cancelled
           </Button>
           <Button 
-            variant="secondary"
-            className="w-full font-bold"
+            variant="outline"
+            className="w-full h-11 font-medium"
             onClick={() => handleConfirm(activeTxn._id, "pending")}
             disabled={isLoading}
           >
             {confirmingStatus === "pending" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             Not sure yet / Ask me later
           </Button>
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

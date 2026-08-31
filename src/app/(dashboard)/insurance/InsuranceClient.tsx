@@ -17,6 +17,8 @@ import { InsuranceTable } from "@/components/tables/InsuranceTable";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
 import { getStartOfDay } from "@/lib/dateTimeHelper";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
 
@@ -272,8 +274,8 @@ export function InsuranceClient({
                   <div className="md:col-span-2 space-y-6">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                       <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                        <h2 className="text-lg font-bold text-foreground">Premium by Type</h2>
-                        <p className="text-sm text-muted-foreground mt-1">Distribution of your insurance premiums across different policy types.</p>
+                        <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Premium by Type</h2>
+                        <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Distribution of your insurance premiums across different policy types.</p>
                       </div>
                       <div className="p-4 sm:p-6 h-[400px]">
                         {chartData.length > 0 ? (

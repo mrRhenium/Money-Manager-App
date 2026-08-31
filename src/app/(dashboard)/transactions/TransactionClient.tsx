@@ -19,6 +19,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
 import { parseToDate, formatDateString } from "@/lib/dateTimeHelper";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function TransactionClient({
   initialTransactions,
@@ -331,8 +333,8 @@ export function TransactionClient({
                 {/* Graph Area */}
                 <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                   <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                    <h2 className="text-lg font-bold text-foreground">Cashflow Trend</h2>
-                    <p className="text-sm text-muted-foreground mt-1">Income vs expenses over the last 30 active days.</p>
+                    <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Cashflow Trend</h2>
+                    <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Income vs expenses over the last 30 active days.</p>
                   </div>
                   <div className="p-4 sm:p-6 h-[400px]">
                     {chartData.length > 0 ? (

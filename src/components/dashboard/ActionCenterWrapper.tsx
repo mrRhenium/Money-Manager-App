@@ -10,6 +10,8 @@ import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { DashboardAdvancedFilter } from "@/components/dashboard/DashboardAdvancedFilter";
 import { MasterFilterDrawer } from "@/components/layout/MasterView";
 import { Suspense } from "react";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function ActionCenterWrapper({ upcomingDues, daysAhead, user, accounts = [] }: { upcomingDues: any[], daysAhead: number, user: any, accounts?: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,10 +34,10 @@ export function ActionCenterWrapper({ upcomingDues, daysAhead, user, accounts = 
               )}
             </Link>
             <div>
-              <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground truncate max-w-[150px] sm:max-w-none">
+              <h1 className={cn(TYPOGRAPHY.headerTitle, "truncate max-w-[200px] sm:max-w-none")}>
                 Welcome, {user?.name?.split(" ")[0] || "User"}!
               </h1>
-              <p className="text-muted-foreground mt-0.5 text-[10px] sm:text-base block">
+              <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-0.5 block")}>
                 Here's your actionable financial overview.
               </p>
             </div>

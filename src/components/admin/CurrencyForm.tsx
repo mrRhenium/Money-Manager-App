@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "antd";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { upsertCurrency } from "@/actions/currency";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Coins, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -74,12 +74,21 @@ export function CurrencyForm({ currency }: { currency?: any }) {
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle>{currency ? "Edit Currency" : "Add Currency"}</DialogTitle>
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Coins className="w-5 h-5" />
+            </div>
+            <span>{currency ? "Edit Currency" : "Add Currency"}</span>
+          </DialogTitle>
+          <DialogDescription>
+            {currency ? "Update exchange rate or currency status" : "Configure a new global currency and exchange rate"}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
             <FormField
               control={form.control as any}
               name="code"
@@ -171,12 +180,17 @@ export function CurrencyForm({ currency }: { currency?: any }) {
                 )}
               />
             </div>
+            </DialogBody>
             
-            <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save"}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-10 px-4 text-sm w-full sm:w-auto">
+                Cancel
               </Button>
-            </div>
+              <Button type="submit" className="h-10 px-5 text-sm font-semibold shadow-md w-full sm:w-auto" disabled={loading}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {loading ? "Saving..." : "Save Currency"}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

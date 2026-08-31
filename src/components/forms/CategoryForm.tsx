@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -92,69 +92,82 @@ export function CategoryForm({ category, triggerClassName }: { category?: any, t
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <FolderPlus className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <FolderPlus className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{category ? "Edit Category" : "Create New Category"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {category ? "Update category styling, icon, and transaction type" : "Add an income or expense classification"}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Type className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Groceries" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Type</FormLabel>
-                  <FormControl>
-                    <Select
-                      showSearch
-                      placeholder="Select type"
-                      className="w-full h-10"
-                      optionFilterProp="label"
-                      options={[
-                        { label: 'Expense', value: 'expense' },
-                        { label: 'Income', value: 'income' },
-                      ]}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <ColorPicker value={field.value} onChange={field.onChange} id={`categoryColorInput-${category?._id || 'new'}`} />
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="icon"
-              render={({ field }) => (
-                <IconPicker value={field.value} onChange={field.onChange} color={form.watch("color")} />
-              )}
-            />
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
-              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {isLoading ? "Saving..." : (category ? "Save Changes" : "Create Category")}
-            </Button>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Type className="w-4 h-4 text-muted-foreground" /> Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Groceries" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Type</FormLabel>
+                    <FormControl>
+                      <Select
+                        showSearch
+                        placeholder="Select type"
+                        className="w-full h-10"
+                        optionFilterProp="label"
+                        options={[
+                          { label: 'Expense', value: 'expense' },
+                          { label: 'Income', value: 'income' },
+                        ]}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="color"
+                render={({ field }) => (
+                  <ColorPicker value={field.value} onChange={field.onChange} id={`categoryColorInput-${category?._id || 'new'}`} />
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                  <IconPicker value={field.value} onChange={field.onChange} color={form.watch("color")} />
+                )}
+              />
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={isLoading}>
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {isLoading ? "Saving..." : (category ? "Save Changes" : "Create Category")}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

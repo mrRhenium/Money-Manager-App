@@ -5,14 +5,15 @@ import { List, Select } from "antd";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BudgetForm } from "../forms/BudgetForm";
-import { deleteBudget } from "@/actions/budget";
-import { Trash, Search, Calendar } from "lucide-react";
+import { BudgetDeleteModal } from "../forms/BudgetDeleteModal";
+import { Trash, Search, Calendar, PieChart } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 import dayjs from "dayjs";
-import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 export function BudgetList({ 
   budgets, 
@@ -38,10 +39,7 @@ export function BudgetList({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const { hiddenIds, triggerDelete } = useUndoableDelete();
-
   const filteredBudgets = budgets.filter((b) => {
-    if (hiddenIds.has(b._id)) return false;
     if (!hideToolbar) {
       return b.categoryId?.name?.toLowerCase().includes(search.toLowerCase());
     }
@@ -143,8 +141,16 @@ export function BudgetList({
       )}
 
       {filteredBudgets.length === 0 ? (
-        <div className="col-span-full p-8 text-center border rounded-xl border-dashed">
-          <p className="text-muted-foreground mb-4">No budgets found.</p>
+        <div className="col-span-full py-12 px-6 text-center border rounded-2xl border-dashed bg-card/40 flex flex-col items-center justify-center max-w-lg mx-auto my-6">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <PieChart className="w-7 h-7" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground mb-1">
+            No Budgets for {dayjs(selectedMonth + "-01").format("MMMM YYYY")}
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-md">
+            No spending limits set for this period.
+          </p>
         </div>
       ) : (
         <List
@@ -184,45 +190,30 @@ export function BudgetList({
                           <CategoryIcon name={budget.icon || budget.categoryId?.icon} color={budgetColor} className="w-5 h-5" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <h3 className="font-semibold truncate leading-none mb-1" title={budget.categoryId?.name}>{budget.categoryId?.name}</h3>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="w-3 h-3" /> {periodText}</span>
+                          <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1")} title={budget.categoryId?.name}>{budget.categoryId?.name}</h3>
+                          <span className={cn(TYPOGRAPHY.cardSubtitle, "flex items-center gap-1")}><Calendar className="w-3 h-3" /> {periodText}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <BudgetForm categories={categories} budget={budget} />
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                          onClick={() => {
-                            triggerDelete({
-                              id: budget._id,
-                              entityName: budget.categoryId?.name || "Budget",
-                              onCommit: async () => {
-                                const res = await deleteBudget(budget._id);
-                                if (res && !res.success) {
-                                  throw new Error(res.error);
-                                }
-                              }
-                            });
-                          }}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
+                        <BudgetDeleteModal budget={budget} totalSpent={budget.totalSpent} />
                       </div>
                     </div>
                     <div className="w-full space-y-3 mt-4">
                       <div className="flex justify-between items-end">
                         <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Spent / Budget</p>
-                          <p className="text-sm font-semibold">{formatCurrency(budget.totalSpent)} <span className="text-muted-foreground font-normal">/ {formatCurrency(budget.amount)}</span></p>
+                          <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Spent / Budget</p>
+                          <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>
+                            {formatCurrency(budget.totalSpent)} <span className="text-muted-foreground font-normal">/ {formatCurrency(budget.amount)}</span>
+                          </p>
                         </div>
                         <div className="text-right">
-                          <span className={isOverBudget ? "text-red-500 font-bold" : "text-primary font-bold"}>{actualPercentage.toFixed(1)}%</span>
-                          <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
-                            {isOverBudget 
-                              ? `OVER: ${formatCurrency(budget.totalSpent - budget.amount)}` 
-                              : `LEFT: ${formatCurrency(budget.amount - budget.totalSpent)}`}
+                          <div className="flex items-center justify-end gap-1.5 mb-1">
+                            <p className={cn(TYPOGRAPHY.cardLabel)}>{isOverBudget ? "Over Budget" : "Remaining"}</p>
+                            <span className={cn(TYPOGRAPHY.badge, "px-1.5 py-0", isOverBudget ? "text-red-500 bg-red-500/10 font-bold" : "text-primary bg-primary/10 font-bold")}>{actualPercentage.toFixed(1)}%</span>
+                          </div>
+                          <p className={cn(TYPOGRAPHY.cardValue, "font-semibold text-right", isOverBudget ? "text-red-500" : "text-foreground")}>
+                            {formatCurrency(Math.abs(budget.amount - budget.totalSpent))}
                           </p>
                         </div>
                       </div>

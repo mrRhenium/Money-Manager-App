@@ -15,6 +15,8 @@ import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { AddFundsModal } from "../forms/AddFundsModal";
 import { WithdrawFundsModal } from "../forms/WithdrawFundsModal";
 import { useCurrency } from "@/hooks/useCurrency";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function GoalList({ 
   activeGoals, 
@@ -118,10 +120,10 @@ export function GoalList({
                         <Target className="w-5 h-5 text-white" />
                       </div>
                     <div>
-                      <h3 className="font-semibold leading-none mb-1 truncate" title={goal.name}>{goal.name}</h3>
+                      <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1")} title={goal.name}>{goal.name}</h3>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {goal.deadline && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <p className={cn(TYPOGRAPHY.cardSubtitle, "flex items-center gap-1")}>
                             <CalendarDays className="w-3 h-3" /> 
                             {formatDateString(goal.deadline, "DD-MM-YYYY")}
                           </p>
@@ -150,15 +152,22 @@ export function GoalList({
                   <div className="w-full space-y-3 pt-2">
                     <div className="flex justify-between items-end">
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Saved / Target</p>
-                        <p className="text-sm font-semibold">{format(goal.currentAmount)} <span className="text-muted-foreground font-normal">/ {format(goal.targetAmount)}</span></p>
+                        <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Saved / Target</p>
+                        <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>
+                          {format(goal.currentAmount)} <span className="text-muted-foreground font-normal">/ {format(goal.targetAmount)}</span>
+                        </p>
                       </div>
                       <div className="text-right">
-                        <span style={{ color: goal.color }} className="font-bold">{actualPercentage.toFixed(1)}%</span>
-                        <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
-                          {isCompleted 
-                            ? <span className="text-emerald-500">COMPLETED!</span> 
-                            : `LEFT: ${format(goal.targetAmount - goal.currentAmount)}`}
+                        <div className="flex items-center justify-end gap-1.5 mb-1">
+                          <p className={cn(TYPOGRAPHY.cardLabel)}>Remaining</p>
+                          <span style={{ color: goal.color }} className={cn(TYPOGRAPHY.badge, "px-1.5 py-0")}>{actualPercentage.toFixed(1)}%</span>
+                        </div>
+                        <p className={cn(TYPOGRAPHY.cardValue, "font-semibold text-right")}>
+                          {isCompleted ? (
+                            <span className="text-emerald-500 font-bold">Completed!</span>
+                          ) : (
+                            format(goal.targetAmount - goal.currentAmount)
+                          )}
                         </p>
                       </div>
                     </div>

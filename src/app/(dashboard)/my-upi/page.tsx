@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
 import { QrCode, Plus, Trash, Copy, Loader2, ArrowLeft, Smartphone, Shield, Hash } from "lucide-react";
 import { getUserProfile, updateProfile } from "@/actions/user";
 import { useToast } from "@/hooks/useToast";
 import { QRCodeSVG } from "qrcode.react";
 import Link from "next/link";
 import { MasterHeader } from "@/components/layout/MasterHeader";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 function MyUpiContent() {
   const { data: session } = useSession();
@@ -86,8 +88,8 @@ function MyUpiContent() {
             <Card className="lg:col-span-3 shadow-sm border border-slate-200/60 dark:border-slate-800">
               <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/50">
                 <div>
-                  <CardTitle className="text-base sm:text-lg">My UPI IDs</CardTitle>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">Add your VPA/UPI IDs to generate receiving QR codes.</p>
+                  <CardTitle className={cn(TYPOGRAPHY.sectionTitle)}>My UPI IDs</CardTitle>
+                  <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1 hidden sm:block")}>Add your VPA/UPI IDs to generate receiving QR codes.</p>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Button onClick={() => {
@@ -96,11 +98,11 @@ function MyUpiContent() {
                     } else {
                       toast.error("Please fill in the empty UPI ID before adding a new one.");
                     }
-                  }} variant="outline" size="sm" className="h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm">
-                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Add
+                  }} variant="outline" size="sm" className="px-2.5">
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add
                   </Button>
-                  <Button onClick={handleSave} disabled={isSaving} size="sm" className="h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm">
-                    {isSaving ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> : "Save"}
+                  <Button onClick={handleSave} disabled={isSaving} size="sm" className="px-3">
+                    {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Save"}
                   </Button>
                 </div>
               </CardHeader>
@@ -118,15 +120,15 @@ function MyUpiContent() {
                         newIds[idx] = e.target.value;
                         setUpiIds(newIds);
                       }}
-                      className="flex-1 h-8 sm:h-10 text-xs sm:text-sm"
+                      className="flex-1"
                     />
-                    <Button type="button" variant="outline" size="icon" className="shrink-0 w-8 h-8 sm:w-10 sm:h-10" onClick={() => copyToClipboard(vpa, "UPI ID")} disabled={!vpa}>
-                      <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <Button type="button" variant="outline" size="icon-sm" className="shrink-0" onClick={() => copyToClipboard(vpa, "UPI ID")} disabled={!vpa}>
+                      <Copy className="w-3.5 h-3.5" />
                     </Button>
-                    <Button type="button" variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive w-8 h-8 sm:w-10 sm:h-10" onClick={() => {
+                    <Button type="button" variant="ghost" size="icon-sm" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={() => {
                       setUpiIds(upiIds.filter((_, i) => i !== idx));
                     }}>
-                      <Trash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <Trash className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 ))}
@@ -141,16 +143,16 @@ function MyUpiContent() {
             {/* Right Column - QR Code */}
             <Card className="lg:col-span-2 shadow-sm border border-slate-200/60 dark:border-slate-800">
               <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/50">
-                <CardTitle className="text-base sm:text-lg font-bold text-foreground">My Receiving QR Code</CardTitle>
-                <p className="text-[10px] sm:text-sm text-muted-foreground mt-1">Share this to receive payments.</p>
+                <CardTitle className={cn(TYPOGRAPHY.sectionTitle)}>My Receiving QR Code</CardTitle>
+                <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Share this to receive payments.</p>
               </CardHeader>
               <CardContent className="p-4 md:p-6 flex flex-col items-center gap-4 sm:gap-6">
                 {activeIds.length > 0 ? (
                   <>
                     <div className="w-full">
-                      <Label className="text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2 block">Select UPI ID for QR Code</Label>
+                      <Label className={cn(TYPOGRAPHY.settingsLabel, "mb-1.5 sm:mb-2 block")}>Select UPI ID for QR Code</Label>
                       <select
-                        className="flex h-8 sm:h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 py-1 sm:py-2 text-xs sm:text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="flex h-10 w-full items-center justify-between rounded-lg border border-input bg-transparent px-3 text-[length:var(--font-size-modal-input,0.875rem)] shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         value={selectedUpiForQr}
                         onChange={(e) => setSelectedUpiForQr(e.target.value)}
                       >
@@ -187,31 +189,41 @@ function MyUpiContent() {
                         </button>
 
                         <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
-                          <DialogContent className="sm:max-w-md flex flex-col items-center justify-center p-8 border-none bg-white/95 backdrop-blur shadow-2xl">
-                            <DialogHeader className="mb-4">
-                              <DialogTitle className="text-center text-xl font-bold">My QR Code</DialogTitle>
+                          <DialogContent initialFocus={false} size="md">
+                            <DialogHeader>
+                              <DialogTitle>
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                  <QrCode className="w-4 h-4" />
+                                </div>
+                                <span>My QR Code</span>
+                              </DialogTitle>
+                              <DialogDescription>
+                                Scan with any UPI application to send payments directly to this ID.
+                              </DialogDescription>
                             </DialogHeader>
-                            <div className="p-6 bg-white rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.1)] border-4 border-primary/10">
-                              <QRCodeSVG
-                                value={generatedUpiUrl}
-                                size={300}
-                                level="M"
-                                imageSettings={{
-                                  src: "/icon-512x512.png",
-                                  x: undefined,
-                                  y: undefined,
-                                  height: 70,
-                                  width: 70,
-                                  excavate: true,
-                                }}
-                              />
-                            </div>
-                            <p className="mt-6 text-base font-semibold text-center text-foreground bg-primary/10 px-6 py-2.5 rounded-full border border-primary/20">
-                              {selectedUpiForQr}
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-3 text-center max-w-xs">
-                              Scan this QR code with any UPI app (GPay, PhonePe, Paytm, etc.) to pay {name}.
-                            </p>
+                            <DialogBody className="flex flex-col items-center justify-center p-6 space-y-4">
+                              <div className="p-4 sm:p-6 bg-white rounded-2xl sm:rounded-3xl shadow-md border-2 border-primary/20 flex items-center justify-center">
+                                <QRCodeSVG
+                                  value={generatedUpiUrl}
+                                  size={240}
+                                  level="M"
+                                  imageSettings={{
+                                    src: "/icon-512x512.png",
+                                    x: undefined,
+                                    y: undefined,
+                                    height: 54,
+                                    width: 54,
+                                    excavate: true,
+                                  }}
+                                />
+                              </div>
+                              <p className={cn(TYPOGRAPHY.settingsTitle, "text-center bg-primary/10 px-5 py-2 rounded-full border border-primary/20 font-mono")}>
+                                {selectedUpiForQr}
+                              </p>
+                              <p className={cn(TYPOGRAPHY.modalDescription, "text-center max-w-xs")}>
+                                Compatible with GPay, PhonePe, Paytm, BHIM, and bank UPI apps for {name}.
+                              </p>
+                            </DialogBody>
                           </DialogContent>
                         </Dialog>
                       </>

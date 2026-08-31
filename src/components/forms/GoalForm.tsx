@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Target, PenLine } from "lucide-react";
+import { Plus, Target, PenLine, Loader2 } from "lucide-react";
 import { formatDateString, parseToDate } from "@/lib/dateTimeHelper";
 import { createGoal, updateGoal } from "@/actions/goal";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
@@ -111,85 +111,98 @@ export function GoalForm({ goal, onUpdate, triggerClassName }: { goal?: any, onU
           </Button>
         )}
       />
-      <DialogContent className="sm:max-w-md">
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Target className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Target className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{goal ? "Edit Goal" : "New Savings Goal"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {goal ? "Update target target amount, target date, or icon" : "Set up a financial target with visual progress tracking"}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Goal Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Vacation Fund" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="targetAmount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Target Amount</FormLabel>
-                  <FormControl>
-                    <CurrencyInput 
-                      placeholder="e.g. 50,000" 
-                      currency={currency}
-                      onCurrencyChange={setCurrency}
-                      {...field} 
-                      onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="deadline"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Target Date (Optional)</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
               <FormField
                 control={form.control}
-                name="icon"
+                name="name"
                 render={({ field }) => (
-              <IconPicker value={form.watch("icon")} onChange={(val) => form.setValue("icon", val)} color={form.watch("color")} />
+                  <FormItem>
+                    <FormLabel>Goal Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Vacation Fund" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
 
               <FormField
                 control={form.control}
-                name="color"
+                name="targetAmount"
                 render={({ field }) => (
-                  <ColorPicker value={field.value} onChange={field.onChange} id={`goalColor-${goal?._id || 'new'}`} />
+                  <FormItem>
+                    <FormLabel>Target Amount</FormLabel>
+                    <FormControl>
+                      <CurrencyInput 
+                        placeholder="e.g. 50,000" 
+                        currency={currency}
+                        onCurrencyChange={setCurrency}
+                        {...field} 
+                        onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
-            </div>
 
-            <Button type="submit" className="w-full mt-4" disabled={loading}>
-              {loading ? "Saving..." : (goal ? "Save Changes" : "Create Goal")}
-            </Button>
+              <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Target Date (Optional)</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-4 pt-2 border-t">
+                <FormField
+                  control={form.control}
+                  name="icon"
+                  render={({ field }) => (
+                    <IconPicker value={form.watch("icon")} onChange={(val) => form.setValue("icon", val)} color={form.watch("color")} />
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <ColorPicker value={field.value} onChange={field.onChange} id={`goalColor-${goal?._id || 'new'}`} />
+                  )}
+                />
+              </div>
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={loading}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {loading ? "Saving..." : (goal ? "Save Changes" : "Create Goal")}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

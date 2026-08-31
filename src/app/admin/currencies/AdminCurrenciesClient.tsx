@@ -115,7 +115,7 @@ export function AdminCurrenciesClient({ currencies }: { currencies: any[] }) {
       render: (_: any, record: any) => (
         <div className="flex items-center justify-end gap-1">
           <CurrencyForm currency={record} />
-          <CurrencyDeleteButton id={record._id} isBase={record.isBase} />
+          <CurrencyDeleteButton id={record._id} isBase={record.isBase} code={record.code} name={record.name} />
         </div>
       ),
     }
@@ -170,7 +170,7 @@ export function AdminCurrenciesClient({ currencies }: { currencies: any[] }) {
 
                   <div className="flex items-center gap-1">
                     <CurrencyForm currency={record} />
-                    <CurrencyDeleteButton id={record._id} isBase={record.isBase} />
+                    <CurrencyDeleteButton id={record._id} isBase={record.isBase} code={record.code} name={record.name} />
                   </div>
                 </div>
               </div>

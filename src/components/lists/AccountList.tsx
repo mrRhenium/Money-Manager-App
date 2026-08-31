@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "antd";
 import { AccountForm } from "../forms/AccountForm";
-import { deleteAccount } from "@/actions/account";
+import { AccountDeleteModal } from "../forms/AccountDeleteModal";
 import { Trash, Search, Filter, Landmark, Wallet, Banknote, CreditCard } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
-import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 import { formatCurrency } from "@/lib/currencyFormatter";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 const getAccountIcon = (type: string) => {
   switch (type.toLowerCase()) {
@@ -41,10 +42,9 @@ export function AccountList({ accounts, hideToolbar = false, externalSort }: { a
   const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
-  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredAccounts = useMemo(() => {
-    let result = accounts.filter((acc) => !hiddenIds.has(acc._id));
+    let result = [...accounts];
     
     if (!hideToolbar) {
       result = result.filter((acc) => {
@@ -66,7 +66,7 @@ export function AccountList({ accounts, hideToolbar = false, externalSort }: { a
     }
 
     return result;
-  }, [accounts, searchQuery, typeFilters, hiddenIds, hideToolbar, externalSort]);
+  }, [accounts, searchQuery, typeFilters, hideToolbar, externalSort]);
   if (accounts.length === 0) {
     return (
       <div className="p-8 text-center border rounded-xl border-dashed col-span-full">
@@ -142,8 +142,8 @@ export function AccountList({ accounts, hideToolbar = false, externalSort }: { a
                       {account.icon ? <CategoryIcon name={account.icon} className="w-5 h-5 text-white" /> : getAccountIcon(account.type)}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold leading-none mb-1 truncate capitalize" title={account.name}>{account.name}</h3>
-                      <p className="text-[10px] text-muted-foreground uppercase font-semibold mt-1 tracking-wider">
+                      <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1 capitalize")} title={account.name}>{account.name}</h3>
+                      <p className={cn(TYPOGRAPHY.cardLabel, "mt-1")}>
                         {account.type}
                       </p>
                     </div>
@@ -151,30 +151,12 @@ export function AccountList({ accounts, hideToolbar = false, externalSort }: { a
 
                   <div className="flex items-center gap-1 transition-opacity shrink-0">
                     <AccountForm account={account} />
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                      onClick={() => {
-                        triggerDelete({
-                          id: account._id,
-                          entityName: account.name,
-                          onCommit: async () => {
-                            const res = await deleteAccount(account._id);
-                            if (res && !res.success) {
-                              throw new Error(res.error);
-                            }
-                          }
-                        });
-                      }}
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
+                    <AccountDeleteModal account={account} />
                   </div>
                 </div>
 
                 <div className="z-10 mt-auto pt-4">
-                  <div className="text-xl sm:text-2xl font-bold truncate tracking-tight">
+                  <div className={cn(TYPOGRAPHY.cardAmount, "truncate font-extrabold")}>
                     {formatCurrency(account.balance, account.currency || "INR")}
                   </div>
                 </div>

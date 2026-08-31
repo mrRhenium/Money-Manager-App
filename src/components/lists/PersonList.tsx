@@ -10,8 +10,9 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useCurrency } from "@/hooks/useCurrency";
 import { PersonDetailDrawer } from "@/components/people/PersonDetailDrawer";
 import { useToast } from "@/hooks/useToast";
-import { useUndoableDelete } from "@/hooks/useUndoableDelete";
 import { Button } from "@/components/ui/button";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 export function PersonList({
   people,
@@ -36,7 +37,6 @@ export function PersonList({
   const { toast } = useToast();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { hiddenIds, triggerDelete } = useUndoableDelete();
   const [selectedPerson, setSelectedPerson] = useState<any | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [localPeople, setLocalPeople] = useState(people);
@@ -109,7 +109,6 @@ export function PersonList({
 
   const filteredPeople = useMemo(() => {
     return localPeople.filter((person) => {
-      if (hiddenIds.has(person._id)) return false;
       const q = searchQuery.toLowerCase();
       const matchesSearch =
         person.name?.toLowerCase().includes(q) ||
@@ -119,7 +118,7 @@ export function PersonList({
       const matchesRelation = relationFilter === "All" || person.relation === relationFilter;
       return matchesSearch && matchesRelation;
     });
-  }, [localPeople, searchQuery, relationFilter, hiddenIds]);
+  }, [localPeople, searchQuery, relationFilter]);
 
   const filteredFavorites = useMemo(() => {
     return filteredPeople.filter(p => p.isFavorite);
@@ -177,11 +176,11 @@ export function PersonList({
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-foreground text-sm truncate group-hover:text-primary transition-colors" title={person.name}>
+                  <h3 className={cn(TYPOGRAPHY.cardTitle, "font-bold group-hover:text-primary transition-colors")} title={person.name}>
                     {person.name}
                   </h3>
                 </div>
-                <span className="text-xs text-muted-foreground truncate block">{person.relation || "Contact"}</span>
+                <span className={cn(TYPOGRAPHY.cardSubtitle, "block")}>{person.relation || "Contact"}</span>
               </div>
             </div>
 
@@ -197,35 +196,13 @@ export function PersonList({
                 <Star className={`w-4 h-4 ${isFav ? "fill-amber-500" : ""}`} />
               </button>
               <PersonForm person={person} />
-              {person.transactionCount > 0 ? (
-                <PersonDeleteModal person={person} />
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                  onClick={() => {
-                    triggerDelete({
-                      id: person._id,
-                      entityName: person.name,
-                      onCommit: async () => {
-                        const res = await deletePerson(person._id);
-                        if (res && !res.success) {
-                          throw new Error(res.error);
-                        }
-                      }
-                    });
-                  }}
-                >
-                  <Trash className="w-4 h-4" />
-                </Button>
-              )}
+              <PersonDeleteModal person={person} />
             </div>
           </div>
 
           {/* Unambiguous Net Balance status badge */}
           <div className="pt-3 border-t border-border/50 flex items-center justify-between mt-auto">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 normal-case font-normal")}>
               {isPositive ? (
                 <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                   <ArrowDownLeft className="w-3.5 h-3.5" /> To Receive
@@ -241,12 +218,12 @@ export function PersonList({
               )}
             </div>
 
-            <span className={`text-sm font-extrabold px-2.5 py-0.5 rounded-full border ${isPositive
+            <span className={cn(TYPOGRAPHY.badge, "border font-extrabold px-2.5 py-0.5 rounded-full", isPositive
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                 : isNegative
                   ? "bg-red-500/10 text-red-500 border-red-500/20"
                   : "bg-secondary/60 text-muted-foreground border-border/40"
-              }`}>
+              )}>
               {isPositive ? `+${format(person.netBalance)}` :
                 isNegative ? `-${format(Math.abs(person.netBalance))}` :
                   "All Settled (₹0)"}

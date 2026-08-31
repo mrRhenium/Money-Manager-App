@@ -8,10 +8,13 @@ import { deleteTransaction } from "@/actions/transaction";
 import { Trash, Search, RefreshCcw, User, Landmark, TrendingUp, CreditCard, Shield, Receipt } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { Input } from "@/components/ui/input";
-import { parseToDate } from "@/lib/dateTimeHelper";
+import { parseToDate, formatDateString } from "@/lib/dateTimeHelper";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useToast } from "@/hooks/useToast";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 function getFallbackTransactionMeta(record: any) {
   const lowerNote = (record.note || "").toLowerCase();
@@ -86,6 +89,7 @@ export function TransactionTable({
   externalMobileAccount?: string[];
 }) {
   const { format } = useCurrency();
+  const { toast } = useToast();
   const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const visibleTransactions = useMemo(() => {
@@ -352,7 +356,10 @@ export function TransactionTable({
                 id: record._id,
                 entityName: record.note ? `Transaction (${record.note})` : "Transaction",
                 onCommit: async () => {
-                  await deleteTransaction(record._id);
+                  const res = await deleteTransaction(record._id);
+                  if (res && !res.success) {
+                    throw new Error(res.error || "Failed to delete transaction");
+                  }
                 }
               });
             }}
@@ -432,21 +439,21 @@ export function TransactionTable({
                         </div>
                       )}
                       <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-foreground leading-none mb-1 truncate">
+                        <span className={cn(TYPOGRAPHY.cardTitle, "block leading-none mb-1")}>
                           {isTransfer 
                             ? "Internal Transfer" 
                             : record.personId?.name
                             ? (record.categoryId?.name ? `${record.personId.name} • ${record.categoryId.name}` : `${record.personId.name} (${record.type})`)
                             : (record.categoryId?.name || getFallbackTransactionMeta(record).title)}
                         </span>
-                        <span className="text-xs text-muted-foreground mt-0.5 font-medium">
+                        <span className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5 font-medium")}>
                           {formatDate(record.date, "standard", userTimezone)}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end gap-1">
-                      <div className={`font-bold text-lg whitespace-nowrap ${
+                      <div className={cn(TYPOGRAPHY.cardAmount, "whitespace-nowrap", 
                         isCancelled 
                           ? "text-muted-foreground line-through opacity-75" 
                           : isPending 
@@ -456,16 +463,16 @@ export function TransactionTable({
                           : isNegative 
                           ? "text-red-500" 
                           : "text-blue-500"
-                      }`}>
+                      )}>
                         {isCancelled ? "" : isNegative ? "-" : (isPositive ? "+" : "")}{format(record.amount)}
                       </div>
                       {isCancelled && (
-                        <span className="text-[10px] uppercase font-bold text-zinc-500 bg-zinc-500/10 px-1.5 py-0.5 rounded border border-zinc-500/20">
+                        <span className={cn(TYPOGRAPHY.badge, "text-zinc-500 bg-zinc-500/10 border border-zinc-500/20")}>
                           Cancelled
                         </span>
                       )}
                       {isPending && (
-                        <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 flex items-center gap-1">
+                        <span className={cn(TYPOGRAPHY.badge, "text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 flex items-center gap-1")}>
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                           Pending
                         </span>
@@ -477,19 +484,19 @@ export function TransactionTable({
                     <div className="flex items-center gap-1.5 text-muted-foreground bg-muted/50 px-2.5 py-1.5 rounded-lg w-fit">
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-landmark shrink-0"><line x1="3" x2="21" y1="22" y2="22" /><line x1="6" x2="6" y1="18" y2="11" /><line x1="10" x2="10" y1="18" y2="11" /><line x1="14" x2="14" y1="18" y2="11" /><line x1="18" x2="18" y1="18" y2="11" /><polygon points="12 2 20 7 4 7" /></svg>
                       {isTransfer && record.toAccountId ? (
-                        <span className="flex items-center gap-1.5 text-xs">
+                        <span className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 normal-case font-normal")}>
                           <span className="font-medium text-foreground/80 truncate max-w-[100px] sm:max-w-none">{record.accountId?.name || "-"}</span>
                           <span className="text-muted-foreground/60">→</span>
                           <span className="font-medium text-foreground/80 truncate max-w-[100px] sm:max-w-none">{record.toAccountId?.name || "-"}</span>
                         </span>
                       ) : (
-                        <span className="font-medium text-foreground/80 truncate text-xs">{record.accountId?.name || "-"}</span>
+                        <span className={cn(TYPOGRAPHY.cardLabel, "font-medium text-foreground/80 truncate normal-case")}>{record.accountId?.name || "-"}</span>
                       )}
                     </div>
 
                     {isQr ? (
                       <div className="flex flex-col gap-1 py-0.5">
-                        {record.note && <span className="font-semibold text-sm text-foreground">{record.note}</span>}
+                        {record.note && <span className={cn(TYPOGRAPHY.cardTitle, "font-semibold")}>{record.note}</span>}
                         <div className="inline-flex items-center gap-1.5 bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-lg text-xs w-fit text-primary">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                           <span className="font-bold">UPI:</span>
@@ -497,7 +504,7 @@ export function TransactionTable({
                         </div>
                       </div>
                     ) : (
-                      record.note && <div className="text-foreground/90 text-sm truncate">{record.note}</div>
+                      record.note && <div className={cn(TYPOGRAPHY.cardSubtitle, "text-foreground/90")}>{record.note}</div>
                     )}
                   </div>
 
@@ -515,7 +522,10 @@ export function TransactionTable({
                           id: record._id,
                           entityName: record.note ? `Transaction (${record.note})` : "Transaction",
                           onCommit: async () => {
-                            await deleteTransaction(record._id);
+                            const res = await deleteTransaction(record._id);
+                            if (res && !res.success) {
+                              throw new Error(res.error || "Failed to delete transaction");
+                            }
                           }
                         });
                       }}

@@ -119,19 +119,27 @@ export function useUndoableDelete() {
     };
 
     // 3. Show notification with Undo button and countdown bar
-    notification.success({
+    notification.open({
       key: id,
-      message: `${entityName} deleted`,
+      message: (
+        <span className="font-semibold text-foreground">
+          {entityName} deleted
+        </span>
+      ),
       description: (
         <div>
-          <span style={{ fontSize: 13, opacity: 0.75 }}>This action will be permanent in 10 seconds.</span>
+          <span className="text-xs text-muted-foreground">Action will be permanent in 10 seconds.</span>
           <CountdownBar durationMs={durationMs} />
         </div>
       ),
-      duration,
+      duration: 0, // Handled exclusively by setTimeout to prevent double-commit race conditions
       placement: "bottomRight",
+      className: "!z-[1000] shadow-xl border border-border/80 rounded-xl",
+      style: {
+        marginBottom: 68, // Ensures clearance above mobile bottom nav
+      },
       onClose: () => {
-        // If closed manually by the user clicking 'x' or swiping
+        // If closed manually by the user clicking 'x'
         if (reason === 'manual') {
           if (timersRef.current[id]) {
             clearTimeout(timersRef.current[id]);
@@ -144,6 +152,7 @@ export function useUndoableDelete() {
         <Button 
           size="small" 
           type="primary"
+          className="font-bold shadow-xs !h-8 !px-3"
           onClick={(e) => {
             e.stopPropagation();
             handleUndo();
@@ -157,7 +166,7 @@ export function useUndoableDelete() {
     // 4. Setup commit timer
     timersRef.current[id] = setTimeout(() => {
       reason = 'timeout';
-      // Forcefully close the notification when the countdown ends
+      // Close the notification when the countdown ends
       notification.destroy(id);
       
       commitDeletion();

@@ -13,6 +13,18 @@ function AppConfigurator({ children }: { children: React.ReactNode }) {
   const customColor = (session?.user as any)?.themeColor;
   const activeColor = customColor || "#0ea5e9";
 
+  React.useEffect(() => {
+    try {
+      const savedFontSize = localStorage.getItem("user-font-size") || "normal";
+      document.documentElement.style.removeProperty("--font-scale");
+      document.documentElement.setAttribute("data-font-size", savedFontSize);
+      const savedFontFamily = localStorage.getItem("user-font-family");
+      if (savedFontFamily) {
+        document.documentElement.style.setProperty("--font-family-base", savedFontFamily);
+      }
+    } catch {}
+  }, []);
+
   return (
     <>
       {customColor && (
@@ -32,7 +44,7 @@ function AppConfigurator({ children }: { children: React.ReactNode }) {
           token: {
             colorPrimary: activeColor,
             borderRadius: 8,
-            fontFamily: "var(--font-sans)",
+            fontFamily: "var(--font-family-base, var(--font-sans))",
           },
           algorithm: resolvedTheme === "dark" ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}

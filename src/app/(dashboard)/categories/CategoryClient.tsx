@@ -16,6 +16,8 @@ import { CategoryForm } from "@/components/forms/CategoryForm";
 import { CategoryList } from "@/components/lists/CategoryList";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function CategoryClient({ 
   expenseCategories,
@@ -163,8 +165,8 @@ export function CategoryClient({
                   <div className="md:col-span-2 space-y-6">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                       <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                        <h2 className="text-lg font-bold text-foreground">Top 10 Categories by Spend</h2>
-                        <p className="text-sm text-muted-foreground mt-1">Highest outflow categories this period.</p>
+                        <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Top 10 Categories by Spend</h2>
+                        <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Highest outflow categories this period.</p>
                       </div>
                       <div className="p-4 sm:p-6 h-[400px]">
                         <ResponsiveContainer width="100%" height="100%">

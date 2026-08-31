@@ -11,13 +11,15 @@ import { Input } from "@/components/ui/input";
 import { RecurringBillForm } from "@/components/forms/RecurringBillForm";
 import { RecurringBillDeleteModal } from "@/components/forms/RecurringBillDeleteModal";
 import { markSubscriptionPaid } from "@/actions/recurringBill";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
 import { Tabs, Select as AntSelect, List } from "antd";
 import { formatDateString, parseToDate, getStartOfDay } from "@/lib/dateTimeHelper";
 import { SubscriptionHistoryModal } from "@/components/forms/SubscriptionHistoryModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 interface RecurringBillListProps {
   bills: any[];
@@ -133,14 +135,19 @@ export function RecurringBillList({
     <div className="w-full space-y-4">
       {/* Variable Pay Dialog */}
       <Dialog open={!!variablePayBill} onOpenChange={(open) => !open && setVariablePayBill(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent initialFocus={false} size="sm">
           <DialogHeader>
-            <DialogTitle>Enter Actual Paid Amount</DialogTitle>
+            <DialogTitle>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Wallet className="w-4 h-4" />
+              </div>
+              <span>Enter Paid Amount</span>
+            </DialogTitle>
+            <DialogDescription>
+              {variablePayBill?.name} is a variable bill. Confirm the actual amount paid for this cycle.
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              {variablePayBill?.name} is a variable bill. What was the exact amount you paid for this cycle?
-            </p>
+          <DialogBody className="space-y-3">
             <CurrencyInput
               currency="INR"
               placeholder="0"
@@ -148,10 +155,10 @@ export function RecurringBillList({
               onChange={(e) => setVariableAmount(formatIndianNumber(e.target.value))}
               onCurrencyChange={() => {}}
             />
-          </div>
+          </DialogBody>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setVariablePayBill(null)}>Cancel</Button>
-            <Button onClick={confirmVariablePay} disabled={payingId === variablePayBill?._id}>
+            <Button variant="outline" className="h-10 px-4 text-sm w-full sm:w-auto" onClick={() => setVariablePayBill(null)}>Cancel</Button>
+            <Button className="h-10 px-5 text-sm font-semibold shadow-md w-full sm:w-auto" onClick={confirmVariablePay} disabled={payingId === variablePayBill?._id}>
               {payingId === variablePayBill?._id ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
               Confirm Payment
             </Button>
@@ -234,7 +241,7 @@ export function RecurringBillList({
                   <div className="relative group block rounded-2xl p-5 border border-border/60 bg-card text-card-foreground shadow-sm hover:shadow-md transition-all h-full flex flex-col justify-between overflow-hidden gap-4">
                     <div className="flex justify-between items-start gap-4 z-10">
                       <div className="flex items-center gap-3 min-w-0">
-                        <span className="text-xs font-bold text-muted-foreground shrink-0">{index + 1}.</span>
+                        <span className={cn(TYPOGRAPHY.cardLabel, "shrink-0")}>{index + 1}.</span>
                         <div
                           className={`p-2 rounded-xl flex items-center justify-center shrink-0 text-white shadow-inner ${!bill.isActive ? 'grayscale opacity-50' : ''}`}
                           style={{ backgroundColor: bill.color || '#6366f1' }}
@@ -242,14 +249,14 @@ export function RecurringBillList({
                           <CategoryIcon name={bill.icon} className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <h3 className={`font-semibold leading-none mb-1 truncate ${!bill.isActive ? 'text-muted-foreground' : ''}`} title={bill.name}>{bill.name}</h3>
-                          <p className={`text-sm font-semibold mt-1 ${!bill.isActive ? 'text-muted-foreground' : ''}`}>
+                          <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1", !bill.isActive ? 'text-muted-foreground' : '')} title={bill.name}>{bill.name}</h3>
+                          <p className={cn(TYPOGRAPHY.cardAmount, "mt-1", !bill.isActive ? 'text-muted-foreground' : '')}>
                             {format(bill.amount)} <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground font-normal">/ {bill.frequency}</span>
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 transition-opacity shrink-0">
-                        <RecurringBillForm accounts={accounts} categories={categories} bill={bill} viewOnly={true} />
+                        <SubscriptionHistoryModal bill={bill} />
                         <RecurringBillForm accounts={accounts} categories={categories} bill={bill} />
                         <RecurringBillDeleteModal bill={bill} />
                       </div>
@@ -257,44 +264,43 @@ export function RecurringBillList({
   
                     <div className="z-10 mt-auto">
                       <div className="space-y-3 pt-4 border-t border-border/50">
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Clock className="w-3 h-3" /> STARTED</span>
-                          <span className="font-semibold truncate max-w-[120px]">{formatDateString(bill.createdAt, "MMM YYYY")}</span>
+                        <div className="flex justify-between items-center">
+                          <span className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5")}><Clock className="w-3 h-3" /> STARTED</span>
+                          <span className={cn(TYPOGRAPHY.cardValue, "truncate max-w-[120px]")}>{formatDateString(bill.createdAt, "MMM YYYY")}</span>
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Calendar className="w-3 h-3" /> NEXT DUE</span>
-                          <span className={`font-semibold truncate max-w-[120px] ${isOverdue ? 'text-destructive' : isToday ? 'text-primary' : ''}`}>
+                        <div className="flex justify-between items-center">
+                          <span className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5")}><Calendar className="w-3 h-3" /> NEXT DUE</span>
+                          <span className={cn(TYPOGRAPHY.cardValue, "truncate max-w-[120px]", isOverdue ? 'text-destructive' : isToday ? 'text-primary' : '')}>
                             {formatDateString(dueDate, "DD MMM YYYY")}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Wallet className="w-3 h-3" /> FROM</span>
-                          <span className="font-semibold truncate max-w-[120px]">{bill.accountId?.name || "Not set"}</span>
+                        <div className="flex justify-between items-center">
+                          <span className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5")}><Wallet className="w-3 h-3" /> FROM</span>
+                          <span className={cn(TYPOGRAPHY.cardValue, "truncate max-w-[120px]")}>{bill.accountId?.name || "Not set"}</span>
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> PAID</span>
+                        <div className="flex justify-between items-center">
+                          <span className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5")}><CheckCircle className="w-3 h-3" /> PAID</span>
                           <span className="font-semibold truncate max-w-[120px]">
-                            <Badge variant="outline" className="text-[10px]">{bill.transactionsCount || 0} times</Badge>
+                            <Badge variant="outline" className={cn(TYPOGRAPHY.badge)}>{bill.transactionsCount || 0} times</Badge>
                           </span>
                         </div>
                         {bill.autoPayPlatform && (
-                          <div className="flex justify-between items-center text-sm">
-                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5"><Smartphone className="w-3 h-3" /> PLATFORM</span>
-                            <span className="font-semibold truncate max-w-[120px]">{bill.autoPayPlatform}</span>
+                          <div className="flex justify-between items-center">
+                            <span className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5")}><Smartphone className="w-3 h-3" /> PLATFORM</span>
+                            <span className={cn(TYPOGRAPHY.cardValue, "truncate max-w-[120px]")}>{bill.autoPayPlatform}</span>
                           </div>
                         )}
                       </div>
   
                       <div className="mt-5 flex items-center justify-between">
                         {(!bill.isActive || isOverdue || isToday) && (
-                          <Badge variant={!bill.isActive ? "outline" : isOverdue ? "destructive" : isToday ? "default" : "secondary"} className="font-bold px-3 py-1">
+                          <Badge variant={!bill.isActive ? "outline" : isOverdue ? "destructive" : isToday ? "default" : "secondary"} className={cn(TYPOGRAPHY.badge, "font-bold px-3 py-1")}>
                             {!bill.isActive ? "Paused" : isOverdue ? "Overdue" : "Due Today"}
                           </Badge>
                         )}
                         {!(!bill.isActive || isOverdue || isToday) && <div />}
                         
                         <div className="flex items-center gap-2">
-                          <SubscriptionHistoryModal bill={bill} />
                           {bill.isActive && (
                             <Button 
                               variant="outline" 

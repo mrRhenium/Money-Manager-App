@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
-import { PenLine, Plus, Landmark, Calculator, PenTool } from "lucide-react";
+import { PenLine, Plus, Landmark, Calculator, PenTool, Loader2 } from "lucide-react";
 import { getCurrentFormatted, formatDateString } from "@/lib/dateTimeHelper";
 import { upsertLoan } from "@/actions/loan";
 import { parseIndianNumber, formatIndianNumber } from "@/lib/numberHelper";
@@ -198,41 +198,46 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
           </Button>
         )}
       />
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Landmark className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Landmark className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{loan ? "Edit Loan" : "New Loan"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {loan ? "Update principal, tenure, interest rates, or schedule" : "Track borrowed or lent loans with automatic EMI calculations"}
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Calculation Mode Toggle */}
-        <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-secondary/30 border">
-          <span className="text-sm font-medium text-muted-foreground w-full sm:w-auto sm:mr-auto">Calculation Mode:</span>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant={calcMode === "manual" ? "default" : "outline"}
-              size="sm"
-              className="h-8 gap-1.5"
-              onClick={() => setCalcMode("manual")}
-            >
-              <PenTool className="w-3.5 h-3.5" /> Manual
-            </Button>
-            <Button
-              type="button"
-              variant={calcMode === "auto" ? "default" : "outline"}
-              size="sm"
-              className="h-8 gap-1.5"
-              onClick={() => setCalcMode("auto")}
-            >
-              <Calculator className="w-3.5 h-3.5" /> Auto-Calculate
-            </Button>
-          </div>
-        </div>
-
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
+              {/* Calculation Mode Toggle */}
+              <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-secondary/30 border">
+                <span className="text-sm font-medium text-muted-foreground w-full sm:w-auto sm:mr-auto">Calculation Mode:</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={calcMode === "manual" ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 gap-1.5"
+                    onClick={() => setCalcMode("manual")}
+                  >
+                    <PenTool className="w-3.5 h-3.5" /> Manual
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={calcMode === "auto" ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 gap-1.5"
+                    onClick={() => setCalcMode("auto")}
+                  >
+                    <Calculator className="w-3.5 h-3.5" /> Auto-Calculate
+                  </Button>
+                </div>
+              </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -543,9 +548,17 @@ export function LoanForm({ accounts, loan, onUpdate, triggerClassName }: { accou
                <IconPicker value={icon} onChange={setIcon} color={color} />
             </div>
 
-            <Button type="submit" className="w-full mt-4" disabled={loading}>
-              {loading ? "Saving..." : (loan ? "Save Changes" : "Create Loan")}
-            </Button>
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={loading}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {loading ? "Saving..." : (loan ? "Save Changes" : "Create Loan")}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

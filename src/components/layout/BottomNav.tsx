@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PieChart, QrCode, ScanLine, Users, Wallet, Menu, Landmark, Tags, TrendingUp, CreditCard, Settings, History, Repeat, Target, Shield, LayoutDashboard, Database, Banknote } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { ScanAndPayModal } from "../upi/ScanAndPayModal";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function BottomNav({ role }: { role?: string }) {
   const pathname = usePathname();
@@ -68,7 +70,11 @@ export function BottomNav({ role }: { role?: string }) {
                 <item.icon className={`${item.isMain ? "w-6 h-6" : "w-5 h-5 group-hover:-translate-y-0.5 transition-transform"}`} />
               </div>
               {!item.isMain && (
-                <span className={`text-[10px] font-medium transition-colors ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"}`}>
+                <span className={cn(
+                  TYPOGRAPHY.navBottom,
+                  "transition-colors text-center leading-tight line-clamp-1",
+                  isActive ? "text-primary font-semibold" : "text-muted-foreground group-hover:text-primary"
+                )}>
                   {item.label}
                 </span>
               )}
@@ -82,31 +88,54 @@ export function BottomNav({ role }: { role?: string }) {
                   <DialogTrigger className="w-full h-full outline-none">
                     {NavItemContent}
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent initialFocus={false} size="md">
                     <DialogHeader>
-                      <DialogTitle className="text-xl font-bold">More Options</DialogTitle>
+                      <DialogTitle>
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Menu className="w-4 h-4" />
+                        </div>
+                        <span>More Options</span>
+                      </DialogTitle>
+                      <DialogDescription>
+                        Quick access to all modules and configurations.
+                      </DialogDescription>
                     </DialogHeader>
-                    <div className="grid grid-cols-3 gap-4 py-4">
-                      {menuItems.map((menuItem) => {
-                        const shouldReplace = pathname !== "/" && menuItem.href !== "/";
-                        return (
-                          <Link
-                            replace={shouldReplace}
-                            key={menuItem.href}
-                            href={menuItem.href}
-                            onClick={() => setMenuOpen(false)}
-                            className="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl hover:bg-muted/50 transition-colors"
-                          >
-                            <div className={`p-3 rounded-full ${pathname === menuItem.href ? "bg-primary text-primary-foreground shadow-md scale-110" : "bg-secondary text-secondary-foreground"}`}>
-                              <menuItem.icon className="w-5 h-5" />
-                            </div>
-                            <span className={`text-xs font-medium text-center ${pathname === menuItem.href ? "text-primary font-bold" : "text-foreground"}`}>
-                              {menuItem.label}
-                            </span>
-                          </Link>
-                        );
-                      })}
-                    </div>
+                    <DialogBody className="py-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                        {menuItems.map((menuItem) => {
+                          const shouldReplace = pathname !== "/" && menuItem.href !== "/";
+                          const isActive = pathname === menuItem.href;
+                          return (
+                            <Link
+                              replace={shouldReplace}
+                              key={menuItem.href}
+                              href={menuItem.href}
+                              onClick={() => setMenuOpen(false)}
+                              className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl transition-all ${
+                                isActive 
+                                  ? "bg-primary/10 border border-primary/30" 
+                                  : "hover:bg-muted/60 border border-transparent"
+                              }`}
+                            >
+                              <div className={`p-2.5 rounded-xl transition-transform ${
+                                isActive 
+                                  ? "bg-primary text-primary-foreground shadow-sm scale-105" 
+                                  : "bg-muted/80 text-foreground"
+                              }`}>
+                                <menuItem.icon className="w-5 h-5" />
+                              </div>
+                              <span className={cn(
+                                TYPOGRAPHY.navMobileMenu,
+                                "text-center line-clamp-1 leading-tight",
+                                isActive ? "text-primary font-bold" : "text-muted-foreground font-medium"
+                              )}>
+                                {menuItem.label}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </DialogBody>
                   </DialogContent>
                 </Dialog>
               </li>

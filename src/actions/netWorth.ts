@@ -81,13 +81,17 @@ export async function snapshotNetWorth() {
 
     const netWorth = totalAssets - totalLiabilities;
 
-    await NetWorthHistory.create({
-      userId: session.user.id,
-      date: today,
-      netWorth,
-      assets: totalAssets,
-      liabilities: totalLiabilities
-    });
+    await NetWorthHistory.findOneAndUpdate(
+      { userId: session.user.id, date: today },
+      {
+        $set: {
+          netWorth,
+          assets: totalAssets,
+          liabilities: totalLiabilities
+        }
+      },
+      { upsert: true, new: true }
+    );
 
     return { success: true };
   } catch (error: any) {

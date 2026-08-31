@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { getPendingTransactions, confirmTransaction } from "@/actions/transaction";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -19,7 +19,7 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
   const { format, currencyCode } = useCurrency();
   const { data: session } = useSession();
   const { toast } = useToast();
-  
+
   const [pendingTxns, setPendingTxns] = useState<any[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,11 +40,11 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
 
   useEffect(() => {
     fetchPending();
-    
+
     // Periodically update or fetch on focus
     const interval = setInterval(fetchPending, 15000);
     window.addEventListener("focus", fetchPending);
-    
+
     return () => {
       clearInterval(interval);
       window.removeEventListener("focus", fetchPending);
@@ -72,7 +72,7 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
 
   if (pendingTxns.length === 0) return null;
 
-  
+
   const filteredTxns = pendingTxns.filter(txn => {
     if (!searchQuery) return true;
     const s = searchQuery.toLowerCase();
@@ -86,7 +86,7 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
       dateStr.includes(s)
     );
   });
-  
+
   const totalAmount = pendingTxns.reduce((sum, txn) => sum + txn.amount, 0);
   const totalPages = Math.ceil(filteredTxns.length / itemsPerPage);
   const paginatedTxns = filteredTxns.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -118,21 +118,23 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
           </CardContent>
         </Card>
       } />
-      <DialogContent className="sm:max-w-2xl md:max-w-3xl max-h-[80vh] overflow-y-auto p-6 rounded-2xl">
-        <DialogHeader className="pb-3 border-b text-left">
-          <DialogTitle className="text-base sm:text-lg font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
-            <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
-            Resolve Pending UPI Payments
+      <DialogContent initialFocus={false} size="lg">
+        <DialogHeader>
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+              <Smartphone className="w-5 h-5" />
+            </div>
+            <span>Pending UPI Payments</span>
           </DialogTitle>
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+          <DialogDescription>
             Confirm whether these UPI payments were successful or cancelled to keep your balances aligned.
-          </p>
-          <div className="relative mt-3 sm:mt-4">
+          </DialogDescription>
+          <div className="relative mt-2">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search by receiver name, amount, or date..."
-              className="pl-9 bg-background w-full"
+              className="pl-9 bg-background w-full h-9 text-xs sm:text-sm"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -141,14 +143,14 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
             />
           </div>
         </DialogHeader>
-        <div className="space-y-3 mt-4">
+        <DialogBody className="space-y-3">
           {paginatedTxns.map((txn) => {
             const payeeName = txn.upiPayeeName || txn.personId?.name || txn.note?.replace("UPI Payment to ", "") || "UPI Recipient";
             const upiId = txn.upiPayeeVpa || "";
             const personName = txn.personId?.name || "";
             const noteText = txn.note || "No note attached";
             const isLoading = loadingId === txn._id;
-            
+
             return (
               <div key={txn._id} className="flex flex-col p-3 sm:p-4 bg-background rounded-xl border border-amber-500/20 gap-3 shadow-inner">
                 <div>
@@ -166,8 +168,8 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
                   </p>
                 </div>
                 <div className="grid grid-cols-3 sm:flex sm:flex-row gap-2 shrink-0 mt-2 sm:mt-0 w-full sm:w-auto">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 px-2 sm:px-3"
                     onClick={() => handleResolve(txn._id, "completed")}
                     disabled={isLoading}
@@ -175,8 +177,8 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
                     {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Check className="w-3.5 h-3.5 mr-1" />}
                     Paid
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="destructive"
                     className="font-semibold text-xs h-8 px-2 sm:px-3"
                     onClick={() => handleResolve(txn._id, "cancelled")}
@@ -185,8 +187,8 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
                     {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <X className="w-3.5 h-3.5 mr-1" />}
                     Cancel
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="secondary"
                     className="font-semibold text-xs h-8 px-2 sm:px-3 border border-amber-500/20 text-amber-700 bg-amber-50"
                     onClick={() => handleResolve(txn._id, "pending")}
@@ -199,20 +201,20 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
               </div>
             );
           })}
-        </div>
-      
+        </DialogBody>
+
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4 border-t mt-4">
+          <DialogFooter className="justify-between sm:justify-between w-full">
             <span className="text-xs text-muted-foreground">Page {currentPage} of {totalPages}</span>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
-                <ChevronLeft className="w-4 h-4" />
+              <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>
+                <ChevronLeft className="w-4 h-4 mr-1" /> Prev
               </Button>
-              <Button size="sm" variant="outline" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
-                <ChevronRight className="w-4 h-4" />
+              <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>
+                Next <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
-          </div>
+          </DialogFooter>
         )}
       </DialogContent>
     </Dialog>

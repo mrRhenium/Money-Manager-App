@@ -5,7 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { createTransaction, confirmTransaction } from "@/actions/transaction";
 import { getCurrentDate } from "@/lib/dateTimeHelper";
 import { getCategories } from "@/actions/category";
@@ -426,11 +426,13 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
         onOpenChange(val);
       }}
     >
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-6 rounded-2xl">
+      <DialogContent initialFocus={false} size="md">
         {step !== "confirmation_dialog" && step !== "ios_relay" && (
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-primary font-bold text-lg">
-              <Camera className="w-5 h-5" />
+            <DialogTitle>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Camera className="w-5 h-5" />
+              </div>
               <span>UPI Scan & Pay</span>
             </DialogTitle>
             <DialogDescription>
@@ -438,6 +440,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
             </DialogDescription>
           </DialogHeader>
         )}
+        <DialogBody className="space-y-4">
 
         {/* STEP 1: SCAN VIEW */}
         {step === "scan" && (
@@ -817,6 +820,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
             </div>
           </div>
         )}
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

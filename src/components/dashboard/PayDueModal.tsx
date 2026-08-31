@@ -4,7 +4,11 @@ import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,9 +39,12 @@ import { formatDateString, getCurrentDate, parseToDate } from "@/lib/dateTimeHel
 import { recordDuePayment, DuePaymentInput } from "@/actions/duePayment";
 
 export interface DueItem {
+  id?: string;
   title: string;
+  subtitle?: string;
   amount: number;
   dueDate: Date | string;
+  daysRemaining?: number;
   type: "loan_emi" | "loan_emi_receive" | "credit_card" | "sip" | "insurance" | "subscription";
   entityId?: string;
   linkedAccountId?: string;
@@ -222,23 +229,22 @@ export function PayDueModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[92vw] sm:max-w-lg p-0 gap-0 overflow-hidden flex flex-col max-h-[88vh] sm:max-h-[85vh] rounded-2xl border bg-card shadow-2xl z-[60]">
-        {/* Fixed Header */}
-        <div className="p-4 sm:p-5 border-b shrink-0 flex items-center gap-3 pr-12 bg-muted/20">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeConfig.bgColor} ${typeConfig.color}`}>
-            <DueIcon className="w-5 h-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <DialogTitle className="text-base sm:text-lg font-bold text-foreground truncate">
-              {typeConfig.actionLabel}
-            </DialogTitle>
-            <p className="text-xs text-muted-foreground truncate">{typeConfig.label}</p>
-          </div>
-        </div>
+      <DialogContent initialFocus={false} size="md" className="z-[60]">
+        <DialogHeader>
+          <DialogTitle>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${typeConfig.bgColor} ${typeConfig.color}`}>
+              <DueIcon className="w-4 h-4" />
+            </div>
+            <span className="truncate">{typeConfig.actionLabel}</span>
+          </DialogTitle>
+          <DialogDescription className="truncate">
+            {typeConfig.label}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Scrollable Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-5 custom-scrollbar space-y-4 min-h-0">
+          <DialogBody className="space-y-4">
             {/* Due Item Overview Banner */}
             <div className="p-3 sm:p-4 rounded-xl bg-muted/40 border border-border/50 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
@@ -387,23 +393,23 @@ export function PayDueModal({
                 className="text-xs sm:text-sm rounded-xl"
               />
             </div>
-          </div>
+          </DialogBody>
 
           {/* Fixed Sticky Footer */}
-          <div className="p-3.5 sm:p-4 border-t bg-muted/20 shrink-0 flex flex-col sm:flex-row sm:justify-end gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="w-full sm:w-auto rounded-xl text-xs sm:text-sm h-10 order-2 sm:order-1"
+              className="w-full sm:w-auto h-10 px-4 text-sm"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={loading || !numericAmount || !accountId}
-              className="w-full sm:w-auto rounded-xl text-xs sm:text-sm font-semibold gap-1.5 h-10 order-1 sm:order-2"
+              className="w-full sm:w-auto h-10 px-5 text-sm font-semibold shadow-md gap-1.5"
             >
               {loading ? (
                 <>
@@ -416,7 +422,7 @@ export function PayDueModal({
                 </>
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

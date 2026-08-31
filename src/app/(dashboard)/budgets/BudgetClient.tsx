@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { MasterLayout } from "@/components/layout/MasterLayout";
 import { MasterHeader } from "@/components/layout/MasterHeader";
@@ -11,13 +11,15 @@ import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Select as AntSelect } from "antd";
 import { MasterSearchField } from "@/components/layout/MasterView";
-import { Search, PieChart as PieChartIcon, Target, TrendingUp, TrendingDown, LayoutList } from "lucide-react";
+import { Search, PieChart as PieChartIcon, Target, TrendingUp, TrendingDown, LayoutList, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BudgetForm } from "@/components/forms/BudgetForm";
 import { BudgetList } from "@/components/lists/BudgetList";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
 import dayjs from "dayjs";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function BudgetClient({ 
   initialBudgets, 
@@ -37,6 +39,26 @@ export function BudgetClient({
   const { format, formatCompact } = useCurrency();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const handleMonthChange = (newMonth: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("month", newMonth);
+    params.delete("startDate");
+    params.delete("endDate");
+    params.set("mode", "monthly");
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handlePrevMonth = () => {
+    const prev = dayjs(initialMonth + "-01").subtract(1, 'month').format("YYYY-MM");
+    handleMonthChange(prev);
+  };
+
+  const handleNextMonth = () => {
+    const next = dayjs(initialMonth + "-01").add(1, 'month').format("YYYY-MM");
+    handleMonthChange(next);
+  };
 
   // State
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "data");
@@ -110,7 +132,7 @@ export function BudgetClient({
     }
 
     return result;
-  }, [initialBudgets, searchQuery, sortBy]);
+  }, [initialBudgets, searchQuery, sortBy, statusFilter, rolloverFilter]);
   
   const totalBudgeted = filteredBudgets.reduce((sum: number, b: any) => sum + (b.amount || 0), 0);
   const totalSpent = filteredBudgets.reduce((sum: number, b: any) => sum + (b.totalSpent || 0), 0);
@@ -130,6 +152,16 @@ export function BudgetClient({
   const filterPanelContent = (
     <div className="space-y-6">
       <MasterSearchField searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search categories..." />
+
+      <div>
+        <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Month</h3>
+        <input
+          type="month"
+          value={initialMonth}
+          onChange={(e) => e.target.value && handleMonthChange(e.target.value)}
+          className="w-full h-10 px-3 rounded-lg border bg-background text-foreground text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        />
+      </div>
 
       <div>
         <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wider">Budget Status</h3>
@@ -187,7 +219,48 @@ export function BudgetClient({
       <MasterHeader 
         title={<><PieChartIcon className="w-6 h-6 text-primary" /> Budgets</>}
         subtitle="Manage your spending limits."
-        actions={<div className="lg:hidden"><BudgetForm categories={categories} triggerClassName="h-9 px-4 text-sm font-semibold" /></div>}
+        actions={
+          <div className="flex items-center gap-2">
+            {/* Month Navigator */}
+            <div className="flex items-center bg-card border border-border/60 rounded-xl p-0.5 shadow-2xs">
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={handlePrevMonth}
+                title="Previous Month"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <div className="relative flex items-center">
+                <input
+                  type="month"
+                  value={initialMonth}
+                  onChange={(e) => e.target.value && handleMonthChange(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  title="Click to select month"
+                />
+                <span className="text-xs sm:text-sm font-semibold px-2 py-1 flex items-center gap-1.5 pointer-events-none select-none text-foreground whitespace-nowrap">
+                  <Calendar className="w-3.5 h-3.5 text-primary shrink-0" />
+                  {dayjs(initialMonth + "-01").format("MMM YYYY")}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={handleNextMonth}
+                title="Next Month"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="lg:hidden">
+              <BudgetForm categories={categories} triggerClassName="h-9 px-3 text-xs font-semibold" />
+            </div>
+          </div>
+        }
       />
       
       <div className="flex-1 flex flex-col w-full px-4 lg:px-8 pt-4 overflow-hidden">
@@ -254,8 +327,8 @@ export function BudgetClient({
                   <div className="md:col-span-2 space-y-6">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                       <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                        <h2 className="text-lg font-bold text-foreground">Top 10 Budgets vs Spent</h2>
-                        <p className="text-sm text-muted-foreground mt-1">Comparison of allocated budgets and actual expenditures.</p>
+                        <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Top 10 Budgets vs Spent</h2>
+                        <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Comparison of allocated budgets and actual expenditures.</p>
                       </div>
                       <div className="p-4 sm:p-6 h-[400px]">
                         <ResponsiveContainer width="100%" height="100%">

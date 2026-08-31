@@ -8,7 +8,10 @@ import { deleteCategory } from "@/actions/category";
 import { Trash, Search } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useState, useMemo } from "react";
+import { useToast } from "@/hooks/useToast";
 import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 export function CategoryList({ 
   expenseCategories, 
@@ -33,7 +36,7 @@ export function CategoryList({
       const search = hideToolbar ? externalSearch : searchQuery;
       return cat.name.toLowerCase().includes(search.toLowerCase());
     });
-  }, [expenseCategories, searchQuery, hiddenIds, hideToolbar, externalSearch]);
+  }, [expenseCategories, searchQuery, hideToolbar, externalSearch, hiddenIds]);
 
   const filteredIncomes = useMemo(() => {
     return incomeCategories.filter(cat => {
@@ -41,14 +44,14 @@ export function CategoryList({
       const search = hideToolbar ? externalSearch : searchQuery;
       return cat.name.toLowerCase().includes(search.toLowerCase());
     });
-  }, [incomeCategories, searchQuery, hiddenIds, hideToolbar, externalSearch]);
+  }, [incomeCategories, searchQuery, hideToolbar, externalSearch, hiddenIds]);
   const renderCategoryItem = (cat: any, index: number) => (
     <List.Item className="!p-0 !border-0 mb-2">
       <div className="flex items-center justify-between p-3 border rounded-lg bg-card shadow-sm w-full relative overflow-hidden group">
-        <div className="flex items-center gap-3 z-10">
-          <span className="text-xs font-bold text-muted-foreground w-4 shrink-0 text-right">{index + 1}.</span>
-          <CategoryIcon name={cat.icon} color={cat.color} className="w-5 h-5" />
-          <span className="font-medium text-foreground">{cat.name}</span>
+        <div className="flex items-center gap-3 z-10 min-w-0">
+          <span className={cn(TYPOGRAPHY.cardLabel, "w-4 shrink-0 text-right")}>{index + 1}.</span>
+          <CategoryIcon name={cat.icon} color={cat.color} className="w-5 h-5 shrink-0" />
+          <span className={cn(TYPOGRAPHY.cardTitle, "font-medium truncate")}>{cat.name}</span>
         </div>
         <div className="flex items-center gap-1.5 z-10">
           <CategoryForm category={cat} />
@@ -60,11 +63,11 @@ export function CategoryList({
               onClick={() => {
                 triggerDelete({
                   id: cat._id,
-                  entityName: cat.name,
+                  entityName: `Category "${cat.name}"`,
                   onCommit: async () => {
                     const res = await deleteCategory(cat._id);
                     if (res && !res.success) {
-                      throw new Error(res.error);
+                      throw new Error(res.error || "Failed to delete category");
                     }
                   }
                 });

@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select as AntSelect } from "antd";
 import { InvestmentForm } from "@/components/forms/InvestmentForm";
-import { useUndoableDelete } from "@/hooks/useUndoableDelete";
-import { deleteInvestment } from "@/actions/investment";
+import { InvestmentDeleteModal } from "@/components/forms/InvestmentDeleteModal";
 import { useCurrency } from "@/hooks/useCurrency";
 import { parseToDate, formatDateString } from "@/lib/dateTimeHelper";
 import Link from "next/link";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 export function InvestmentList({ 
   investments, 
@@ -32,7 +33,6 @@ export function InvestmentList({
   externalTypes?: string[];
 }) {
   const { format } = useCurrency();
-  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const [internalSearch, setInternalSearch] = useState("");
   const [internalSort, setInternalSort] = useState("newest");
@@ -45,7 +45,7 @@ export function InvestmentList({
   const typeFilters = hideToolbar ? externalTypes : internalTypes;
 
   const filteredAndSortedInvestments = useMemo(() => {
-    let result = [...investments].filter(i => !hiddenIds.has(i._id));
+    let result = [...investments];
 
     if (statusFilter === "active") result = result.filter(i => i.status === "active");
     else if (statusFilter === "closed") result = result.filter(i => i.status === "closed" || i.status === "sold" || i.status === "matured");
@@ -73,7 +73,7 @@ export function InvestmentList({
     });
 
     return result;
-  }, [investments, searchQuery, statusFilter, typeFilters, sortBy, hiddenIds]);
+  }, [investments, searchQuery, statusFilter, typeFilters, sortBy]);
 
   const typeOptions = Array.from(new Set(investments.map(i => i.investmentType))).map(type => ({ label: type, value: type }));
 
@@ -143,15 +143,15 @@ export function InvestmentList({
                           <CategoryIcon name={record.icon} className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="font-semibold leading-none mb-1 flex items-center gap-2">
+                          <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1 flex items-center gap-2")}>
                             <span className="truncate min-w-0">{record.name}</span>
                           </h3>
-                          <p className="text-sm text-muted-foreground truncate mt-0.5">
+                          <p className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>
                             {record.investmentType}
                             {record.platform ? ` • ${record.platform}` : ""}
                           </p>
                           {(record.units || record.interestRate || record.maturityDate) && (
-                            <p className="text-[11px] mt-1 font-medium opacity-85 text-muted-foreground truncate">
+                            <p className={cn(TYPOGRAPHY.cardLabel, "mt-1 font-medium opacity-85")}>
                               {record.investmentType === "FD" || record.investmentType === "RD" || record.investmentType === "Bonds" ? (
                                 <>
                                   {record.interestRate ? `${record.interestRate}% interest` : ""}
@@ -175,33 +175,15 @@ export function InvestmentList({
                             </Button>
                           </Link>
                           <InvestmentForm investment={record} accounts={accounts} triggerClassName="h-8 w-8 rounded-full" />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                            onClick={() => {
-                              triggerDelete({
-                                id: record._id,
-                                entityName: record.name,
-                                onCommit: async () => {
-                                  const res = await deleteInvestment(record._id);
-                                  if (res && !res.success) {
-                                    throw new Error(res.error);
-                                  }
-                                }
-                              });
-                            }}
-                          >
-                            <Trash className="w-4 h-4" />
-                          </Button>
+                          <InvestmentDeleteModal investment={record} />
                         </div>
                         <div className="flex flex-col items-end gap-1.5 mt-1 mr-1">
-                          {isClosed && <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded text-muted-foreground uppercase font-normal">{record.status}</span>}
+                          {isClosed && <span className={cn(TYPOGRAPHY.badge, "bg-secondary text-muted-foreground")}>{record.status}</span>}
                           {record.autoPriceUpdateEnabled && !record.lastAutoUpdatedAt && !isClosed && (
-                            <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-500 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded uppercase font-bold flex items-center gap-1"><RefreshCw className="w-3 h-3" /> Pending</span>
+                            <span className={cn(TYPOGRAPHY.badge, "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-500 border border-amber-200 dark:border-amber-800 flex items-center gap-1")}><RefreshCw className="w-3 h-3" /> Pending</span>
                           )}
                           {record.autoPriceUpdateEnabled && record.lastAutoUpdatedAt && !isClosed && (
-                            <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.5 rounded uppercase font-bold flex items-center gap-1"><RefreshCw className="w-3 h-3" /> Synced</span>
+                            <span className={cn(TYPOGRAPHY.badge, "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1")}><RefreshCw className="w-3 h-3" /> Synced</span>
                           )}
                         </div>
                       </div>
@@ -209,24 +191,24 @@ export function InvestmentList({
 
                     <div className="grid grid-cols-2 gap-y-5 gap-x-2 pt-5 border-t border-slate-100 dark:border-slate-800 mt-auto z-10 relative">
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Invested</p>
-                        <p className="font-semibold text-sm">{format(record.investedAmount)}</p>
+                        <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Invested</p>
+                        <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>{format(record.investedAmount)}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Latest Price</p>
-                        <p className="font-semibold text-sm">{record.currentPrice ? format(record.currentPrice) : "-"}</p>
+                        <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Latest Price</p>
+                        <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>{record.currentPrice ? format(record.currentPrice) : "-"}</p>
                       </div>
                       <div className="col-span-2 pt-3 mt-1 border-t border-slate-100 dark:border-slate-800">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Current Value</p>
-                            <span className="font-bold text-sm text-foreground">{format(record.currentValue)}</span>
+                            <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Current Value</p>
+                            <span className={cn(TYPOGRAPHY.cardValue, "font-bold text-foreground")}>{format(record.currentValue)}</span>
                           </div>
                           <div>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1 text-right">Returns</p>
-                            <div className={`flex items-center gap-2 font-bold text-sm justify-end ${isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground"}`}>
+                            <p className={cn(TYPOGRAPHY.cardLabel, "mb-1 text-right")}>Returns</p>
+                            <div className={cn(TYPOGRAPHY.cardValue, "flex items-center gap-2 font-bold justify-end", isPos ? "text-emerald-500" : isNeg ? "text-red-500" : "text-muted-foreground")}>
                               <span>{isPos ? "+" : ""}{format(ret)}</span>
-                              <span className="text-[10px] bg-current/10 px-1.5 py-0.5 rounded">{isPos ? "+" : ""}{retPct.toFixed(2)}%</span>
+                              <span className={cn(TYPOGRAPHY.badge, "bg-current/10")}>{isPos ? "+" : ""}{retPct.toFixed(2)}%</span>
                             </div>
                           </div>
                         </div>

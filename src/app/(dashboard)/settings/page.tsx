@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
 import { LogOut, User, Bell, Palette, Globe, Smartphone } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,7 +24,18 @@ import { MasterHeader } from "@/components/layout/MasterHeader";
 import { MasterToolbar, MasterViewLayout } from "@/components/layout/MasterView";
 import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ConfirmDeleteDialog } from "@/components/common/ConfirmDeleteDialog";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY as string;
+
+const SETTINGS_NAV_ITEMS = [
+  { id: "profile", label: "Profile Information", desc: "Update your account details", icon: User, color: "text-primary", bg: "bg-primary/10" },
+  { id: "preferences", label: "App Theme", desc: "App theme & appearance", icon: Palette, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { id: "payment_apps", label: "UPI & Payment Apps", desc: "Manage active apps and default", icon: Smartphone, color: "text-amber-500", bg: "bg-amber-500/10" },
+  { id: "timezone", label: "Global Timezone", desc: "Set default times for tracking", icon: Globe, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { id: "notifications", label: "Notifications", desc: "Push alerts and reminders", icon: Bell, color: "text-blue-500", bg: "bg-blue-500/10" },
+  { id: "logout", label: "Sign Out", desc: "End your current session", icon: LogOut, color: "text-red-500", bg: "bg-red-500/10" },
+] as const;
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -49,6 +60,7 @@ function SettingsContent() {
   const [themeColor, setThemeColor] = useState((session?.user as any)?.themeColor || "#0ea5e9");
   const [currency, setCurrency] = useState((session?.user as any)?.currency || "INR");
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [showDeleteAvatarConfirm, setShowDeleteAvatarConfirm] = useState(false);
   const [isThemeLoading, setIsThemeLoading] = useState(false);
   const [isCurrencyLoading, setIsCurrencyLoading] = useState(false);
   const [currencyOptions, setCurrencyOptions] = useState<{ label: string, value: string }[]>([
@@ -80,6 +92,36 @@ function SettingsContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as "profile" | "preferences" | "payment_apps" | "timezone" | "notifications" | "logout" | null;
   const activeTab = tabParam || "profile";
+
+  const [fontSizePreference, setFontSizePreference] = useState<string>("normal");
+  const [fontFamilyPreference, setFontFamilyPreference] = useState<string>("noto");
+
+  useEffect(() => {
+    try {
+      const savedSize = localStorage.getItem("user-font-size") || "normal";
+      setFontSizePreference(savedSize);
+      document.documentElement.style.removeProperty("--font-scale");
+      document.documentElement.setAttribute("data-font-size", savedSize);
+      const savedFamily = localStorage.getItem("user-font-family-key") || "noto";
+      setFontFamilyPreference(savedFamily);
+    } catch {}
+  }, []);
+
+  const handleFontSizeChange = (size: "compact" | "normal" | "large") => {
+    setFontSizePreference(size);
+    document.documentElement.style.removeProperty("--font-scale");
+    document.documentElement.setAttribute("data-font-size", size);
+    localStorage.setItem("user-font-size", size);
+    toast.success(`Text size set to ${size === "compact" ? "Compact" : size === "large" ? "Comfortable" : "Standard"}`);
+  };
+
+  const handleFontFamilyChange = (key: string, familyCss: string) => {
+    setFontFamilyPreference(key);
+    document.documentElement.style.setProperty("--font-family-base", familyCss);
+    localStorage.setItem("user-font-family-key", key);
+    localStorage.setItem("user-font-family", familyCss);
+    toast.success("Font family updated!");
+  };
 
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -303,7 +345,7 @@ function SettingsContent() {
             {image ? (
               <button
                 type="button"
-                onClick={handleDeleteAvatar}
+                onClick={() => setShowDeleteAvatarConfirm(true)}
                 disabled={isAvatarUploading}
                 title="Delete profile picture"
                 className="absolute bottom-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md border-2 border-background cursor-pointer hover:scale-110 transition-transform"
@@ -319,49 +361,60 @@ function SettingsContent() {
                 <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isAvatarUploading} />
               </label>
             )}
+
+            <ConfirmDeleteDialog
+              open={showDeleteAvatarConfirm}
+              onOpenChange={setShowDeleteAvatarConfirm}
+              title="Remove Profile Picture"
+              entityName="Profile Picture"
+              description="Are you sure you want to remove your profile picture? You can upload a new one at any time."
+              confirmText="Remove Picture"
+              onConfirm={handleDeleteAvatar}
+              isLoading={isAvatarUploading}
+            />
           </div>
           <div>
-            <p className="font-semibold text-sm sm:text-base text-foreground">{session?.user?.name}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{session?.user?.email}</p>
+            <p className={cn(TYPOGRAPHY.settingsTitle)}>{session?.user?.name}</p>
+            <p className={cn(TYPOGRAPHY.settingsDesc, "mt-0.5")}>{session?.user?.email}</p>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="name" className="text-xs font-semibold">Name</Label>
-          <Input id="name" className="h-9 text-xs sm:text-sm" value={name} onChange={e => setName(e.target.value)} />
+          <Label htmlFor="name" className={cn(TYPOGRAPHY.settingsLabel)}>Name</Label>
+          <Input id="name" value={name} onChange={e => setName(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="mobile" className="text-xs font-semibold">Mobile Phone (Optional)</Label>
+          <Label htmlFor="mobile" className={cn(TYPOGRAPHY.settingsLabel)}>Mobile Phone (Optional)</Label>
           <div className="flex gap-2">
-            <Input id="mobile" className="h-9 text-xs sm:text-sm" placeholder="e.g. +1 234 567 8900" value={mobile} onChange={e => setMobile(e.target.value)} />
-            <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => copyToClipboard(mobile, "Mobile number")} disabled={!mobile}>
+            <Input id="mobile" placeholder="e.g. +1 234 567 8900" value={mobile} onChange={e => setMobile(e.target.value)} />
+            <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(mobile, "Mobile number")} disabled={!mobile}>
               <Copy className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
+          <Label htmlFor="email" className={cn(TYPOGRAPHY.settingsLabel)}>Email</Label>
           <div className="flex gap-2">
-            <Input id="email" className="h-9 text-xs sm:text-sm" defaultValue={session?.user?.email || ""} disabled />
-            <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => copyToClipboard(session?.user?.email || "", "Email")}>
+            <Input id="email" defaultValue={session?.user?.email || ""} disabled />
+            <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => copyToClipboard(session?.user?.email || "", "Email")}>
               <Copy className="w-3.5 h-3.5" />
             </Button>
           </div>
-          <p className="text-[11px] text-muted-foreground">Email cannot be changed.</p>
+          <p className={cn(TYPOGRAPHY.settingsDesc)}>Email cannot be changed.</p>
         </div>
         <div className="space-y-1.5 pt-1">
-          <Label className="text-xs font-semibold">Base Currency</Label>
+          <Label className={cn(TYPOGRAPHY.settingsLabel)}>Base Currency</Label>
           <Select
             value={currency}
             onChange={handleCurrencyChange}
             disabled={isCurrencyLoading}
-            className="w-full h-9 text-xs"
+            className="w-full"
             options={currencyOptions}
           />
-          <p className="text-[11px] text-muted-foreground">This sets the default symbol and formatting everywhere in the app.</p>
+          <p className={cn(TYPOGRAPHY.settingsDesc)}>This sets the default symbol and formatting everywhere in the app.</p>
         </div>
 
-        <Button className="mt-3 w-full md:w-auto h-9 px-4 text-xs font-semibold" onClick={handleProfileSave} disabled={isProfileLoading || isAvatarUploading}>
+        <Button className="mt-3 w-full md:w-auto px-4 font-semibold" onClick={handleProfileSave} disabled={isProfileLoading || isAvatarUploading}>
           {isProfileLoading ? "Saving..." : "Save Changes"}
         </Button>
       </div>
@@ -377,8 +430,8 @@ function SettingsContent() {
               <User className="w-4.5 h-4.5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold">Profile Information</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Update your account details here.</CardDescription>
+              <CardTitle className={cn(TYPOGRAPHY.settingsTitle)}>Profile Information</CardTitle>
+              <CardDescription className={cn(TYPOGRAPHY.settingsDesc)}>Update your account details here.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -461,6 +514,41 @@ function SettingsContent() {
               </div>
             </div>
 
+            {/* Text Size / Scaling Card */}
+            <div className="p-3.5 rounded-xl border bg-card space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-xs sm:text-sm text-foreground">Text Size</p>
+                  <p className="text-[11px] text-muted-foreground">Adjust typography scaling across the portal</p>
+                </div>
+                <span className="text-xs font-bold text-primary capitalize bg-primary/10 px-2 py-0.5 rounded-md">
+                  {fontSizePreference === "compact" ? "Compact" : fontSizePreference === "large" ? "Comfortable" : "Standard"}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-muted/50 rounded-xl border">
+                {[
+                  { key: "compact", label: "Compact", hint: "Dense" },
+                  { key: "normal", label: "Standard", hint: "Default" },
+                  { key: "large", label: "Comfortable", hint: "Large" },
+                ].map(opt => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => handleFontSizeChange(opt.key as any)}
+                    className={cn(
+                      "py-1.5 px-2 rounded-lg text-xs font-semibold transition-all text-center flex flex-col items-center",
+                      fontSizePreference === opt.key 
+                        ? "bg-card text-foreground shadow-xs border font-bold" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span>{opt.label}</span>
+                    <span className="text-[10px] opacity-70">{opt.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Display Theme Card */}
             <div className="p-3.5 rounded-xl border bg-card flex items-center justify-between shadow-2xs">
               <div>
@@ -471,16 +559,6 @@ function SettingsContent() {
                 <ThemeToggle />
               </div>
             </div>
-          </div>
-
-          <div className="w-full pt-2">
-            <Button
-              type="button"
-              className="w-full h-11 rounded-xl text-sm font-semibold shadow-xs"
-              onClick={() => setMobileOpen(false)}
-            >
-              Done
-            </Button>
           </div>
         </div>
       );
@@ -525,6 +603,36 @@ function SettingsContent() {
           </div>
         </div>
 
+        {/* Text Size Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 gap-3">
+          <div className="flex flex-col">
+            <h4 className="text-xs sm:text-sm font-semibold text-foreground">Text Size & Scaling</h4>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Scale all cards, headers, badges, and popups simultaneously.</p>
+          </div>
+
+          <div className="flex items-center gap-1.5 p-1 bg-muted/50 rounded-xl border">
+            {[
+              { key: "compact", label: "Compact" },
+              { key: "normal", label: "Standard" },
+              { key: "large", label: "Comfortable" },
+            ].map(opt => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => handleFontSizeChange(opt.key as any)}
+                className={cn(
+                  "py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-center",
+                  fontSizePreference === opt.key 
+                    ? "bg-card text-foreground shadow-xs border font-bold" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Display Theme Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 gap-3 bg-muted/20">
           <div className="flex flex-col">
@@ -549,8 +657,8 @@ function SettingsContent() {
               <Palette className="w-4.5 h-4.5 text-indigo-500" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold">App Theme</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Customize your Money Manager appearance.</CardDescription>
+              <CardTitle className={cn(TYPOGRAPHY.settingsTitle)}>App Theme</CardTitle>
+              <CardDescription className={cn(TYPOGRAPHY.settingsDesc)}>Customize your Money Manager appearance.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -574,8 +682,8 @@ function SettingsContent() {
               <Smartphone className="w-4.5 h-4.5 text-amber-500" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold">UPI & Payment Apps</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Select which UPI apps are active on your device and set your default app for Scan & Pay.</CardDescription>
+              <CardTitle className={cn(TYPOGRAPHY.settingsTitle)}>UPI & Payment Apps</CardTitle>
+              <CardDescription className={cn(TYPOGRAPHY.settingsDesc)}>Select which UPI apps are active on your device and set your default app for Scan & Pay.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -603,8 +711,8 @@ function SettingsContent() {
               <Globe className="w-4.5 h-4.5 text-emerald-500" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold">Global Timezone</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">All transactions and dates will be displayed according to this timezone.</CardDescription>
+              <CardTitle className={cn(TYPOGRAPHY.settingsTitle)}>Global Timezone</CardTitle>
+              <CardDescription className={cn(TYPOGRAPHY.settingsDesc)}>All transactions and dates will be displayed according to this timezone.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -622,8 +730,8 @@ function SettingsContent() {
               <Bell className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-semibold text-xs sm:text-sm text-foreground">Push Notifications</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className={cn(TYPOGRAPHY.settingsLabel)}>Push Notifications</p>
+              <p className={cn(TYPOGRAPHY.settingsDesc, "mt-0.5")}>
                 {isSubscribed ? 'You will receive bill reminders and alerts' : 'Enable to receive important reminders'}
               </p>
             </div>
@@ -662,8 +770,8 @@ function SettingsContent() {
               <Bell className="w-4.5 h-4.5 text-blue-500" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold">Notifications</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">Receive web push notifications for bill reminders and alerts.</CardDescription>
+              <CardTitle className={cn(TYPOGRAPHY.settingsTitle)}>Notifications</CardTitle>
+              <CardDescription className={cn(TYPOGRAPHY.settingsDesc)}>Receive web push notifications for bill reminders and alerts.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -759,12 +867,12 @@ function SettingsContent() {
         {isSearching ? (
           <MasterViewLayout sidebar={null}>
             <div className="pb-24 pt-1 w-full max-w-4xl space-y-3">
-              {showProfile && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><User className="w-3.5 h-3.5 text-primary" /></div> Profile Information</h3>{renderProfileCard(true)}</div>}
-              {showPreferences && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> App Theme</h3>{renderPreferencesCard(true)}</div>}
-              {showPaymentApps && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</h3>{renderPaymentAppsCard(true)}</div>}
-              {showTimezone && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0"><Globe className="w-3.5 h-3.5 text-emerald-500" /></div> Global Timezone</h3>{renderTimezoneCard(true)}</div>}
-              {showNotifications && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</h3>{renderNotificationsCard(true)}</div>}
-              {showLogout && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2.5"><div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0"><LogOut className="w-3.5 h-3.5 text-red-500" /></div> Sign Out</h3>{renderLogoutCard(false, true)}</div>}
+              {showProfile && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className={cn(TYPOGRAPHY.sectionTitle, "mb-3 flex items-center gap-2.5")}><div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><User className="w-3.5 h-3.5 text-primary" /></div> Profile Information</h3>{renderProfileCard(true)}</div>}
+              {showPreferences && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className={cn(TYPOGRAPHY.sectionTitle, "mb-3 flex items-center gap-2.5")}><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> App Theme</h3>{renderPreferencesCard(true)}</div>}
+              {showPaymentApps && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className={cn(TYPOGRAPHY.sectionTitle, "mb-3 flex items-center gap-2.5")}><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</h3>{renderPaymentAppsCard(true)}</div>}
+              {showTimezone && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className={cn(TYPOGRAPHY.sectionTitle, "mb-3 flex items-center gap-2.5")}><div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0"><Globe className="w-3.5 h-3.5 text-emerald-500" /></div> Global Timezone</h3>{renderTimezoneCard(true)}</div>}
+              {showNotifications && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className={cn(TYPOGRAPHY.sectionTitle, "mb-3 flex items-center gap-2.5")}><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</h3>{renderNotificationsCard(true)}</div>}
+              {showLogout && <div className="bg-card rounded-xl border shadow-xs p-3.5 md:p-5"><h3 className={cn(TYPOGRAPHY.sectionTitle, "mb-3 flex items-center gap-2.5")}><div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0"><LogOut className="w-3.5 h-3.5 text-red-500" /></div> Sign Out</h3>{renderLogoutCard(false, true)}</div>}
 
               {!showProfile && !showPreferences && !showPaymentApps && !showTimezone && !showNotifications && !showLogout && (
                 <div className="p-10 text-center text-xs sm:text-sm text-muted-foreground border rounded-xl border-dashed">
@@ -777,160 +885,59 @@ function SettingsContent() {
           <MasterViewLayout
             sidebar={
               <div className="w-full shrink-0 flex flex-col gap-1.5">
-                <button
-                  onClick={() => handleTabChange("profile")}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "profile" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-xs"
-                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-                    }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "profile" && !isMobile ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                  Profile Information
-                </button>
-                <button
-                  onClick={() => handleTabChange("preferences")}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "preferences" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-xs"
-                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-                    }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "preferences" && !isMobile ? "bg-white/20 text-white" : "bg-indigo-500/10 text-indigo-500"}`}>
-                    <Palette className="w-3.5 h-3.5" />
-                  </div>
-                  App Theme
-                </button>
-                <button
-                  onClick={() => handleTabChange("payment_apps")}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "payment_apps" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-xs"
-                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-                    }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "payment_apps" && !isMobile ? "bg-white/20 text-white" : "bg-amber-500/10 text-amber-500"}`}>
-                    <Smartphone className="w-3.5 h-3.5" />
-                  </div>
-                  Payment Apps
-                </button>
-                <button
-                  onClick={() => handleTabChange("timezone")}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "timezone" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-xs"
-                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-                    }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "timezone" && !isMobile ? "bg-white/20 text-white" : "bg-emerald-500/10 text-emerald-500"}`}>
-                    <Globe className="w-3.5 h-3.5" />
-                  </div>
-                  Global Timezone
-                </button>
-                <button
-                  onClick={() => handleTabChange("notifications")}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "notifications" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-xs"
-                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-                    }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "notifications" && !isMobile ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-500"}`}>
-                    <Bell className="w-3.5 h-3.5" />
-                  </div>
-                  Notifications
-                </button>
-                <button
-                  onClick={() => handleTabChange("logout")}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 text-xs sm:text-sm font-medium rounded-xl transition-all text-left w-full border ${activeTab === "logout" && !isMobile
-                    ? "bg-primary text-white border-primary shadow-xs"
-                    : "text-muted-foreground bg-card hover:bg-muted border-border/50"
-                    }`}
-                >
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${activeTab === "logout" && !isMobile ? "bg-white/20 text-white" : "bg-red-500/10 text-red-500"}`}>
-                    <LogOut className="w-3.5 h-3.5" />
-                  </div>
-                  Sign Out
-                </button>
+                {SETTINGS_NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id && !isMobile;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleTabChange(item.id as any)}
+                      className={cn(
+                        "flex items-center gap-2.5 px-3 py-2.5 font-medium rounded-xl transition-all text-left w-full border text-[length:var(--font-size-settings-label)]",
+                        isActive
+                          ? "bg-primary text-white border-primary shadow-xs"
+                          : "text-muted-foreground bg-card hover:bg-muted border-border/50"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                        isActive ? "bg-white/20 text-white" : `${item.bg} ${item.color}`
+                      )}>
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             }
           >
             {isMobile ? (
               <div className="pb-24 pt-1 w-full max-w-4xl flex flex-col gap-2.5">
-                <button onClick={() => handleTabChange("profile")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <User className="w-4.5 h-4.5 text-primary" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-xs sm:text-sm text-foreground">Profile Information</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Update your account details</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-
-                <button onClick={() => handleTabChange("preferences")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                      <Palette className="w-4.5 h-4.5 text-indigo-500" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-xs sm:text-sm text-foreground">App Theme</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">App theme & appearance</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-
-                <button onClick={() => handleTabChange("payment_apps")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                      <Smartphone className="w-4.5 h-4.5 text-amber-500" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-xs sm:text-sm text-foreground">UPI & Payment Apps</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Manage active apps and default</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-
-                <button onClick={() => handleTabChange("timezone")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                      <Globe className="w-4.5 h-4.5 text-emerald-500" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-xs sm:text-sm text-foreground">Global Timezone</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Set default times for tracking</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-
-                <button onClick={() => handleTabChange("notifications")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                      <Bell className="w-4.5 h-4.5 text-blue-500" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-xs sm:text-sm text-foreground">Notifications</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Push alerts and reminders</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
-
-                <button onClick={() => handleTabChange("logout")} className="w-full bg-card border rounded-xl p-3 flex items-center justify-between shadow-2xs hover:bg-red-500/5 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center">
-                      <LogOut className="w-4.5 h-4.5 text-red-500" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-xs sm:text-sm text-foreground">Sign Out</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">End your current session</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </button>
+                {SETTINGS_NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleTabChange(item.id as any)}
+                      className="w-full bg-card border border-slate-200/70 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-2xs hover:bg-secondary/50 transition-all text-left group"
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105",
+                          item.bg
+                        )}>
+                          <Icon className={cn("w-5 h-5", item.color)} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className={cn(TYPOGRAPHY.cardTitle, "font-semibold leading-snug")}>{item.label}</p>
+                          <p className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5 leading-snug")}>{item.desc}</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="pb-24 pt-2 w-full max-w-4xl space-y-4">
@@ -957,10 +964,10 @@ function SettingsContent() {
         }}>
           <DialogContent
             initialFocus={false}
-            className={`w-[92vw] rounded-2xl max-h-[88vh] overflow-y-auto ${["logout", "timezone", "preferences"].includes(activeTab) ? "max-w-sm sm:max-w-md p-4 sm:p-5" : "max-w-lg p-5"}`}
+            size={["logout", "timezone", "preferences"].includes(activeTab) ? "sm" : "md"}
           >
             <DialogHeader>
-              <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2">
                 {activeTab === "profile" && <><div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><User className="w-3.5 h-3.5 text-primary" /></div> Profile Information</>}
                 {activeTab === "preferences" && <><div className="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0"><Palette className="w-3.5 h-3.5 text-indigo-500" /></div> App Theme</>}
                 {activeTab === "payment_apps" && <><div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0"><Smartphone className="w-3.5 h-3.5 text-amber-500" /></div> UPI & Payment Apps</>}
@@ -968,15 +975,18 @@ function SettingsContent() {
                 {activeTab === "notifications" && <><div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0"><Bell className="w-3.5 h-3.5 text-blue-500" /></div> Notifications</>}
                 {activeTab === "logout" && <><div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0"><LogOut className="w-3.5 h-3.5 text-red-500" /></div> Sign Out</>}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                Settings Configuration
+              </DialogDescription>
             </DialogHeader>
-            <div className="pt-1">
+            <DialogBody className="pt-1">
               {activeTab === "profile" && renderProfileCard(true)}
               {activeTab === "preferences" && renderPreferencesCard(true)}
               {activeTab === "payment_apps" && renderPaymentAppsCard(true)}
               {activeTab === "timezone" && renderTimezoneCard(true)}
               {activeTab === "notifications" && renderNotificationsCard(true)}
               {activeTab === "logout" && renderLogoutCard(true)}
-            </div>
+            </DialogBody>
           </DialogContent>
         </Dialog>
       </div>

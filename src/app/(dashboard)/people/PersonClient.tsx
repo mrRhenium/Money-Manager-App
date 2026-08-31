@@ -16,6 +16,8 @@ import { PersonList } from "@/components/lists/PersonList";
 import { usePathname, useSearchParams } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function PersonClient({
   initialPeople,
@@ -281,8 +283,8 @@ export function PersonClient({
 
                 <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                   <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                    <h2 className="text-lg font-bold text-foreground">Top 10 People by Net Balance</h2>
-                    <p className="text-sm text-muted-foreground mt-1">Comparison of money you need to receive vs pay.</p>
+                    <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Top 10 People by Net Balance</h2>
+                    <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Comparison of money you need to receive vs pay.</p>
                   </div>
                   <div className="p-4 sm:p-6 h-[400px]">
                     {chartData.length > 0 ? (

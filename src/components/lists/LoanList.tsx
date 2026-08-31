@@ -14,6 +14,8 @@ import { AlertTriangle, CalendarDays, ArrowUpRight, ArrowDownLeft, RotateCcw } f
 import { List, Modal } from "antd";
 import dayjs from "dayjs";
 import { formatIndianNumber } from "@/lib/numberHelper";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 interface LoanListProps {
   loans: any[];
@@ -141,20 +143,20 @@ export function LoanList({
                 <CategoryIcon name={loan.icon} className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-semibold leading-none mb-1 truncate">{loan.name}</h3>
+                <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1")}>{loan.name}</h3>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   {isTaken ? (
-                    <span className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                    <span className={cn(TYPOGRAPHY.badge, "text-red-500 bg-red-50 flex items-center gap-1")}>
                       <ArrowUpRight className="w-3 h-3" /> Loan Taken
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                    <span className={cn(TYPOGRAPHY.badge, "text-emerald-500 bg-emerald-50 flex items-center gap-1")}>
                       <ArrowDownLeft className="w-3 h-3" /> Loan Given
                     </span>
                   )}
                   
                   {loan.interestRate !== undefined && (
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${loan.interestType === 'compound' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                    <span className={cn(TYPOGRAPHY.badge, loan.interestType === 'compound' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600')}>
                       {loan.interestRate}% {loan.interestType === 'compound' ? 'COMPOUND' : 'SIMPLE'}
                     </span>
                   )}
@@ -169,15 +171,15 @@ export function LoanList({
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-secondary/30 p-3 rounded-xl border shadow-sm flex flex-col justify-center">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate mb-1">EMI Amount</p>
-              <p className="font-semibold text-sm truncate">{format(loan.emiAmount)}</p>
+              <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>EMI Amount</p>
+              <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>{format(loan.emiAmount)}</p>
               <p className="text-[10px] text-muted-foreground mt-1">
                 {emisPaid} / {loan.tenureMonths} EMIs paid
               </p>
             </div>
             <div className="bg-secondary/30 p-3 rounded-xl border shadow-sm flex flex-col justify-center">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate mb-1">Outstanding</p>
-              <p className={`font-bold text-sm truncate ${isTaken ? 'text-red-500' : 'text-emerald-500'}`}>
+              <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Outstanding</p>
+              <p className={cn(TYPOGRAPHY.cardValue, "font-semibold", isTaken ? 'text-red-500' : 'text-emerald-500')}>
                 {format(loan.outstandingBalance)}
               </p>
               {!isCompleted && (
@@ -195,8 +197,8 @@ export function LoanList({
           <div className="w-full space-y-3 mt-auto px-1">
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Paid / Total Payable</p>
-                <p className="text-sm font-semibold">{format(amountPaid)} <span className="text-muted-foreground font-normal">/ {format(loan.totalAmount)}</span></p>
+                <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Paid / Total Payable</p>
+                <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>{format(amountPaid)} <span className="text-muted-foreground font-normal">/ {format(loan.totalAmount)}</span></p>
               </div>
               <div className="text-right">
                 <span style={{ color: loan.color }} className="font-bold">{actualPercentage.toFixed(1)}%</span>

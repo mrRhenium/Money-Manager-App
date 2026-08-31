@@ -5,7 +5,7 @@ import { getCurrentFormatted } from "@/lib/dateTimeHelper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -146,141 +146,153 @@ export function BudgetForm({ categories, budget, triggerClassName }: BudgetFormP
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Target className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Target className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{budget ? "Edit Category Budget" : "Set Category Budget"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {budget ? "Update monthly limit, timeframe, or category tracking" : "Set an expenditure limit for monthly or custom tracking"}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {errorMsg && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                {errorMsg}
-              </div>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Folder className="w-4 h-4 text-muted-foreground" /> Category</FormLabel>
-                    <FormControl>
-                      <Select
-                        showSearch
-                        placeholder="Select expense category"
-                        className="w-full h-10"
-                        optionFilterProp="label"
-                        options={expenseCategories.map(cat => ({ label: cat.name, value: cat._id }))}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" /> Budget Type</FormLabel>
-                    <FormControl>
-                      <Select
-                        className="w-full h-10"
-                        options={[
-                          { label: "Monthly", value: "monthly" },
-                          { label: "Custom Date Range", value: "custom" }
-                        ]}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
-                    <FormControl>
-                      <CurrencyInput 
-                        type="text" 
-                        placeholder="e.g. 5,000"
-                        currency={currency}
-                        onCurrencyChange={setCurrency}
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(formatIndianNumber(e.target.value));
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {budgetType === "monthly" ? (
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
+              {errorMsg && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+                  {errorMsg}
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="month"
+                  name="categoryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" /> Month</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Folder className="w-4 h-4 text-muted-foreground" /> Category</FormLabel>
                       <FormControl>
-                        <Input type="month" {...field} />
+                        <Select
+                          showSearch
+                          placeholder="Select expense category"
+                          className="w-full h-10"
+                          optionFilterProp="label"
+                          options={expenseCategories.map(cat => ({ label: cat.name, value: cat._id }))}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" /> Budget Type</FormLabel>
+                      <FormControl>
+                        <Select
+                          className="w-full h-10"
+                          options={[
+                            { label: "Monthly", value: "monthly" },
+                            { label: "Custom Date Range", value: "custom" }
+                          ]}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount</FormLabel>
+                      <FormControl>
+                        <CurrencyInput 
+                          type="text" 
+                          placeholder="e.g. 5,000"
+                          currency={currency}
+                          onCurrencyChange={setCurrency}
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(formatIndianNumber(e.target.value));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {budgetType === "monthly" ? (
                   <FormField
                     control={form.control}
-                    name="startDate"
+                    name="month"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Start Date</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" /> Month</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <Input type="month" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="endDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs">End Date</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Start Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">End Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-              <ColorPicker value={color} onChange={setColor} id={`budgetColor-${budget?._id || 'new'}`} />
-              <IconPicker value={icon} onChange={setIcon} />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+                <ColorPicker value={color} onChange={setColor} id={`budgetColor-${budget?._id || 'new'}`} />
+                <IconPicker value={icon} onChange={setIcon} />
+              </div>
+            </DialogBody>
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
-              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {isLoading ? "Saving..." : (budget ? "Save Changes" : "Save Budget")}
-            </Button>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={isLoading}>
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {isLoading ? "Saving..." : (budget ? "Save Changes" : "Save Budget")}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

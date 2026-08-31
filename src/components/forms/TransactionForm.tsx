@@ -5,7 +5,7 @@ import { getCurrentFormatted, parseToDate, formatDateString } from "@/lib/dateTi
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -219,56 +219,61 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <ReceiptText className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <ReceiptText className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{transaction ? "Edit Transaction" : "Log Transaction"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {transaction ? "Update transaction details and category mapping" : "Record an income, expense, transfer, or debt entry"}
+          </DialogDescription>
         </DialogHeader>
         
-        {errorMsg && (
-          <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-            {errorMsg}
-          </div>
-        )}
-        
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg text-primary">
-              <Camera className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm text-foreground">Smart Billing & Payments</h4>
-              <p className="text-xs text-muted-foreground">Upload receipt to autofill or scan a UPI QR code</p>
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button variant="secondary" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3" onClick={() => fileInputRef.current?.click()} disabled={isScanning || isUploading}>
-              {(isScanning || isUploading) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
-              {(isScanning || isUploading) ? "Processing..." : "Scan & Upload Bill"}
-            </Button>
-            <Button variant="outline" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3 border-primary/20 hover:bg-primary/5 hover:text-primary" onClick={() => setScanPayOpen(true)}>
-              <QrCode className="w-4 h-4 mr-2" />
-              Scan QR Pay
-            </Button>
-          </div>
-          <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-        </div>
-        
-        {billImage && (
-          <div className="relative w-full h-32 rounded-lg border overflow-hidden mt-4 group">
-            <img src={billImage} alt="Uploaded Bill" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-               <Button variant="destructive" size="sm" onClick={() => setBillImage("")}>
-                 <Trash className="w-4 h-4 mr-2" /> Remove Bill
-               </Button>
-            </div>
-          </div>
-        )}
-
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody>
+              {errorMsg && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+                  {errorMsg}
+                </div>
+              )}
+              
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                    <Camera className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm text-foreground">Smart Billing & Payments</h4>
+                    <p className="text-xs text-muted-foreground">Upload receipt to autofill or scan a UPI QR code</p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Button variant="secondary" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3" onClick={() => fileInputRef.current?.click()} disabled={isScanning || isUploading}>
+                    {(isScanning || isUploading) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Camera className="w-4 h-4 mr-2" />}
+                    {(isScanning || isUploading) ? "Processing..." : "Scan & Upload Bill"}
+                  </Button>
+                  <Button variant="outline" className="w-full sm:w-auto shadow-sm text-xs h-9 px-3 border-primary/20 hover:bg-primary/5 hover:text-primary" onClick={() => setScanPayOpen(true)}>
+                    <QrCode className="w-4 h-4 mr-2" />
+                    Scan QR Pay
+                  </Button>
+                </div>
+                <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+              </div>
+              
+              {billImage && (
+                <div className="relative w-full h-32 rounded-lg border overflow-hidden mt-4 group">
+                  <img src={billImage} alt="Uploaded Bill" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                     <Button variant="destructive" size="sm" onClick={() => setBillImage("")}>
+                       <Trash className="w-4 h-4 mr-2" /> Remove Bill
+                     </Button>
+                  </div>
+                </div>
+              )}
             {/* Row 1: Type and Category / People */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -538,10 +543,17 @@ export function TransactionForm({ accounts, categories, people = [], creditCards
               )}
             />
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {isSubmitting ? "Saving..." : (transaction ? "Save Changes" : "Save Transaction")}
-            </Button>
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {isSubmitting ? "Saving..." : (transaction ? "Save Changes" : "Save Transaction")}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

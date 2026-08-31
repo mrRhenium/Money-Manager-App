@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { TYPOGRAPHY } from "@/lib/designTokens";
+
 interface MasterHeaderProps {
   title: string | React.ReactNode;
   subtitle?: string | React.ReactNode;
@@ -37,11 +39,11 @@ export function MasterHeader({ title, subtitle, backHref, actions, className }: 
             </Link>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate w-full flex items-center gap-2" title={typeof title === "string" ? title : undefined}>
+            <h1 className={cn(TYPOGRAPHY.headerTitle, "truncate w-full flex items-center gap-2")} title={typeof title === "string" ? title : undefined}>
               {title}
             </h1>
             {subtitle && (
-              <div className="text-[11px] sm:text-sm text-muted-foreground mt-0.5 truncate w-full">
+              <div className={cn(TYPOGRAPHY.headerSubtitle, "mt-0.5 truncate w-full")}>
                 {subtitle}
               </div>
             )}

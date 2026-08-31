@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Trash, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
@@ -42,22 +42,32 @@ export function InvestmentDeleteModal({ investment }: { investment: any }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger render={
         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
           <Trash className="w-4 h-4" />
         </Button>
-      </DialogTrigger>
-      <DialogContent>
+      } />
+      <DialogContent initialFocus={false} size={isUtilized ? "md" : "sm"}>
         {!isUtilized ? (
           <>
             <DialogHeader>
-              <DialogTitle>Delete {investment.name}</DialogTitle>
+              <DialogTitle>
+                <div className="w-8 h-8 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                  <Trash className="w-4 h-4" />
+                </div>
+                <span>Delete {investment.name}</span>
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this asset? It has no invested amount yet.
+              </DialogDescription>
             </DialogHeader>
-            <p className="text-muted-foreground">Are you sure you want to delete <strong>{investment.name}</strong>? It has no invested amount yet.</p>
-            <DialogFooter className="sm:justify-center gap-2 pt-4">
-              <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+            <DialogFooter>
+              <Button variant="outline" className="h-9 px-4 text-[length:var(--font-size-modal-btn)]" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
               <Button 
-                className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+                variant="destructive"
+                className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" 
                 onClick={handleDelete} 
                 disabled={loading}
               >
@@ -68,14 +78,19 @@ export function InvestmentDeleteModal({ investment }: { investment: any }) {
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-red-600">
-                <AlertTriangle className="w-5 h-5" />
-                Stop Tracking {investment.name}
+              <DialogTitle>
+                <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <span>Stop Tracking {investment.name}</span>
               </DialogTitle>
+              <DialogDescription>
+                You have {format(investment.investedAmount)} invested in this asset. Tracking will be paused.
+              </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 py-2">
-              <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
+            <DialogBody className="space-y-4">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs sm:text-sm text-amber-800 dark:text-amber-300">
                 <p className="font-semibold mb-1">Notice: Preserving History</p>
                 <p>You have an invested amount of {format(investment.investedAmount)} in this asset. <strong>Its historical data will NOT be deleted</strong>, but tracking will be paused and its status marked as closed/sold.</p>
               </div>
@@ -112,21 +127,24 @@ export function InvestmentDeleteModal({ investment }: { investment: any }) {
                   id="confirm-inv-deletion" 
                   checked={confirmed}
                   onChange={(e: any) => setConfirmed(e.target.checked)}
-                  className="mt-1"
+                  className="mt-1 accent-primary"
                 />
                 <label
                   htmlFor="confirm-inv-deletion"
-                  className="text-sm text-muted-foreground cursor-pointer leading-tight"
+                  className="text-xs sm:text-sm text-muted-foreground cursor-pointer leading-snug"
                 >
                   I understand this will change the status to closed, preserving past data but hiding it from active tracking.
                 </label>
               </div>
-            </div>
+            </DialogBody>
 
-            <DialogFooter className="mt-4 sm:justify-center gap-2">
-              <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+            <DialogFooter>
+              <Button variant="outline" className="h-9 px-4 text-[length:var(--font-size-modal-btn)]" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
               <Button 
-                className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+                variant="destructive"
+                className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" 
                 onClick={handleDelete} 
                 disabled={loading || !reason || !notes.trim() || !confirmed}
               >

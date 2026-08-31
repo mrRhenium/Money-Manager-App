@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Trash, AlertTriangle } from "lucide-react";
 import { deleteAccount } from "@/actions/account";
@@ -39,20 +39,30 @@ export function AccountDeleteModal({ account }: { account: any }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger render={
         <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
           <Trash className="w-4 h-4" />
         </Button>
-      </DialogTrigger>
-      <DialogContent>
+      } />
+      <DialogContent initialFocus={false} size="sm">
         <DialogHeader>
-          <DialogTitle>Delete {account.name}</DialogTitle>
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+              <Trash className="w-4 h-4" />
+            </div>
+            <span>Delete {account.name}</span>
+          </DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this account? You can only delete accounts that have no transactions linked to them.
+          </DialogDescription>
         </DialogHeader>
-        <p className="text-muted-foreground">Are you sure you want to delete this account? You can only delete accounts that have no transactions linked to them.</p>
-        <DialogFooter className="sm:justify-center gap-2 pt-4">
-          <Button variant="outline" className="rounded-full px-6" onClick={() => setOpen(false)}>Cancel</Button>
+        <DialogFooter>
+          <Button variant="outline" className="h-9 px-4 text-[length:var(--font-size-modal-btn)]" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button 
-            className="rounded-full px-6 bg-red-100 text-red-600 hover:bg-red-200 border-0" 
+            variant="destructive"
+            className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" 
             onClick={handleDelete} 
             disabled={loading}
           >

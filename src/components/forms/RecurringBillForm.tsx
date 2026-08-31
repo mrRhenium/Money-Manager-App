@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "antd";
 import { createRecurringBill, updateRecurringBill } from "@/actions/recurringBill";
-import { Plus, PenLine, Repeat, Coins, Calendar, Wallet, Smartphone, Folder, Eye } from "lucide-react";
+import { Plus, PenLine, Repeat, Coins, Calendar, Wallet, Smartphone, Folder, Eye, Loader2 } from "lucide-react";
 import { formatIndianNumber, parseIndianNumber } from "@/lib/numberHelper";
 import { getCurrentFormatted, formatDateString } from "@/lib/dateTimeHelper";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
@@ -135,16 +135,22 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent initialFocus={false} className="sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Repeat className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Repeat className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{bill ? (viewOnly ? "View Subscription" : "Edit Subscription") : "Add Subscription"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {bill ? (viewOnly ? "Details and billing cadence for this subscription" : "Update subscription amount, cycle, or auto-debit account") : "Track recurring payments, OTT subscriptions, and utilities"}
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -356,11 +362,19 @@ export function RecurringBillForm({ accounts, categories, triggerClassName, bill
               <IconPicker disabled={viewOnly} value={icon} onChange={setIcon} />
             </div>
 
-            {!viewOnly && (
-              <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
-                {isLoading ? "Saving..." : (bill ? "Save Changes" : "Add Subscription")}
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                {viewOnly ? "Close" : "Cancel"}
               </Button>
-            )}
+              {!viewOnly && (
+                <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={isLoading}>
+                  {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  {isLoading ? "Saving..." : (bill ? "Save Changes" : "Add Subscription")}
+                </Button>
+              )}
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

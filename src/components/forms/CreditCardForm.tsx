@@ -5,7 +5,7 @@ import { getCurrentFormatted, formatDateString, parseToDate, getEndOfMonth } fro
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -148,23 +148,28 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CardIcon className="w-5 h-5 text-primary" />
-            {card ? "Edit Credit Card" : "Register Credit Card"}
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <CardIcon className="w-5 h-5" />
+            </div>
+            <span>{card ? "Edit Credit Card" : "Register Credit Card"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {card ? "Update card limits, billing cycles, or visual theme" : "Add a new credit card to track balances, billing dates, and dues"}
+          </DialogDescription>
         </DialogHeader>
 
-        {error && <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md">{error}</div>}
-        {Object.keys(form.formState.errors).length > 0 && (
-          <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md">
-            Please fix the validation errors before saving.
-          </div>
-        )}
-
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
+              {error && <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md">{error}</div>}
+              {Object.keys(form.formState.errors).length > 0 && (
+                <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md">
+                  Please fix the validation errors before saving.
+                </div>
+              )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="bankName" render={({ field }) => (
                 <FormItem><FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Bank Name</FormLabel><FormControl><Input placeholder="e.g. HDFC Bank" {...field} /></FormControl><FormMessage /></FormItem>
@@ -286,10 +291,17 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
               <ColorPicker value={field.value} onChange={field.onChange} id={`creditCardColorInput-${card?._id || 'new'}`} />
             )} />
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={loading}>
-              {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {loading ? "Saving..." : (card ? "Save Changes" : "Register Card")}
-            </Button>
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={loading}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {loading ? "Saving..." : (card ? "Save Changes" : "Register Card")}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

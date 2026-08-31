@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,17 +68,22 @@ export function AddFundsModal({ goal, accounts = [], onUpdate }: { goal: any, ac
           <PlusCircle className="w-3 h-3" /> Add Funds
         </Button>
       } />
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent initialFocus={false} size="sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Wallet className="w-5 h-5" />
-            <span className="text-foreground">Fund {goal.name}</span>
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Wallet className="w-4 h-4" />
+            </div>
+            <span className="truncate">Fund {goal.name}</span>
           </DialogTitle>
+          <DialogDescription>
+            Allocate money to accelerate your savings progress.
+          </DialogDescription>
         </DialogHeader>
         
-        {error && <div className="text-sm text-red-500 p-2 bg-red-500/10 rounded">{error}</div>}
+        <DialogBody className="space-y-4">
+          {error && <div className="text-sm text-red-500 p-2 bg-red-500/10 rounded">{error}</div>}
 
-        <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Amount to Add</Label>
             <CurrencyInput 
@@ -114,11 +119,16 @@ export function AddFundsModal({ goal, accounts = [], onUpdate }: { goal: any, ac
               options={accounts.map(acc => ({ label: acc.name, value: acc._id }))}
             />
           </div>
-        </div>
+        </DialogBody>
 
-          <Button className="w-full mt-2" onClick={handleAddFunds} disabled={loading || !amount}>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+            Cancel
+          </Button>
+          <Button className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" onClick={handleAddFunds} disabled={loading || !amount}>
             {loading ? "Adding..." : "Confirm Addition"}
           </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { History, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -55,30 +55,33 @@ export function SubscriptionHistoryModal({ bill }: SubscriptionHistoryModalProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors" title="View History">
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors" title="Transaction History">
           <History className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <History className="w-5 h-5 text-primary" />
-            Payment History
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <History className="w-5 h-5" />
+            </div>
+            <span>Payment History</span>
           </DialogTitle>
-        </DialogHeader>
-        
-        <div className="px-0 pt-2">
-          <div className="relative">
+          <DialogDescription>
+            Historical payments logged for this subscription.
+          </DialogDescription>
+          <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search by date (DD-MM-YYYY) or amount..." 
-              className="pl-9 bg-background h-10"
+              className="pl-9 bg-background h-9 text-xs sm:text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </div>
-        <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        </DialogHeader>
+
+        <DialogBody className="space-y-4">
           {loading ? (
             <div className="flex justify-center items-center py-8 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -90,7 +93,7 @@ export function SubscriptionHistoryModal({ bill }: SubscriptionHistoryModalProps
             </div>
           ) : (
             <div className="space-y-3">
-              {paginatedTransactions.map((tx, i) => (
+              {paginatedTransactions.map((tx) => (
                 <div key={tx._id} className="flex justify-between items-center p-3 rounded-lg border bg-muted/20">
                   <div>
                     <p className="font-semibold">{formatDateString(tx.date, "DD MMM, YYYY")}</p>
@@ -101,12 +104,12 @@ export function SubscriptionHistoryModal({ bill }: SubscriptionHistoryModalProps
                   </div>
                 </div>
               ))}
-
             </div>
           )}
-        </div>
+        </DialogBody>
+
         {filteredTransactions.length > ITEMS_PER_PAGE && (
-          <div className="flex justify-center pt-2 pb-2">
+          <DialogFooter className="justify-center sm:justify-center">
             <Pagination 
               current={currentPage} 
               pageSize={ITEMS_PER_PAGE} 
@@ -114,9 +117,8 @@ export function SubscriptionHistoryModal({ bill }: SubscriptionHistoryModalProps
               onChange={setCurrentPage} 
               size="small" 
             />
-          </div>
+          </DialogFooter>
         )}
-
       </DialogContent>
     </Dialog>
   );

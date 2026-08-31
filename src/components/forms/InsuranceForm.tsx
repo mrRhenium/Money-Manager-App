@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -126,22 +126,27 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Shield className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{policy ? "Edit Policy" : "Add New Policy"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {policy ? "Update policy coverage, renewal dates, or premium terms" : "Track life, health, vehicle, or home insurance policies and due dates"}
+          </DialogDescription>
         </DialogHeader>
-        
-        {errorMsg && (
-          <div className="p-3 mb-2 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
-            <span className="font-semibold">Error:</span> {errorMsg}
-          </div>
-        )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
+              {errorMsg && (
+                <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm border border-destructive/20 flex items-center gap-2">
+                  <span className="font-semibold">Error:</span> {errorMsg}
+                </div>
+              )}
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
@@ -373,7 +378,16 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
               <IconPicker value={icon} onChange={setIcon} />
             </div>
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md">{policy ? "Save Changes" : "Save Policy"}</Button>
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs">
+                {policy ? "Save Changes" : "Save Policy"}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

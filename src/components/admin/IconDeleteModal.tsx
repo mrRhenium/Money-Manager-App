@@ -7,9 +7,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogBody,
   DialogTrigger,
   DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Trash, AlertTriangle, ShieldCheck, Ban } from "lucide-react";
 import { deleteIcon } from "@/actions/icon";
@@ -65,30 +66,26 @@ export function IconDeleteModal({ icon, onSuccess }: IconDeleteModalProps) {
         }
       />
 
-      <DialogContent className="w-[95vw] sm:max-w-md overflow-x-hidden p-4 sm:p-6 rounded-2xl">
+      <DialogContent initialFocus={false} size="sm">
         <DialogHeader>
-          <div className="flex items-center gap-3">
+          <DialogTitle>
             <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                 isConsumed
                   ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                   : "bg-red-500/10 text-red-500 border border-red-500/20"
               }`}
             >
-              {isConsumed ? <AlertTriangle className="w-5 h-5" /> : <Trash className="w-5 h-5" />}
+              {isConsumed ? <AlertTriangle className="w-4 h-4" /> : <Trash className="w-4 h-4" />}
             </div>
-            <div>
-              <DialogTitle className="text-base sm:text-lg font-bold">
-                {isConsumed ? "Cannot Delete Icon" : "Delete System Icon"}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                {isConsumed ? "Dependency Protection Active" : "This action cannot be undone"}
-              </DialogDescription>
-            </div>
-          </div>
+            <span>{isConsumed ? "Cannot Delete Icon" : "Delete System Icon"}</span>
+          </DialogTitle>
+          <DialogDescription>
+            {isConsumed ? "Dependency Protection Active" : "This action cannot be undone"}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="py-3 space-y-3">
+        <DialogBody className="space-y-3">
           {/* Target Icon Info Card */}
           <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border">
             <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -133,14 +130,14 @@ export function IconDeleteModal({ icon, onSuccess }: IconDeleteModalProps) {
               Are you sure you want to permanently delete <strong>{icon.label}</strong> ({icon.name})? It is not currently used anywhere.
             </div>
           )}
-        </div>
+        </DialogBody>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter>
           <Button
             type="button"
             variant="outline"
             onClick={() => setOpen(false)}
-            className="h-9 text-xs"
+            className="h-10 px-4 text-sm w-full sm:w-auto"
           >
             {isConsumed ? "Close" : "Cancel"}
           </Button>
@@ -151,7 +148,7 @@ export function IconDeleteModal({ icon, onSuccess }: IconDeleteModalProps) {
               variant="destructive"
               onClick={handleDelete}
               disabled={loading}
-              className="h-9 text-xs font-semibold"
+              className="h-10 px-5 text-sm font-semibold shadow-md w-full sm:w-auto"
             >
               {loading ? "Deleting..." : "Confirm Delete"}
             </Button>

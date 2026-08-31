@@ -7,10 +7,12 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { InsuranceForm } from "../forms/InsuranceForm";
+import { InsuranceDeleteModal } from "../forms/InsuranceDeleteModal";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { useCurrency } from "@/hooks/useCurrency";
 import { formatDateString } from "@/lib/dateTimeHelper";
-import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 export function InsuranceTable({ 
   policies, 
@@ -31,14 +33,12 @@ export function InsuranceTable({
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
-  const { hiddenIds, triggerDelete } = useUndoableDelete();
-
   const filteredAndSorted = useMemo(() => {
     let result = [...policies];
     
     // Status filter - only active by default unless we add a status dropdown
     // Let's filter out non-active if we don't want to show them, but for now we show all
-    result = result.filter(p => p.status !== "mistake" && !hiddenIds.has(p._id));
+    result = result.filter(p => p.status !== "mistake");
 
     const currentSearch = hideToolbar ? externalSearch : search;
     const currentType = hideToolbar ? externalType : filterType;
@@ -65,7 +65,7 @@ export function InsuranceTable({
     });
 
     return result;
-  }, [policies, search, filterType, sortBy, hiddenIds, hideToolbar, externalSearch, externalType, externalSort]);
+  }, [policies, search, filterType, sortBy, hideToolbar, externalSearch, externalType, externalSort]);
 
 
   return (
@@ -128,8 +128,8 @@ export function InsuranceTable({
                       <CategoryIcon name={record.icon} className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold leading-none mb-1 truncate text-foreground">{record.policyName}</h3>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{record.provider} ({record.type})</p>
+                      <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1")}>{record.policyName}</h3>
+                      <p className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>{record.provider} ({record.type})</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0 -mt-1 -mr-1">
@@ -139,40 +139,22 @@ export function InsuranceTable({
                       </Button>
                     </Link>
                     <InsuranceForm policy={record} accounts={accounts} />
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                      onClick={() => {
-                        triggerDelete({
-                          id: record._id,
-                          entityName: record.policyName,
-                          onCommit: async () => {
-                            const res = await deleteInsurancePolicy(record._id);
-                            if (res && !res.success) {
-                              throw new Error(res.error);
-                            }
-                          }
-                        });
-                      }}
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
+                    <InsuranceDeleteModal policy={record} />
                   </div>
                 </div>
   
                 <div className="grid grid-cols-2 gap-y-4 gap-x-2 pt-4 border-t border-border/50 mt-auto">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Coverage</p>
-                    <p className="font-semibold text-sm text-foreground">{format(record.coverageAmount)}</p>
+                    <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Coverage</p>
+                    <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>{format(record.coverageAmount)}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Premium</p>
-                    <p className="font-semibold text-sm text-foreground">{format(record.premiumAmount)} <span className="text-xs text-muted-foreground font-normal">/ {record.premiumFrequency}</span></p>
+                    <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Premium</p>
+                    <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>{format(record.premiumAmount)} <span className="text-xs text-muted-foreground font-normal">/ {record.premiumFrequency}</span></p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Next Renewal</p>
-                    <p className="font-medium text-sm text-foreground">{record.renewalDate ? formatDateString(record.renewalDate, "DD-MM-YYYY") : "-"}</p>
+                    <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Next Renewal</p>
+                    <p className={cn(TYPOGRAPHY.cardValue)}>{record.renewalDate ? formatDateString(record.renewalDate, "DD-MM-YYYY") : "-"}</p>
                   </div>
                 </div>
   

@@ -8,17 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 import { CreditCardForm } from "../forms/CreditCardForm";
-import { deleteCreditCard } from "@/actions/creditCard";
+import { CreditCardDeleteModal } from "../forms/CreditCardDeleteModal";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useUndoableDelete } from "@/hooks/useUndoableDelete";
+import { TYPOGRAPHY } from "@/lib/designTokens";
+import { cn } from "@/lib/utils";
 
 export function CreditCardList({ cards, hideToolbar = false, externalSort }: { cards: any[], hideToolbar?: boolean, externalSort?: string }) {
   const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
-  const { hiddenIds, triggerDelete } = useUndoableDelete();
 
   const filteredCards = useMemo(() => {
-    let result = cards.filter(card => !hiddenIds.has(card._id));
+    let result = [...cards];
 
     if (!hideToolbar) {
       result = result.filter(card => {
@@ -41,7 +41,7 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
     }
 
     return result;
-  }, [cards, searchQuery, hiddenIds, hideToolbar, externalSort]);
+  }, [cards, searchQuery, hideToolbar, externalSort]);
 
   if (cards.length === 0) {
     return null; // The parent page handles empty state beautifully
@@ -89,14 +89,14 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
 
                   <div className="flex justify-between items-start gap-2 relative z-10 pointer-events-none">
                     <div className="flex items-start gap-2 min-w-0">
-                      <span className="text-white/70 font-bold shrink-0 text-sm mt-1">{index + 1}.</span>
+                      <span className={cn(TYPOGRAPHY.cardLabel, "text-white/70 font-bold shrink-0 mt-1")}>{index + 1}.</span>
                       <div className="min-w-0">
-                        <h3 className="font-semibold leading-none mb-1 opacity-90 truncate" title={card.bankName}>{card.bankName}</h3>
-                        <p className="text-sm opacity-80 truncate" title={card.cardName}>{card.cardName}</p>
+                        <h3 className={cn(TYPOGRAPHY.cardTitle, "leading-none mb-1 opacity-90 text-white")} title={card.bankName}>{card.bankName}</h3>
+                        <p className={cn(TYPOGRAPHY.cardSubtitle, "opacity-80 text-white/80")} title={card.cardName}>{card.cardName}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <div className="bg-white/25 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md mt-1">
+                      <div className={cn(TYPOGRAPHY.badge, "bg-white/25 text-white backdrop-blur-md mt-1")}>
                         {card.cardNetwork}
                       </div>
                     </div>
@@ -110,29 +110,9 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
                       <span>{card.last4Digits}</span>
                     </Link>
 
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <CreditCardForm card={card} />
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-full transition-colors"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          triggerDelete({
-                            id: card._id,
-                            entityName: `${card.bankName} ${card.cardName}`,
-                            onCommit: async () => {
-                              const res = await deleteCreditCard(card._id);
-                              if (res && !res.success) {
-                                throw new Error(res.error);
-                              }
-                            }
-                          });
-                        }}
-                      >
-                        <Trash className="w-4 h-4" />
-                      </Button>
+                      <CreditCardDeleteModal card={card} transactionsCount={card.transactionsCount || 0} />
                     </div>
                   </div>
                 </div>
@@ -140,13 +120,18 @@ export function CreditCardList({ cards, hideToolbar = false, externalSort }: { c
                 <Link href={`/credit-cards/${card._id}`} className="block mt-3 bg-secondary/30 rounded-xl p-3 transition-colors group-hover:bg-secondary/50 w-full space-y-3">
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Used / Limit</p>
-                      <p className="text-sm font-semibold text-foreground">{format(card.currentOutstanding)} <span className="text-muted-foreground font-normal">/ {format(card.creditLimit)}</span></p>
+                      <p className={cn(TYPOGRAPHY.cardLabel, "mb-1")}>Used / Limit</p>
+                      <p className={cn(TYPOGRAPHY.cardValue, "font-semibold")}>
+                        {format(card.currentOutstanding)} <span className="text-muted-foreground font-normal">/ {format(card.creditLimit)}</span>
+                      </p>
                     </div>
                     <div className="text-right">
-                      <span className={isHighUtilization ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{utilization.toFixed(1)}%</span>
-                      <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider mt-1">
-                        LEFT: {format(card.availableLimit)}
+                      <div className="flex items-center justify-end gap-1.5 mb-1">
+                        <p className={cn(TYPOGRAPHY.cardLabel)}>Available</p>
+                        <span className={cn(TYPOGRAPHY.badge, "px-1.5 py-0", isHighUtilization ? "text-red-500 bg-red-500/10 font-bold" : "text-emerald-600 bg-emerald-500/10 font-bold")}>{utilization.toFixed(1)}%</span>
+                      </div>
+                      <p className={cn(TYPOGRAPHY.cardValue, "font-semibold text-right")}>
+                        {format(card.availableLimit)}
                       </p>
                     </div>
                   </div>

@@ -40,6 +40,8 @@ import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
 import { ActionCenterWrapper } from "@/components/dashboard/ActionCenterWrapper";
 import { DashboardAdvancedFilter } from "@/components/dashboard/DashboardAdvancedFilter";
 import { KPICard } from "@/components/dashboard/KPICard";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 function getFallbackTransactionIcon(type: string) {
   const className = "w-5 h-5 text-white";
@@ -312,6 +314,12 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
 
   upcomingDues.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
 
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  upcomingDues.forEach((d: any) => {
+    const dueMidnight = new Date(d.dueDate.getFullYear(), d.dueDate.getMonth(), d.dueDate.getDate());
+    d.daysRemaining = Math.round((dueMidnight.getTime() - todayMidnight.getTime()) / (1000 * 3600 * 24));
+  });
+
   // Growth calculation (mocking a simple % for visual purposes if we don't have deep historical net worth, but since we have nwHistory we can use it)
   let nwGrowth = 0;
   if (nwHistory && nwHistory.length > 1) {
@@ -410,7 +418,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
         {/* Charts */}
         <Card className="lg:col-span-4 border-none shadow-sm hover:shadow-md transition-all">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-foreground">Spending by Category</CardTitle>
+            <CardTitle className={cn(TYPOGRAPHY.sectionTitle)}>Spending by Category</CardTitle>
           </CardHeader>
           <CardContent>
             {chartData.length > 0 ? (
@@ -424,7 +432,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
         {/* Recent Transactions */}
         <Card className="lg:col-span-3 border-none shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-lg font-semibold text-foreground">Recent Activity</CardTitle>
+            <CardTitle className={cn(TYPOGRAPHY.sectionTitle)}>Recent Activity</CardTitle>
             <Link href="/transactions" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center">
               View All <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
@@ -478,7 +486,7 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       {/* Net Worth Chart Footer */}
       <Card className="border-none shadow-sm hover:shadow-md transition-all">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-foreground">Net Worth Trend ({daysFilter} Days)</CardTitle>
+          <CardTitle className={cn(TYPOGRAPHY.sectionTitle)}>Net Worth Trend ({daysFilter} Days)</CardTitle>
         </CardHeader>
         <CardContent className="h-[250px]">
           <NetWorthChart data={nwHistory} />

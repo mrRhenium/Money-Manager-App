@@ -23,6 +23,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?: boolean }) {
   const pathname = usePathname();
@@ -82,7 +83,7 @@ export function SidebarMenu({ role, isCollapsed }: { role?: string, isCollapsed?
               <Icon className={cn("w-5 h-5 shrink-0 transition-transform duration-300", isActive && "scale-110 drop-shadow-sm")} />
 
               {!isCollapsed && (
-                <span className="font-medium whitespace-nowrap z-10 transition-colors">
+                <span className={cn(TYPOGRAPHY.navSidebar, "whitespace-nowrap z-10 transition-colors", isActive && "font-semibold")}>
                   {item.label}
                 </span>
               )}

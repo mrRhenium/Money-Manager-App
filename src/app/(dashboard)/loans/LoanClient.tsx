@@ -16,6 +16,8 @@ import { LoanForm } from "@/components/forms/LoanForm";
 import { LoanList } from "@/components/lists/LoanList";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function LoanClient({ 
   initialLoans, 
@@ -230,8 +232,8 @@ export function LoanClient({
                   <div className="md:col-span-2 space-y-6">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                       <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                        <h2 className="text-lg font-bold text-foreground">Top 10 Loans (Repaid vs Outstanding)</h2>
-                        <p className="text-sm text-muted-foreground mt-1">Comparison of amount paid and remaining balance.</p>
+                        <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Top 10 Loans (Repaid vs Outstanding)</h2>
+                        <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Comparison of amount paid and remaining balance.</p>
                       </div>
                       <div className="p-4 sm:p-6 h-[400px]">
                         {chartData.length > 0 ? (
@@ -276,16 +278,16 @@ export function LoanClient({
                   <div className="space-y-4">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-red-500/5 overflow-hidden">
                       <div className="p-4 sm:p-6">
-                        <h2 className="text-sm font-medium text-muted-foreground">Total Liabilities (Taken)</h2>
-                        <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
+                        <h2 className={cn(TYPOGRAPHY.cardLabel)}>Total Liabilities (Taken)</h2>
+                        <div className={cn(TYPOGRAPHY.cardAmount, "text-red-600 dark:text-red-400 mt-1")}>
                           <CurrencyDisplay amount={totalLiabilities} />
                         </div>
                       </div>
                     </div>
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-emerald-500/5 overflow-hidden">
                       <div className="p-4 sm:p-6">
-                        <h2 className="text-sm font-medium text-muted-foreground">Total Assets (Given)</h2>
-                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                        <h2 className={cn(TYPOGRAPHY.cardLabel)}>Total Assets (Given)</h2>
+                        <div className={cn(TYPOGRAPHY.cardAmount, "text-emerald-600 dark:text-emerald-400 mt-1")}>
                           <CurrencyDisplay amount={totalAssets} />
                         </div>
                       </div>

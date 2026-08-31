@@ -10,6 +10,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogBody,
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
@@ -147,17 +149,21 @@ export function IconFormModal({ icon, onSuccess, trigger }: IconFormModalProps) 
         />
       )}
 
-      <DialogContent className="w-[95vw] sm:max-w-md overflow-x-hidden p-4 sm:p-6 rounded-2xl">
-        <DialogHeader className="mb-2">
-          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-bold">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+      <DialogContent initialFocus={false} size="md">
+        <DialogHeader>
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
-            {isEditing ? "Edit System Icon" : "Create New System Icon"}
+            <span>{isEditing ? "Edit System Icon" : "Create New System Icon"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {isEditing ? "Modify icon display label, tags, or category" : "Register a Lucide icon for categories and visual badges"}
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <DialogBody className="space-y-4">
           {/* Live Icon Preview & Name Selector */}
           <div className="space-y-2 p-3 rounded-xl bg-muted/40 border">
             <Label className="text-xs font-semibold text-muted-foreground">Icon Preview & Component</Label>
@@ -266,18 +272,19 @@ export function IconFormModal({ icon, onSuccess, trigger }: IconFormModalProps) 
             </div>
             <Switch checked={isActive} onChange={setIsActive} />
           </div>
+          </DialogBody>
 
-          <DialogFooter className="pt-2 gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={loading}
-              className="h-9 text-xs"
+              className="h-9 px-4 text-[length:var(--font-size-modal-btn)]"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="h-9 text-xs font-semibold">
+            <Button type="submit" disabled={loading} className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs">
               {loading ? "Saving..." : isEditing ? "Update Icon" : "Create Icon"}
             </Button>
           </DialogFooter>

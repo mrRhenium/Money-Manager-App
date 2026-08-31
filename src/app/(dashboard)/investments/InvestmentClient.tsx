@@ -18,6 +18,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 dayjs.extend(relativeTime);
 
@@ -296,8 +298,8 @@ export function InvestmentClient({ initialInvestments, accounts }: { initialInve
                   <div className="md:col-span-2 space-y-6">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                       <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                        <h2 className="text-lg font-bold text-foreground">Asset Allocation</h2>
-                        <p className="text-sm text-muted-foreground mt-1">Current value distribution across investment types.</p>
+                        <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Asset Allocation</h2>
+                        <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Current value distribution across investment types.</p>
                       </div>
                       <div className="p-4 sm:p-6 h-[400px]">
                         {chartData.length > 0 ? (

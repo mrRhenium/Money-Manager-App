@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { getStartOfMonth, getEndOfMonth } from "@/lib/dateTimeHelper";
 import { logAuditEvent, createAuditLog } from "@/actions/auditLog";
+import dayjs from "dayjs";
 
 export async function getBudgetsWithProgress(options: { month?: string, startDate?: string, endDate?: string }) {
   const session = await auth();
@@ -286,4 +287,72 @@ export async function getMissingBudgets() {
 
   const categories = await Category.find({ _id: { $in: missingIds } }).lean();
   return JSON.parse(JSON.stringify(categories));
+}
+
+export async function copyBudgetsFromPreviousMonth(targetMonth: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    await dbConnect();
+
+    // calculate previous month
+    const targetDate = dayjs(targetMonth + "-01");
+    const prevMonthStr = targetDate.subtract(1, 'month').format("YYYY-MM");
+
+    // find all active monthly budgets from previous month
+    const prevBudgets = await Budget.find({
+      userId: session.user.id,
+      month: prevMonthStr,
+      type: "monthly",
+      status: { $ne: "archived" }
+    }).lean();
+
+    if (prevBudgets.length === 0) {
+      return { success: false, error: `No budgets found in ${dayjs(prevMonthStr + "-01").format("MMMM YYYY")} to copy.` };
+    }
+
+    // find existing budgets in target month to avoid duplicates
+    const existingBudgets = await Budget.find({
+      userId: session.user.id,
+      month: targetMonth,
+      status: { $ne: "archived" }
+    }).distinct("categoryId");
+
+    const existingCatIds = new Set(existingBudgets.map(id => id.toString()));
+
+    const toCreate = [];
+    for (const pb of prevBudgets) {
+      if (!existingCatIds.has(pb.categoryId.toString())) {
+        toCreate.push({
+          userId: session.user.id,
+          categoryId: pb.categoryId,
+          amount: pb.amount,
+          month: targetMonth,
+          type: "monthly",
+          rollover: pb.rollover,
+          color: pb.color,
+          icon: pb.icon,
+          status: "active"
+        });
+      }
+    }
+
+    if (toCreate.length === 0) {
+      return { success: false, error: "All budgets from previous month already exist in the selected month." };
+    }
+
+    const created = await Budget.insertMany(toCreate);
+
+    for (const b of created) {
+      await logAuditEvent("Budget", b._id.toString(), "CREATE", undefined, b);
+    }
+
+    revalidatePath("/budgets");
+    revalidatePath("/");
+
+    return { success: true, count: created.length };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to copy budgets" };
+  }
 }

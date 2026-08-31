@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { Table, Badge, Select } from "antd";
 import { Input } from "@/components/ui/input";
 import { Button as UiButton } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { parseToDate } from "@/lib/dateTimeHelper";
 import { formatDate } from "@/lib/helpers";
 import { Eye, History, ArrowRight, Calendar, Hash, Layers, Activity, Search } from "lucide-react";
@@ -480,15 +480,20 @@ export function AuditLogsList({
             if (!open) setSelectedLog(null);
           }}
         >
-          <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-background">
-            <DialogHeader className="p-6 pb-0">
-              <DialogTitle className="flex items-center gap-2 border-b border-border pb-3">
-                <History className="w-5 h-5 text-primary" />
-                <span className="font-bold text-lg text-foreground">Audit Log Details</span>
+          <DialogContent initialFocus={false} size="lg">
+            <DialogHeader>
+              <DialogTitle>
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <History className="w-5 h-5" />
+                </div>
+                <span>Audit Log Details</span>
               </DialogTitle>
+              <DialogDescription>
+                Full change snapshot, timestamp, and previous vs current values.
+              </DialogDescription>
             </DialogHeader>
           {selectedLog && (
-            <div className="space-y-6 pt-4 px-6 pb-6">
+            <DialogBody className="space-y-6">
               {/* Metadata Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 sm:p-5 bg-secondary/30 rounded-2xl border text-sm">
                 <div className="flex gap-2.5 items-start">
@@ -590,8 +595,14 @@ export function AuditLogsList({
                   </div>
                 )}
               </div>
-            </div>
+            </DialogBody>
           )}
+
+          <DialogFooter>
+            <UiButton variant="outline" onClick={() => setSelectedLog(null)} className="h-10 px-4 text-sm w-full sm:w-auto">
+              Close
+            </UiButton>
+          </DialogFooter>
           </DialogContent>
         </Dialog>
         );

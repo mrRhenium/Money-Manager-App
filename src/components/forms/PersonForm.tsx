@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,31 +169,37 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <UserPlus className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <UserPlus className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{person ? "Edit Contact" : "Add New Contact"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {person ? "Update contact information, phone numbers, or UPI IDs" : "Save contact details for debt, loan, and settlement tracking"}
+          </DialogDescription>
         </DialogHeader>
-        
-        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 mb-2">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg text-primary">
-              <BookUser className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm text-foreground">Import from Phone</h4>
-              <p className="text-xs text-muted-foreground">Select a contact to auto-fill details</p>
-            </div>
-          </div>
-          <Button type="button" variant="secondary" className="w-full sm:w-auto shadow-sm" onClick={handleImportContact}>
-            <Smartphone className="w-4 h-4 mr-2" />
-            Import
-          </Button>
-        </div>
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                    <BookUser className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm text-foreground">Import from Phone</h4>
+                    <p className="text-xs text-muted-foreground">Select a contact to auto-fill details</p>
+                  </div>
+                </div>
+                <Button type="button" variant="secondary" className="w-full sm:w-auto shadow-sm" onClick={handleImportContact}>
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  Import
+                </Button>
+              </div>
             
             <div className="flex items-center gap-4 py-2">
               <div className="relative w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center bg-muted/20 text-muted-foreground overflow-hidden group">
@@ -211,7 +217,7 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
                 )}
               </div>
               <div className="flex-1 space-y-1">
-                <Label htmlFor="photo-upload" className="cursor-pointer inline-flex items-center text-sm font-medium text-primary hover:underline">
+                <Label htmlFor="photo-upload" className="cursor-pointer inline-flex items-center text-[length:var(--font-size-modal-label)] font-medium text-primary hover:underline">
                   {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   {isUploading ? "Uploading..." : avatarUrl ? "Change Photo" : "Upload Photo (Optional)"}
                 </Label>
@@ -321,10 +327,17 @@ export function PersonForm({ person, triggerClassName }: { person?: any, trigger
             <div className="pt-2 pb-2 border-t">
               <ColorPicker value={color} onChange={setColor} id={`personColor-${person?._id || 'new'}`} />
             </div>
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
-              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {isLoading ? "Saving..." : (person ? "Save Changes" : "Add Contact")}
-            </Button>
+            </DialogBody>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={isLoading}>
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {isLoading ? "Save Changes" : "Add Contact"}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

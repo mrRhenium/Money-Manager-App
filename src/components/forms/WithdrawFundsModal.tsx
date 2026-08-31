@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,17 +77,22 @@ export function WithdrawFundsModal({ goal, accounts = [], onUpdate }: { goal: an
           <MinusCircle className="w-3 h-3" /> Withdraw
         </Button>
       } />
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent initialFocus={false} size="sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Wallet className="w-5 h-5 text-red-500" />
-            <span className="text-foreground">Withdraw from {goal.name}</span>
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
+              <Wallet className="w-4 h-4" />
+            </div>
+            <span className="truncate">Withdraw from {goal.name}</span>
           </DialogTitle>
+          <DialogDescription>
+            Record an emergency fund withdrawal from this goal.
+          </DialogDescription>
         </DialogHeader>
         
-        {error && <div className="text-sm text-red-500 p-2 bg-red-500/10 rounded">{error}</div>}
+        <DialogBody className="space-y-4">
+          {error && <div className="text-sm text-red-500 p-2 bg-red-500/10 rounded">{error}</div>}
 
-        <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Amount to Withdraw</Label>
             <CurrencyInput 
@@ -132,11 +137,16 @@ export function WithdrawFundsModal({ goal, accounts = [], onUpdate }: { goal: an
               placeholder="Why are you withdrawing these funds?"
             />
           </div>
-        </div>
+        </DialogBody>
 
-          <Button variant="destructive" className="w-full mt-2" onClick={handleWithdrawFunds} disabled={loading || !amount || !sourceAccountId || !destinationAccountId || !note.trim()}>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+            Cancel
+          </Button>
+          <Button variant="destructive" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" onClick={handleWithdrawFunds} disabled={loading || !amount || !sourceAccountId || !destinationAccountId || !note.trim()}>
             {loading ? "Withdrawing..." : "Confirm Withdrawal"}
           </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

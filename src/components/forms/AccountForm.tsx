@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -108,86 +108,98 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
           </Button>
         )
       } />
-      <DialogContent initialFocus={false} className="sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent initialFocus={false} size="md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-primary">
-            <Landmark className="w-5 h-5" />
+          <DialogTitle>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Landmark className="w-5 h-5" />
+            </div>
             <span className="text-foreground">{account ? "Edit Account" : "Add New Account"}</span>
           </DialogTitle>
+          <DialogDescription>
+            {account ? "Update account balance, icon, and details" : "Configure a new bank, cash, or wallet account"}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Account Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. HDFC Salary" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Account Type</FormLabel>
-                  <FormControl>
-                    <Select
-                      showSearch
-                      placeholder="Select type"
-                      className="w-full h-10"
-                      optionFilterProp="label"
-                      options={[
-                        { label: 'Bank Account', value: 'bank' },
-                        { label: 'Cash Wallet', value: 'cash' },
-                        { label: 'Digital Wallet', value: 'wallet' },
-                        { label: 'Savings & Deposits', value: 'saving' },
-                        { label: 'Investment Portfolio', value: 'investment' },
-                        { label: 'Other Account', value: 'other' },
-                      ]}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="balance"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Initial Balance</FormLabel>
-                  <FormControl>
-                    <CurrencyInput 
-                      placeholder="e.g. 10,000"
-                      currency={currency}
-                      onCurrencyChange={setCurrency}
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(formatIndianNumber(e.target.value));
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <DialogBody className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Landmark className="w-4 h-4 text-muted-foreground" /> Account Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. HDFC Salary" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><List className="w-4 h-4 text-muted-foreground" /> Account Type</FormLabel>
+                    <FormControl>
+                      <Select
+                        showSearch
+                        placeholder="Select type"
+                        className="w-full h-10"
+                        optionFilterProp="label"
+                        options={[
+                          { label: 'Bank Account', value: 'bank' },
+                          { label: 'Cash Wallet', value: 'cash' },
+                          { label: 'Digital Wallet', value: 'wallet' },
+                          { label: 'Savings & Deposits', value: 'saving' },
+                          { label: 'Investment Portfolio', value: 'investment' },
+                          { label: 'Other Account', value: 'other' },
+                        ]}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="balance"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Initial Balance</FormLabel>
+                    <FormControl>
+                      <CurrencyInput 
+                        placeholder="e.g. 10,000"
+                        currency={currency}
+                        onCurrencyChange={setCurrency}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(formatIndianNumber(e.target.value));
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-              <ColorPicker value={color} onChange={setColor} id={`accountColor-${account?._id || 'new'}`} />
-              <IconPicker value={icon} onChange={setIcon} />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+                <ColorPicker value={color} onChange={setColor} id={`accountColor-${account?._id || 'new'}`} />
+                <IconPicker value={icon} onChange={setIcon} />
+              </div>
+            </DialogBody>
 
-            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-md" disabled={isLoading}>
-              {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {isLoading ? "Saving..." : (account ? "Save Changes" : "Create Account")}
-            </Button>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-9 px-4 text-[length:var(--font-size-modal-btn)]">
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 px-5 text-[length:var(--font-size-modal-btn)] font-semibold shadow-xs" disabled={isLoading}>
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {isLoading ? "Saving..." : (account ? "Save Changes" : "Create Account")}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

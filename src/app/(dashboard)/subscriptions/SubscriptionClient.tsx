@@ -17,6 +17,8 @@ import { RecurringBillList } from "@/components/lists/RecurringBillList";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatIndianNumber } from "@/lib/numberHelper";
 import { getStartOfDay } from "@/lib/dateTimeHelper";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#14b8a6', '#f43f5e'];
 
@@ -303,8 +305,8 @@ export function SubscriptionClient({
                   <div className="md:col-span-2 space-y-6">
                     <div className="shadow-sm border-slate-200/60 dark:border-slate-800 rounded-2xl bg-card overflow-hidden">
                       <div className="p-4 sm:p-6 border-b border-slate-200/50 dark:border-slate-800/50">
-                        <h2 className="text-lg font-bold text-foreground">Monthly Cost Breakdown</h2>
-                        <p className="text-sm text-muted-foreground mt-1">Subscription costs distributed by category (converted to monthly).</p>
+                        <h2 className={cn(TYPOGRAPHY.sectionTitle)}>Monthly Cost Breakdown</h2>
+                        <p className={cn(TYPOGRAPHY.headerSubtitle, "mt-1")}>Subscription costs distributed by category (converted to monthly).</p>
                       </div>
                       <div className="p-4 sm:p-6 h-[400px]">
                         {chartData.length > 0 ? (

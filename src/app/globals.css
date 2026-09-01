@@ -91,14 +91,20 @@
   --font-size-header-subtitle: 0.8125rem;
 
   /* Master Cards (Accounts, Budgets, Cards, Investments, Insurance, People, Loans, Subscriptions) */
-  --font-size-card-title: 0.9375rem;     /* ~15px */
-  --font-size-card-subtitle: 0.8125rem;  /* ~13px */
-  --font-size-card-label: 0.75rem;       /* ~12px */
-  --font-size-card-value: 0.875rem;      /* ~14px */
-  --font-size-card-amount: 1.25rem;      /* ~20px */
+  --font-size-card-title: 0.9375rem;
+  /* ~15px */
+  --font-size-card-subtitle: 0.8125rem;
+  /* ~13px */
+  --font-size-card-label: 0.75rem;
+  /* ~12px */
+  --font-size-card-value: 0.875rem;
+  /* ~14px */
+  --font-size-card-amount: 1.25rem;
+  /* ~20px */
 
   /* Universal Badges & Chips */
-  --font-size-badge: 0.75rem;            /* ~12px */
+  --font-size-badge: 0.75rem;
+  /* ~12px */
 
   /* Popups & Modal Contents (All Dialogs) */
   --font-size-modal-title: 1.125rem;
@@ -109,10 +115,14 @@
   --font-size-modal-btn: var(--font-size-btn-default);
 
   /* Universal Buttons Across Portal */
-  --font-size-btn-xs: 0.75rem;         /* ~12px */
-  --font-size-btn-sm: 0.8125rem;       /* ~13px */
-  --font-size-btn-default: 0.875rem;    /* ~14px */
-  --font-size-btn-lg: 1rem;            /* ~16px */
+  --font-size-btn-xs: 0.75rem;
+  /* ~12px */
+  --font-size-btn-sm: 0.8125rem;
+  /* ~13px */
+  --font-size-btn-default: 0.875rem;
+  /* ~14px */
+  --font-size-btn-lg: 1rem;
+  /* ~16px */
 
   /* Settings Master Content */
   --font-size-settings-title: 0.9375rem;
@@ -137,7 +147,8 @@
 }
 
 /* ─── Compact Typography Mode (Refined, Space-Saving, Dense) ─── */
-[data-font-size="compact"], html[data-font-size="compact"] {
+[data-font-size="compact"],
+html[data-font-size="compact"] {
   --font-size-header-title: 1.125rem;
   --font-size-header-subtitle: 0.75rem;
   --font-size-card-title: 0.875rem;
@@ -170,7 +181,8 @@
 }
 
 /* ─── Standard Typography Mode (Balanced Default) ─── */
-[data-font-size="normal"], html[data-font-size="normal"] {
+[data-font-size="normal"],
+html[data-font-size="normal"] {
   --font-size-header-title: clamp(1.125rem, 2vw, 1.25rem);
   --font-size-header-subtitle: 0.8125rem;
   --font-size-card-title: 0.9375rem;
@@ -203,7 +215,8 @@
 }
 
 /* ─── Comfortable Typography Mode (Spacious, Clear, Highly Legible, Balanced) ─── */
-[data-font-size="large"], html[data-font-size="large"] {
+[data-font-size="large"],
+html[data-font-size="large"] {
   --font-size-header-title: 1.375rem;
   --font-size-header-subtitle: 0.875rem;
   --font-size-card-title: 1.0625rem;
@@ -274,9 +287,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
@@ -286,6 +301,7 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -293,14 +309,17 @@
 
 /* Ant Design Tooltip Styling for Sidebar */
 .ant-tooltip-inner {
-  background-color: #0ea5e9 !important; /* Tailwind sky-500 */
+  background-color: #0ea5e9 !important;
+  /* Tailwind sky-500 */
   color: white !important;
   font-size: 14px !important;
   padding: 8px 16px !important;
   border-radius: 8px !important;
   font-weight: 500 !important;
 }
-.ant-tooltip-arrow::before, .ant-tooltip-arrow::after {
+
+.ant-tooltip-arrow::before,
+.ant-tooltip-arrow::after {
   background-color: #0ea5e9 !important;
 }
 
@@ -309,6 +328,7 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
 a:hover {
   color: inherit;
   text-decoration: none;
@@ -319,7 +339,8 @@ a:hover {
   font-family: var(--font-family-base, var(--font-sans)) !important;
 }
 
-button, [data-slot="button"] {
+button,
+[data-slot="button"] {
   font-family: var(--font-family-base, var(--font-sans));
 }
 
@@ -341,11 +362,13 @@ button, [data-slot="button"] {
 
 /* Ultra small screens (< 300px): Stack vertically */
 @media (max-width: 299px) {
+
   [data-slot="dialog-footer"],
   .ant-modal-footer {
     flex-direction: column-reverse;
     align-items: stretch;
   }
+
   [data-slot="dialog-footer"] button,
   .ant-modal-footer button {
     width: 100%;
@@ -413,6 +436,7 @@ button, [data-slot="button"] {
 }
 
 .ant-select .ant-select-input {
+  position: relative !important;
   align-self: center !important;
 }
 
@@ -460,19 +484,20 @@ button, [data-slot="button"] {
 .ant-select-single .ant-select-selection-search {
   display: flex !important;
   align-items: center !important;
-  position: absolute !important;
+  position: relative !important;
   top: 0 !important;
   bottom: 0 !important;
   height: 100% !important;
 }
 
 .ant-select-single .ant-select-selection-search-input {
+  position: relative !important;
   height: 100% !important;
 }
 
 /* Custom child divs (e.g. icon + text) */
-.ant-select-content > div,
-.ant-select-selection-item > div {
+.ant-select-content>div,
+.ant-select-selection-item>div {
   display: flex !important;
   align-items: center !important;
   width: 100% !important;
@@ -487,7 +512,7 @@ button, [data-slot="button"] {
 }
 
 /* Table header */
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
   background: var(--muted) !important;
   color: var(--muted-foreground) !important;
   font-weight: 600 !important;
@@ -498,11 +523,11 @@ button, [data-slot="button"] {
 }
 
 /* Table rows */
-.ant-table-tbody > tr > td {
+.ant-table-tbody>tr>td {
   border-bottom: 1px solid var(--border) !important;
 }
 
-.ant-table-tbody > tr:last-child > td {
+.ant-table-tbody>tr:last-child>td {
   border-bottom: none !important;
 }
 
@@ -602,6 +627,7 @@ button, [data-slot="button"] {
   text-align: center;
   color: var(--muted-foreground);
 }
+
 /* Dark mode fixes for Ant Design */
 .dark .ant-table,
 .dark .ant-table-cell,
@@ -611,7 +637,7 @@ button, [data-slot="button"] {
   color: var(--foreground) !important;
 }
 
-.dark .ant-table-tbody > tr:hover > td {
+.dark .ant-table-tbody>tr:hover>td {
   background-color: var(--muted) !important;
 }
 
@@ -676,7 +702,8 @@ button, [data-slot="button"] {
   color: var(--foreground) !important;
 }
 
-.dark .ant-select-arrow, .dark .ant-select-clear {
+.dark .ant-select-arrow,
+.dark .ant-select-clear {
   color: var(--muted-foreground) !important;
   background-color: transparent !important;
 }
@@ -704,6 +731,7 @@ button, [data-slot="button"] {
 .dark .ant-drawer-close {
   color: var(--muted-foreground) !important;
 }
+
 .dark .ant-drawer-close:hover {
   color: var(--foreground) !important;
 }
@@ -778,9 +806,11 @@ html.dark .ant-pagination-item-active {
   background-color: var(--primary) !important;
   border-color: var(--primary) !important;
 }
+
 html.dark .ant-pagination-item-active a {
   color: var(--primary-foreground) !important;
 }
+
 html.dark .ant-pagination-item a {
   color: var(--foreground) !important;
 }
@@ -789,15 +819,18 @@ html.dark .ant-table-filter-dropdown {
   background-color: var(--card) !important;
   color: var(--foreground) !important;
 }
+
 html.dark .ant-table-filter-dropdown input {
   background-color: var(--background) !important;
   color: var(--foreground) !important;
   border-color: var(--border) !important;
 }
+
 html.dark .ant-table-filter-dropdown button {
   background-color: var(--muted) !important;
   color: var(--foreground) !important;
 }
+
 html.dark .ant-table-filter-dropdown button:nth-of-type(2) {
   background-color: var(--primary) !important;
   color: var(--primary-foreground) !important;

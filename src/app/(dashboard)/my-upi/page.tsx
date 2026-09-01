@@ -263,34 +263,34 @@ function MyUpiContent() {
       />
 
       {/* MAIN CONTENT WRAPPER */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pb-24 lg:pb-4 pt-3 sm:pt-4 px-3 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pb-24 lg:pb-4 pt-3 sm:pt-4 px-3 sm:px-6 lg:px-8 max-w-full">
+        <div className="max-w-7xl mx-auto space-y-4 min-w-0 w-full">
 
           {/* Quick Info & Security Banner */}
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xs">
-            <div className="flex items-center gap-3.5">
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xs min-w-0 w-full overflow-hidden">
+            <div className="flex items-center gap-3 min-w-0 w-full flex-1">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
                 <Smartphone className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className={cn(TYPOGRAPHY.cardTitle, "font-bold flex items-center gap-2")}>
-                  Zero-Fee Instant Receiving
+              <div className="min-w-0 flex-1">
+                <h3 className={cn(TYPOGRAPHY.cardTitle, "font-bold flex items-center gap-2 flex-wrap")}>
+                  <span>Zero-Fee Instant Receiving</span>
                   <span className={cn(TYPOGRAPHY.badge, "inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold")}>
                     <CheckCircle2 className="w-3 h-3" /> Real-time
                   </span>
                 </h3>
-                <p className={cn(TYPOGRAPHY.cardSubtitle, "text-muted-foreground mt-0.5")}>
+                <p className="text-[length:var(--font-size-card-subtitle)] text-muted-foreground mt-0.5 whitespace-normal break-words leading-relaxed">
                   Payments are credited directly to your bank account with complete UPI interoperability.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
-              <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border font-semibold shadow-2xs")}>
+            <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0 flex-wrap">
+              <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-card border font-semibold shadow-2xs")}>
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
                 <span>NPCI Verified</span>
               </div>
-              <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border font-semibold shadow-2xs")}>
+              <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-card border font-semibold shadow-2xs")}>
                 <Wallet className="w-4 h-4 text-primary" />
                 <span>{upiIds.length} {upiIds.length === 1 ? "UPI ID" : "UPI IDs"}</span>
               </div>
@@ -344,12 +344,13 @@ function MyUpiContent() {
               {/* Add New UPI ID Card - Zero vertical padding on parent card */}
               <Card ref={addUpiCardRef} className="shadow-xs border-border/70 overflow-hidden !py-0 shrink-0">
                 <CardHeader className="p-3.5 sm:p-4 border-b border-border/50 bg-muted/20">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className={cn(TYPOGRAPHY.sectionTitle, "flex items-center gap-2")}>
-                        <Plus className="w-4 h-4 text-primary" /> Add New UPI ID
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className={cn(TYPOGRAPHY.sectionTitle, "flex items-center gap-2 truncate")}>
+                        <Plus className="w-4 h-4 text-primary shrink-0" />
+                        <span className="truncate">Add New UPI ID</span>
                       </CardTitle>
-                      <CardDescription className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>
+                      <CardDescription className="text-[length:var(--font-size-card-subtitle)] text-muted-foreground mt-0.5 truncate block">
                         Link your Google Pay, PhonePe, Paytm, or Bank VPA handles
                       </CardDescription>
                     </div>
@@ -407,16 +408,17 @@ function MyUpiContent() {
                 style={lowerCardHeight ? { height: `${lowerCardHeight}px` } : undefined}
                 className="shadow-xs border-border/70 overflow-hidden flex flex-col !py-0"
               >
-                <CardHeader className="px-3.5 py-2 sm:px-4 sm:py-2 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between shrink-0">
-                  <div>
-                    <CardTitle className={cn(TYPOGRAPHY.sectionTitle, "flex items-center gap-2")}>
-                      <Landmark className="w-4 h-4 text-primary" /> Active Receiving Handles
+                <CardHeader className="px-3 py-2 sm:px-4 sm:py-2 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between gap-2 shrink-0 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className={cn(TYPOGRAPHY.sectionTitle, "flex items-center gap-1.5 truncate")}>
+                      <Landmark className="w-4 h-4 text-primary shrink-0" />
+                      <span className="truncate">Active Receiving Handles</span>
                     </CardTitle>
-                    <CardDescription className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>
+                    <CardDescription className="text-[length:var(--font-size-card-subtitle)] text-muted-foreground mt-0.5 truncate block">
                       Select which ID displays on your active QR code stand
                     </CardDescription>
                   </div>
-                  <span className={cn(TYPOGRAPHY.badge, "px-2 sm:px-2.5 py-0.5 rounded-full bg-primary/10 text-primary shrink-0")}>
+                  <span className={cn(TYPOGRAPHY.badge, "px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0 whitespace-nowrap text-[10px] sm:text-xs")}>
                     {handleSearch ? `${filteredUpiIds.length} of ${upiIds.length}` : `${upiIds.length} Configured`}
                   </span>
                 </CardHeader>

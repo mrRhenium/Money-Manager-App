@@ -77,6 +77,41 @@ function MyUpiContent() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const rightCardRef = useRef<HTMLDivElement>(null);
+  const addUpiCardRef = useRef<HTMLDivElement>(null);
+  const [lowerCardHeight, setLowerCardHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (typeof window === "undefined") return;
+      if (window.innerWidth < 1024) {
+        setLowerCardHeight(null);
+        return;
+      }
+      if (rightCardRef.current && addUpiCardRef.current) {
+        const rightH = rightCardRef.current.offsetHeight;
+        const addUpiH = addUpiCardRef.current.offsetHeight;
+        // 16px corresponds to the gap-4 between the two left cards
+        const targetH = Math.max(220, rightH - addUpiH - 16);
+        setLowerCardHeight(targetH);
+      }
+    };
+
+    // Run after DOM paint
+    const timer = setTimeout(updateHeight, 50);
+
+    const observer = new ResizeObserver(updateHeight);
+    if (rightCardRef.current) observer.observe(rightCardRef.current);
+    if (addUpiCardRef.current) observer.observe(addUpiCardRef.current);
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [selectedUpiForQr, requestedAmount, upiIds.length]);
+
   useEffect(() => {
     if (!session?.user?.id) return;
     getUserProfile().then((user) => {
@@ -216,34 +251,34 @@ function MyUpiContent() {
       />
 
       {/* MAIN CONTENT WRAPPER */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pb-28 pt-4 px-3 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pb-24 lg:pb-4 pt-3 sm:pt-4 px-3 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-4">
 
           {/* Quick Info & Security Banner */}
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xs">
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
                 <Smartphone className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-sm sm:text-base text-foreground flex items-center gap-2">
+                <h3 className={cn(TYPOGRAPHY.cardTitle, "font-bold flex items-center gap-2")}>
                   Zero-Fee Instant Receiving
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  <span className={cn(TYPOGRAPHY.badge, "inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold")}>
                     <CheckCircle2 className="w-3 h-3" /> Real-time
                   </span>
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className={cn(TYPOGRAPHY.cardSubtitle, "text-muted-foreground mt-0.5")}>
                   Payments are credited directly to your bank account with complete UPI interoperability.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border text-xs font-semibold shadow-2xs">
+              <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border font-semibold shadow-2xs")}>
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
                 <span>NPCI Verified</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border text-xs font-semibold shadow-2xs">
+              <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card border font-semibold shadow-2xs")}>
                 <Wallet className="w-4 h-4 text-primary" />
                 <span>{upiIds.length} {upiIds.length === 1 ? "UPI ID" : "UPI IDs"}</span>
               </div>
@@ -256,7 +291,8 @@ function MyUpiContent() {
               type="button"
               onClick={() => setMobileTab("upis")}
               className={cn(
-                "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                "flex-1 py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                TYPOGRAPHY.btnSm,
                 mobileTab === "upis"
                   ? "bg-card text-primary shadow-xs border border-border/50"
                   : "text-muted-foreground hover:text-foreground"
@@ -264,7 +300,7 @@ function MyUpiContent() {
             >
               <Wallet className="w-3.5 h-3.5" />
               <span>My UPI IDs</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-mono">
+              <span className={cn(TYPOGRAPHY.badge, "px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-mono")}>
                 {upiIds.length}
               </span>
             </button>
@@ -272,7 +308,8 @@ function MyUpiContent() {
               type="button"
               onClick={() => setMobileTab("qr")}
               className={cn(
-                "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                "flex-1 py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                TYPOGRAPHY.btnSm,
                 mobileTab === "qr"
                   ? "bg-card text-primary shadow-xs border border-border/50"
                   : "text-muted-foreground hover:text-foreground"
@@ -287,48 +324,48 @@ function MyUpiContent() {
           </div>
 
           {/* 2-Column Responsive Grid */}
-          <div className="grid gap-6 lg:grid-cols-12 items-start">
+          <div className="grid gap-4 sm:gap-5 lg:gap-6 lg:grid-cols-12 items-start">
 
             {/* ── LEFT COLUMN (7 Cols on LG): UPI IDs Manager ── */}
-            <div className={cn("lg:col-span-7 space-y-6", mobileTab !== "upis" && "hidden lg:block")}>
+            <div className={cn("lg:col-span-7 flex flex-col gap-4", mobileTab !== "upis" && "hidden lg:flex")}>
 
-              {/* Add New UPI ID Card */}
-              <Card className="shadow-xs border-border/70 overflow-hidden">
-                <CardHeader className="p-4 sm:p-5 border-b border-border/50 bg-muted/20">
+              {/* Add New UPI ID Card - Zero vertical padding on parent card */}
+              <Card ref={addUpiCardRef} className="shadow-xs border-border/70 overflow-hidden !py-0 shrink-0">
+                <CardHeader className="p-3.5 sm:p-4 border-b border-border/50 bg-muted/20">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-base font-bold flex items-center gap-2">
+                      <CardTitle className={cn(TYPOGRAPHY.sectionTitle, "flex items-center gap-2")}>
                         <Plus className="w-4 h-4 text-primary" /> Add New UPI ID
                       </CardTitle>
-                      <CardDescription className="text-xs mt-0.5">
+                      <CardDescription className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>
                         Link your Google Pay, PhonePe, Paytm, or Bank VPA handles
                       </CardDescription>
                     </div>
                     {isSaving && (
-                      <span className="flex items-center gap-1 text-xs text-primary font-medium">
+                      <span className={cn(TYPOGRAPHY.cardSubtitle, "flex items-center gap-1 text-primary font-medium")}>
                         <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
                       </span>
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 sm:p-5 space-y-4">
+                <CardContent className="p-3.5 sm:p-4 space-y-3">
                   <form onSubmit={handleAddUpi} className="flex flex-col sm:flex-row gap-2.5">
                     <div className="relative flex-1">
                       <Input
                         placeholder="e.g. mobile-number@okhdfcbank"
                         value={newUpiInput}
                         onChange={(e) => setNewUpiInput(e.target.value)}
-                        className="h-10 text-sm font-mono pr-8"
+                        className={cn(TYPOGRAPHY.modalInput, "h-9 sm:h-10 font-mono pr-8")}
                       />
                     </div>
-                    <Button type="submit" className="h-10 px-5 font-semibold shrink-0 shadow-xs" disabled={isSaving}>
+                    <Button type="submit" className={cn(TYPOGRAPHY.btnSm, "h-9 sm:h-10 px-4 sm:px-5 font-semibold shrink-0 shadow-xs")} disabled={isSaving}>
                       <Plus className="w-4 h-4 mr-1.5" /> Add UPI ID
                     </Button>
                   </form>
 
                   {/* Quick Handle Suggestions */}
                   <div>
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
+                    <span className={cn(TYPOGRAPHY.cardLabel, "block mb-1.5")}>
                       Popular Bank Handles (Click to append):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -340,7 +377,10 @@ function MyUpiContent() {
                             const prefix = newUpiInput.split("@")[0] || "";
                             setNewUpiInput(prefix ? `${prefix}${handle}` : handle);
                           }}
-                          className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium border bg-muted/30 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all cursor-pointer"
+                          className={cn(
+                            TYPOGRAPHY.btnXs,
+                            "px-2.5 py-0.5 sm:py-1 rounded-lg font-mono font-medium border bg-muted/30 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all cursor-pointer"
+                          )}
                         >
                           {handle}
                         </button>
@@ -350,22 +390,25 @@ function MyUpiContent() {
                 </CardContent>
               </Card>
 
-              {/* Configured UPI IDs List */}
-              <Card className="shadow-xs border-border/70 overflow-hidden flex flex-col">
-                <CardHeader className="p-3.5 sm:p-5 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between shrink-0">
+              {/* Configured UPI IDs List - Matches height of right card */}
+              <Card 
+                style={lowerCardHeight ? { height: `${lowerCardHeight}px` } : undefined}
+                className="shadow-xs border-border/70 overflow-hidden flex flex-col !py-0"
+              >
+                <CardHeader className="p-3 sm:p-4 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between shrink-0">
                   <div>
-                    <CardTitle className="text-sm sm:text-base font-bold flex items-center gap-2">
+                    <CardTitle className={cn(TYPOGRAPHY.sectionTitle, "flex items-center gap-2")}>
                       <Landmark className="w-4 h-4 text-primary" /> Active Receiving Handles
                     </CardTitle>
-                    <CardDescription className="text-[11px] sm:text-xs mt-0.5">
+                    <CardDescription className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>
                       Select which ID displays on your active QR code stand
                     </CardDescription>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full bg-primary/10 text-primary shrink-0">
+                  <span className={cn(TYPOGRAPHY.badge, "px-2 sm:px-2.5 py-0.5 rounded-full bg-primary/10 text-primary shrink-0")}>
                     {upiIds.length} Configured
                   </span>
                 </CardHeader>
-                <CardContent className="p-3 sm:p-5 space-y-2.5 sm:space-y-3 max-h-[380px] sm:max-h-[420px] overflow-y-auto custom-scrollbar">
+                <CardContent className="p-2.5 sm:p-3.5 space-y-2.5 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                   {upiIds.length > 0 ? (
                     upiIds.map((vpa, idx) => {
                       const isSelected = selectedUpiForQr === vpa;
@@ -387,20 +430,20 @@ function MyUpiContent() {
                             <UpiAppLogo appId={provider.appId} size="md" className="shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-xl" />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center justify-between gap-1.5">
-                                <span className="font-mono font-bold text-xs sm:text-sm text-foreground truncate select-all">
+                                <span className={cn(TYPOGRAPHY.cardValue, "font-mono font-bold truncate select-all")}>
                                   {vpa}
                                 </span>
                                 {isSelected && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary text-primary-foreground shrink-0 shadow-2xs">
+                                  <span className={cn(TYPOGRAPHY.badge, "inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold bg-primary text-primary-foreground shrink-0 shadow-2xs")}>
                                     <Sparkles className="w-2.5 h-2.5" /> Active
                                   </span>
                                 )}
                               </div>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className={cn("text-[10px] font-bold px-1.5 py-0.2 rounded border", provider.badgeColor)}>
+                                <span className={cn(TYPOGRAPHY.badge, "px-1.5 py-0.2 rounded border", provider.badgeColor)}>
                                   {provider.name}
                                 </span>
-                                <span className="text-[10px] sm:text-[11px] text-muted-foreground">Handle #{idx + 1}</span>
+                                <span className={cn(TYPOGRAPHY.cardSubtitle, "text-muted-foreground")}>Handle #{idx + 1}</span>
                               </div>
                             </div>
                           </div>
@@ -409,7 +452,7 @@ function MyUpiContent() {
                           <div className="flex items-center justify-between pt-2 border-t border-border/40 gap-2">
                             <div>
                               {isSelected ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                <span className={cn(TYPOGRAPHY.cardSubtitle, "inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400")}>
                                   <CheckCircle2 className="w-3.5 h-3.5" /> Linked to QR
                                 </span>
                               ) : (
@@ -421,7 +464,7 @@ function MyUpiContent() {
                                     handleSelectActiveUpi(vpa);
                                     setMobileTab("qr");
                                   }}
-                                  className="h-7 px-2.5 text-[11px] font-semibold rounded-lg hover:bg-primary/10 hover:text-primary hover:border-primary/40"
+                                  className={cn(TYPOGRAPHY.btnXs, "h-7 px-2.5 font-semibold rounded-lg hover:bg-primary/10 hover:text-primary hover:border-primary/40")}
                                 >
                                   Show on QR
                                 </Button>
@@ -459,11 +502,11 @@ function MyUpiContent() {
                       <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
                         <QrCode className="w-6 h-6" />
                       </div>
-                      <h4 className="font-bold text-sm text-foreground">No UPI IDs Configured</h4>
-                      <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 mb-4">
+                      <h4 className={cn(TYPOGRAPHY.cardTitle, "font-bold text-foreground")}>No UPI IDs Configured</h4>
+                      <p className={cn(TYPOGRAPHY.cardSubtitle, "text-muted-foreground max-w-sm mx-auto mt-1 mb-4")}>
                         Add your primary Virtual Payment Address (e.g. mobile@okhdfcbank) to generate your high-res receiving QR code.
                       </p>
-                      <Button onClick={() => setNewUpiInput("yourname@okicici")} variant="outline" size="sm">
+                      <Button onClick={() => setNewUpiInput("yourname@okicici")} variant="outline" size="sm" className={TYPOGRAPHY.btnXs}>
                         Fill Sample ID
                       </Button>
                     </div>
@@ -475,22 +518,25 @@ function MyUpiContent() {
 
             {/* ── RIGHT COLUMN (5 Cols on LG): Premium Payment Stand & QR Card ── */}
             <div className={cn("lg:col-span-5 sticky top-4", mobileTab !== "qr" && "hidden lg:block")}>
-              <Card className="shadow-md border border-border/80 bg-gradient-to-b from-card via-card to-secondary/15 rounded-3xl overflow-hidden !py-0">
+              <Card 
+                ref={rightCardRef}
+                className="shadow-md border border-border/80 bg-gradient-to-b from-card via-card to-secondary/15 rounded-3xl overflow-hidden !py-0"
+              >
                 
                 {/* Stand Header Strip - Soft, elegant, non-overwhelming */}
                 <div className="px-4 py-2.5 bg-muted/40 dark:bg-muted/20 border-b border-border/60 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs sm:text-sm border border-primary/20 shrink-0 shadow-2xs">
+                    <div className={cn(TYPOGRAPHY.cardValue, "w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20 shrink-0 shadow-2xs")}>
                       {name ? name.charAt(0).toUpperCase() : "U"}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 leading-none">
-                        <span className="font-bold text-xs sm:text-sm text-foreground truncate">
+                        <span className={cn(TYPOGRAPHY.cardTitle, "font-bold truncate text-foreground")}>
                           {name || "Verified Payee"}
                         </span>
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-mono tracking-wider block mt-0.5 uppercase">
+                      <span className={cn(TYPOGRAPHY.cardLabel, "text-muted-foreground font-mono tracking-wider block mt-0.5 uppercase")}>
                         BHIM UPI QR STAND
                       </span>
                     </div>
@@ -514,10 +560,10 @@ function MyUpiContent() {
                   {upiIds.length > 1 && (
                     <div className="w-full">
                       <div className="flex items-center justify-between mb-1.5">
-                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                        <Label className={cn(TYPOGRAPHY.cardLabel, "block")}>
                           Select Active QR VPA
                         </Label>
-                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <span className={cn(TYPOGRAPHY.badge, "font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1")}>
                           <CheckCircle2 className="w-3 h-3" /> Auto-saved as Default
                         </span>
                       </div>
@@ -552,7 +598,7 @@ function MyUpiContent() {
 
                         {/* Amount Overlay Tag if set */}
                         {requestedAmount && parseFloat(requestedAmount) > 0 && (
-                          <div className="mt-3 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200 shadow-2xs">
+                          <div className={cn(TYPOGRAPHY.cardValue, "mt-3 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 shadow-2xs")}>
                             Amount: ₹{parseFloat(requestedAmount).toLocaleString("en-IN")}
                           </div>
                         )}
@@ -561,8 +607,8 @@ function MyUpiContent() {
                       {/* Displayed UPI ID Pill with Quick Copy */}
                       <div className="mt-4 flex items-center justify-between w-full max-w-xs px-3.5 py-2 rounded-xl bg-muted/40 border border-border/60">
                         <div className="min-w-0 flex-1">
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Receiving UPI ID</span>
-                          <span className="text-xs font-mono font-bold text-foreground truncate block select-all">
+                          <span className={cn(TYPOGRAPHY.cardLabel, "block")}>Receiving UPI ID</span>
+                          <span className={cn(TYPOGRAPHY.cardValue, "font-mono font-bold truncate block select-all")}>
                             {selectedUpiForQr}
                           </span>
                         </div>
@@ -581,14 +627,14 @@ function MyUpiContent() {
                       {/* Specific Amount Parameter Toggle */}
                       <div className="w-full mt-4 pt-4 border-t border-border/50">
                         <div className="flex items-center justify-between mb-2">
-                          <Label className="text-xs font-semibold flex items-center gap-1.5">
+                          <Label className={cn(TYPOGRAPHY.modalFieldLabel, "flex items-center gap-1.5")}>
                             <SlidersHorizontal className="w-3.5 h-3.5 text-primary" /> Request Specific Amount (Optional)
                           </Label>
                           {requestedAmount && (
                             <button
                               type="button"
                               onClick={() => setRequestedAmount("")}
-                              className="text-[11px] font-semibold text-muted-foreground hover:text-destructive"
+                              className={cn(TYPOGRAPHY.btnXs, "font-semibold text-muted-foreground hover:text-destructive cursor-pointer")}
                             >
                               Reset
                             </button>
@@ -596,7 +642,7 @@ function MyUpiContent() {
                         </div>
 
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">₹</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground text-[length:var(--font-size-modal-input)]">₹</span>
                           <Input
                             type="number"
                             min="1"
@@ -604,7 +650,7 @@ function MyUpiContent() {
                             placeholder="Enter amount (e.g. 500)"
                             value={requestedAmount}
                             onChange={(e) => setRequestedAmount(e.target.value)}
-                            className="h-9 pl-7 text-sm font-medium"
+                            className={cn(TYPOGRAPHY.modalInput, "h-9 pl-7 font-medium")}
                           />
                         </div>
 
@@ -616,7 +662,8 @@ function MyUpiContent() {
                               type="button"
                               onClick={() => setRequestedAmount(String(amt))}
                               className={cn(
-                                "px-2.5 py-0.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer",
+                                TYPOGRAPHY.btnXs,
+                                "px-2.5 py-0.5 rounded-lg font-bold border transition-all cursor-pointer",
                                 requestedAmount === String(amt)
                                   ? "bg-primary text-primary-foreground border-primary"
                                   : "bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -630,7 +677,7 @@ function MyUpiContent() {
 
                       {/* Supported Apps Strip */}
                       <div className="w-full mt-4 pt-3 border-t border-border/40 flex flex-col items-center gap-2">
-                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        <span className={cn(TYPOGRAPHY.cardLabel, "block")}>
                           Works with all UPI Apps
                         </span>
                         <div className="flex items-center justify-center gap-2.5">
@@ -647,7 +694,7 @@ function MyUpiContent() {
                         <Button
                           type="button"
                           onClick={handleDownloadQr}
-                          className="h-10 font-bold rounded-xl shadow-xs flex items-center justify-center gap-1.5"
+                          className={cn(TYPOGRAPHY.btnDefault, "h-10 font-bold rounded-xl shadow-xs flex items-center justify-center gap-1.5")}
                         >
                           <Download className="w-4 h-4" /> Download QR
                         </Button>
@@ -656,7 +703,7 @@ function MyUpiContent() {
                           type="button"
                           variant="outline"
                           onClick={handleShareQr}
-                          className="h-10 font-semibold rounded-xl flex items-center justify-center gap-1.5"
+                          className={cn(TYPOGRAPHY.btnDefault, "h-10 font-semibold rounded-xl flex items-center justify-center gap-1.5")}
                         >
                           {copiedKey === "share" ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
                           Share Link
@@ -667,7 +714,7 @@ function MyUpiContent() {
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
                       <QrCode className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                      <p className="text-xs">Select or add a UPI ID to preview QR code</p>
+                      <p className={TYPOGRAPHY.cardSubtitle}>Select or add a UPI ID to preview QR code</p>
                     </div>
                   )}
 
@@ -685,13 +732,13 @@ function MyUpiContent() {
         <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
           <DialogContent initialFocus={false} size="md">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className={TYPOGRAPHY.modalTitle}>
                 <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <QrCode className="w-4 h-4" />
                 </div>
                 <span>Official UPI Receiving QR</span>
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className={TYPOGRAPHY.modalDescription}>
                 Scan with Google Pay, PhonePe, Paytm, BHIM, or any bank UPI app.
               </DialogDescription>
             </DialogHeader>
@@ -709,24 +756,24 @@ function MyUpiContent() {
                   }}
                 />
                 {requestedAmount && parseFloat(requestedAmount) > 0 && (
-                  <div className="mt-4 px-4 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold text-sm border border-emerald-200">
+                  <div className={cn(TYPOGRAPHY.cardValue, "mt-4 px-4 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200")}>
                     Pay Exactly: ₹{parseFloat(requestedAmount).toLocaleString("en-IN")}
                   </div>
                 )}
               </div>
               <div className="text-center space-y-1">
-                <p className="text-base font-bold font-mono text-foreground px-4 py-1.5 rounded-full bg-muted border border-border/60">
+                <p className={cn(TYPOGRAPHY.cardAmount, "font-bold font-mono text-foreground px-4 py-1.5 rounded-full bg-muted border border-border/60")}>
                   {selectedUpiForQr}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className={cn(TYPOGRAPHY.cardSubtitle, "text-muted-foreground")}>
                   Registered to <span className="font-semibold text-foreground">{name}</span>
                 </p>
               </div>
               <div className="flex gap-2 w-full pt-2">
-                <Button onClick={handleDownloadQr} className="flex-1 font-bold h-10 rounded-xl">
+                <Button onClick={handleDownloadQr} className={cn(TYPOGRAPHY.btnDefault, "flex-1 font-bold h-10 rounded-xl")}>
                   <Download className="w-4 h-4 mr-1.5" /> Download QR
                 </Button>
-                <Button onClick={handleShareQr} variant="outline" className="flex-1 font-semibold h-10 rounded-xl">
+                <Button onClick={handleShareQr} variant="outline" className={cn(TYPOGRAPHY.btnDefault, "flex-1 font-semibold h-10 rounded-xl")}>
                   <Share2 className="w-4 h-4 mr-1.5" /> Share
                 </Button>
               </div>

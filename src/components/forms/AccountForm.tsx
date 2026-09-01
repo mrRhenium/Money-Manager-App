@@ -20,6 +20,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   type: z.enum(["bank", "cash", "card", "wallet", "investment", "saving", "other"]),
   balance: z.string().refine(val => {
+    if (val === "" || val === undefined || val === null) return true;
     const num = parseIndianNumber(val);
     return !isNaN(num);
   }, "Balance must be a valid number"),
@@ -38,7 +39,7 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
     defaultValues: {
       name: account?.name || "",
       type: account?.type || "bank",
-      balance: account?.balance ? account.balance.toString() : "",
+      balance: account?.balance !== undefined ? formatIndianNumber(account.balance) : "",
     },
   });
 
@@ -47,7 +48,7 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
       form.reset({
         name: account?.name || "",
         type: account?.type || "bank",
-        balance: account?.balance !== undefined ? account.balance.toString() : "",
+        balance: account?.balance !== undefined ? formatIndianNumber(account.balance) : "",
       });
       setCurrency(account?.currency || "INR");
       setColor(account?.color || "#3b82f6");
@@ -148,6 +149,9 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
                         placeholder="Select type"
                         className="w-full h-10"
                         optionFilterProp="label"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
                         options={[
                           { label: 'Bank Account', value: 'bank' },
                           { label: 'Cash Wallet', value: 'cash' },
@@ -156,7 +160,6 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
                           { label: 'Investment Portfolio', value: 'investment' },
                           { label: 'Other Account', value: 'other' },
                         ]}
-                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -168,13 +171,16 @@ export function AccountForm({ account, triggerClassName }: { account?: any, trig
                 name="balance"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Initial Balance</FormLabel>
+                    <FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> {account ? "Current Balance" : "Initial Balance"}</FormLabel>
                     <FormControl>
                       <CurrencyInput 
                         placeholder="e.g. 10,000"
                         currency={currency}
                         onCurrencyChange={setCurrency}
-                        {...field}
+                        value={field.value}
+                        name={field.name}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
                         onChange={(e) => {
                           field.onChange(formatIndianNumber(e.target.value));
                         }}

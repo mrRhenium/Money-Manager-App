@@ -139,9 +139,22 @@ export async function updateAccount(id: string, data: { name: string; type: "ban
       return { success: false, error: "Account not found or unauthorized." };
     }
 
+    const updateSet: any = {
+      name: data.name.trim(),
+      type: data.type,
+      color: data.color,
+      icon: data.icon,
+      isLiability: data.isLiability || false,
+      currency: data.currency || "INR",
+    };
+
+    if (data.balance !== undefined && !isNaN(data.balance)) {
+      updateSet.balance = data.balance;
+    }
+
     const account = await Account.findOneAndUpdate(
       { _id: id, userId: session.user.id },
-      { $set: { name: data.name, type: data.type, color: data.color, icon: data.icon, isLiability: data.isLiability || false, currency: data.currency || "INR" } },
+      { $set: updateSet },
       { returnDocument: 'after' }
     );
 

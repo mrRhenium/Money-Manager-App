@@ -5,27 +5,31 @@
 export function formatIndianNumber(value: string | number): string {
   if (value === undefined || value === null || value === "") return "";
   
+  const str = String(value);
+  const isNegative = str.trim().startsWith("-");
   // Clean all characters except digits and decimal point
-  const cleanValue = String(value).replace(/[^0-9.]/g, "");
+  const cleanValue = str.replace(/[^0-9.]/g, "");
   
   // Split into integer and fractional parts
   const parts = cleanValue.split(".");
   const integerPart = parts[0];
   const decimalPart = parts.length > 1 ? "." + parts[1].slice(0, 2) : ""; // limit to 2 decimal places
   
-  if (!integerPart) return decimalPart ? "0" + decimalPart : "";
+  if (!integerPart) return decimalPart ? (isNegative ? "-" : "") + "0" + decimalPart : "";
 
   // Format integer part in Indian numbering system:
   // Last 3 digits are grouped together, then groups of 2 digits
+  let formattedInteger: string;
   if (integerPart.length <= 3) {
-    return integerPart + decimalPart;
+    formattedInteger = integerPart;
+  } else {
+    const lastThree = integerPart.substring(integerPart.length - 3);
+    const otherDigits = integerPart.substring(0, integerPart.length - 3);
+    const formattedOther = otherDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+    formattedInteger = formattedOther + "," + lastThree;
   }
   
-  const lastThree = integerPart.substring(integerPart.length - 3);
-  const otherDigits = integerPart.substring(0, integerPart.length - 3);
-  const formattedOther = otherDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
-  
-  return formattedOther + "," + lastThree + decimalPart;
+  return (isNegative ? "-" : "") + formattedInteger + decimalPart;
 }
 
 export function parseIndianNumber(value: string | number): number {

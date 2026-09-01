@@ -1,29 +1,31 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
-import { 
-  QrCode, 
-  Plus, 
-  Trash2, 
-  Copy, 
-  Check, 
-  Download, 
-  Share2, 
-  ShieldCheck, 
-  Sparkles, 
-  Smartphone, 
-  Landmark, 
-  CheckCircle2, 
+import {
+  QrCode,
+  Plus,
+  Trash2,
+  Copy,
+  Check,
+  Download,
+  Share2,
+  ShieldCheck,
+  Sparkles,
+  Smartphone,
+  Landmark,
+  CheckCircle2,
   Maximize2,
   Loader2,
   SlidersHorizontal,
-  Wallet
+  Wallet,
+  Search,
+  X
 } from "lucide-react";
 import { getUserProfile, updateProfile } from "@/actions/user";
 import { useToast } from "@/hooks/useToast";
@@ -76,10 +78,20 @@ function MyUpiContent() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [handleSearch, setHandleSearch] = useState("");
 
   const rightCardRef = useRef<HTMLDivElement>(null);
   const addUpiCardRef = useRef<HTMLDivElement>(null);
   const [lowerCardHeight, setLowerCardHeight] = useState<number | null>(null);
+
+  const filteredUpiIds = useMemo(() => {
+    if (!handleSearch.trim()) return upiIds;
+    const q = handleSearch.toLowerCase().trim();
+    return upiIds.filter(vpa => {
+      const provider = getUpiProvider(vpa);
+      return vpa.toLowerCase().includes(q) || provider.name.toLowerCase().includes(q);
+    });
+  }, [upiIds, handleSearch]);
 
   useEffect(() => {
     const updateHeight = () => {
@@ -219,7 +231,7 @@ function MyUpiContent() {
   // Construct UPI Deep-link
   const parsedAmount = parseFloat(requestedAmount);
   const amountParam = !isNaN(parsedAmount) && parsedAmount > 0 ? `&am=${parsedAmount.toFixed(2)}&cu=INR` : "";
-  const generatedUpiUrl = selectedUpiForQr 
+  const generatedUpiUrl = selectedUpiForQr
     ? `upi://pay?pa=${encodeURIComponent(selectedUpiForQr)}&pn=${encodeURIComponent(name || "User")}${amountParam}`
     : "";
 
@@ -245,7 +257,7 @@ function MyUpiContent() {
       )}
 
       {/* HEADER SECTION */}
-      <MasterHeader 
+      <MasterHeader
         title={<><QrCode className="w-6 h-6 text-primary" /> My UPI & QR</>}
         subtitle="Manage your UPI IDs, customize payment handles, and share receiving QR codes."
       />
@@ -391,11 +403,11 @@ function MyUpiContent() {
               </Card>
 
               {/* Configured UPI IDs List - Matches height of right card */}
-              <Card 
+              <Card
                 style={lowerCardHeight ? { height: `${lowerCardHeight}px` } : undefined}
                 className="shadow-xs border-border/70 overflow-hidden flex flex-col !py-0"
               >
-                <CardHeader className="p-3 sm:p-4 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between shrink-0">
+                <CardHeader className="px-3.5 py-2 sm:px-4 sm:py-2 border-b border-border/50 bg-muted/20 flex flex-row items-center justify-between shrink-0">
                   <div>
                     <CardTitle className={cn(TYPOGRAPHY.sectionTitle, "flex items-center gap-2")}>
                       <Landmark className="w-4 h-4 text-primary" /> Active Receiving Handles
@@ -405,12 +417,42 @@ function MyUpiContent() {
                     </CardDescription>
                   </div>
                   <span className={cn(TYPOGRAPHY.badge, "px-2 sm:px-2.5 py-0.5 rounded-full bg-primary/10 text-primary shrink-0")}>
-                    {upiIds.length} Configured
+                    {handleSearch ? `${filteredUpiIds.length} of ${upiIds.length}` : `${upiIds.length} Configured`}
                   </span>
                 </CardHeader>
+
+                {/* Search Bar in Active Receiving Handles */}
+                {upiIds.length > 0 && (
+                  <div className="px-3.5 sm:px-4 py-1.5 border-b border-border/40 bg-muted/15 shrink-0">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search handles or banks..."
+                        value={handleSearch}
+                        onChange={(e) => setHandleSearch(e.target.value)}
+                        className={cn(
+                          TYPOGRAPHY.modalInput,
+                          "h-10 pl-9 pr-8 text-sm bg-background/90 focus-visible:ring-1 border-border/60 rounded-xl shadow-2xs"
+                        )}
+                      />
+                      {handleSearch && (
+                        <button
+                          type="button"
+                          onClick={() => setHandleSearch("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1 rounded-md"
+                          title="Clear search"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <CardContent className="p-2.5 sm:p-3.5 space-y-2.5 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-                  {upiIds.length > 0 ? (
-                    upiIds.map((vpa, idx) => {
+                  {filteredUpiIds.length > 0 ? (
+                    filteredUpiIds.map((vpa, idx) => {
                       const isSelected = selectedUpiForQr === vpa;
                       const provider = getUpiProvider(vpa);
                       const isCopied = copiedKey === `list-${vpa}`;
@@ -497,6 +539,23 @@ function MyUpiContent() {
                         </div>
                       );
                     })
+                  ) : handleSearch ? (
+                    <div className="text-center py-8 px-4 text-muted-foreground">
+                      <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <h4 className={cn(TYPOGRAPHY.cardTitle, "font-bold text-foreground")}>No Matching Handles</h4>
+                      <p className={cn(TYPOGRAPHY.cardSubtitle, "text-muted-foreground max-w-xs mx-auto mt-1 mb-3")}>
+                        No UPI ID matches &ldquo;{handleSearch}&rdquo;
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setHandleSearch("")}
+                        className={cn(TYPOGRAPHY.btnXs, "h-7 px-3 cursor-pointer")}
+                      >
+                        Clear Search
+                      </Button>
+                    </div>
                   ) : (
                     <div className="text-center py-10 px-4 border-2 border-dashed rounded-2xl border-border/70 bg-muted/10">
                       <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
@@ -518,11 +577,11 @@ function MyUpiContent() {
 
             {/* ── RIGHT COLUMN (5 Cols on LG): Premium Payment Stand & QR Card ── */}
             <div className={cn("lg:col-span-5 sticky top-4", mobileTab !== "qr" && "hidden lg:block")}>
-              <Card 
+              <Card
                 ref={rightCardRef}
                 className="shadow-md border border-border/80 bg-gradient-to-b from-card via-card to-secondary/15 rounded-3xl overflow-hidden !py-0"
               >
-                
+
                 {/* Stand Header Strip - Soft, elegant, non-overwhelming */}
                 <div className="px-4 py-2.5 bg-muted/40 dark:bg-muted/20 border-b border-border/60 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -555,7 +614,7 @@ function MyUpiContent() {
                 </div>
 
                 <CardContent className="px-4 pt-3 pb-3 sm:px-5 sm:pt-3.5 sm:pb-3.5 flex flex-col items-center gap-3.5">
-                  
+
                   {/* Select VPA Switcher */}
                   {upiIds.length > 1 && (
                     <div className="w-full">
@@ -568,6 +627,13 @@ function MyUpiContent() {
                         </span>
                       </div>
                       <Select
+                        showSearch
+                        filterOption={(input, option) =>
+                          String(option?.value ?? option?.label ?? "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase().trim())
+                        }
+                        placeholder="Search & select UPI ID..."
                         value={selectedUpiForQr}
                         onChange={handleSelectActiveUpi}
                         className="w-full h-10"

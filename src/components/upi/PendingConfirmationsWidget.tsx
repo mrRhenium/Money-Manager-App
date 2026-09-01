@@ -14,6 +14,8 @@ import { Smartphone, Check, X, Clock, Loader2, ChevronLeft, ChevronRight } from 
 import { useSession } from "next-auth/react";
 import { formatCurrency } from "@/lib/currencyFormatter";
 import { useCurrency } from "@/hooks/useCurrency";
+import { cn } from "@/lib/utils";
+import { TYPOGRAPHY } from "@/lib/designTokens";
 
 export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: (count: number) => void }) {
   const { format, currencyCode } = useCurrency();
@@ -101,16 +103,16 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
                 <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
                   <Smartphone className="w-5 h-5 animate-pulse" />
                 </div>
-                <div className="flex flex-col">
-                  <h3 className="font-bold text-sm sm:text-base text-amber-800 dark:text-amber-400 truncate">Pending UPI</h3>
-                  <p className="text-xs text-amber-600 dark:text-amber-500 font-medium mt-0.5">
+                <div className="flex flex-col min-w-0">
+                  <h3 className={cn(TYPOGRAPHY.cardTitle, "font-bold text-amber-800 dark:text-amber-400 truncate")}>Pending UPI</h3>
+                  <p className={cn(TYPOGRAPHY.cardSubtitle, "text-amber-600 dark:text-amber-500 font-medium mt-0.5")}>
                     {pendingTxns.length} payment{pendingTxns.length !== 1 ? "s" : ""}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold tracking-wider block">Total Pending:</span>
-                <div className="font-bold text-base sm:text-lg text-amber-700 dark:text-amber-400">
+              <div className="text-right shrink-0">
+                <span className={cn(TYPOGRAPHY.cardLabel, "text-muted-foreground uppercase font-semibold tracking-wider block")}>Total Pending:</span>
+                <div className={cn(TYPOGRAPHY.cardAmount, "font-bold text-amber-700 dark:text-amber-400")}>
                   {format(totalAmount)}
                 </div>
               </div>
@@ -120,13 +122,13 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
       } />
       <DialogContent initialFocus={false} size="lg">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className={cn(TYPOGRAPHY.modalTitle, "flex items-center gap-2")}>
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
               <Smartphone className="w-5 h-5" />
             </div>
             <span>Pending UPI Payments</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className={TYPOGRAPHY.modalDescription}>
             Confirm whether these UPI payments were successful or cancelled to keep your balances aligned.
           </DialogDescription>
           <div className="relative mt-2">
@@ -134,7 +136,7 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
             <Input
               type="text"
               placeholder="Search by receiver name, amount, or date..."
-              className="pl-9 bg-background w-full h-9 text-xs sm:text-sm"
+              className={cn(TYPOGRAPHY.modalInput, "pl-9 bg-background w-full h-9 text-xs sm:text-sm rounded-xl border-border/60")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -154,17 +156,17 @@ export function PendingConfirmationsWidget({ onCountChange }: { onCountChange?: 
             return (
               <div key={txn._id} className="flex flex-col p-3 sm:p-4 bg-background rounded-xl border border-amber-500/20 gap-3 shadow-inner">
                 <div>
-                  <p className="font-bold text-sm text-foreground">{payeeName}</p>
-                  {upiId && <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{upiId}</p>}
-                  {personName && personName !== payeeName && <p className="text-[11px] text-primary/80 mt-0.5">👤 {personName}</p>}
-                  <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-foreground bg-primary/10 px-1.5 py-0.5 rounded">{format(txn.amount)}</span>
+                  <p className={cn(TYPOGRAPHY.cardTitle, "font-bold text-foreground")}>{payeeName}</p>
+                  {upiId && <p className={cn(TYPOGRAPHY.cardSubtitle, "font-mono mt-0.5")}>{upiId}</p>}
+                  {personName && personName !== payeeName && <p className={cn(TYPOGRAPHY.cardSubtitle, "text-primary/80 mt-0.5")}>👤 {personName}</p>}
+                  <p className={cn(TYPOGRAPHY.cardLabel, "text-muted-foreground mt-1.5 flex items-center gap-2 flex-wrap font-normal")}>
+                    <span className={cn(TYPOGRAPHY.badge, "font-bold text-foreground bg-primary/10 px-2 py-0.5 rounded-md")}>{format(txn.amount)}</span>
                     <span>•</span>
                     <span>{formatDateString(txn.date, "DD-MM-YYYY hh:mm A")}</span>
                     {txn.accountId?.name && <><span>•</span><span>{txn.accountId.name}</span></>}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1 italic opacity-80">
-                    "{noteText}"
+                  <p className={cn(TYPOGRAPHY.cardSubtitle, "mt-1 italic opacity-80")}>
+                    &ldquo;{noteText}&rdquo;
                   </p>
                 </div>
                 <div className="grid grid-cols-3 sm:flex sm:flex-row gap-2 shrink-0 mt-2 sm:mt-0 w-full sm:w-auto">

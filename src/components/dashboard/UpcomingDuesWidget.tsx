@@ -93,16 +93,16 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                 <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-600 flex items-center justify-center shrink-0">
                   <Calendar className="w-5 h-5 animate-pulse" />
                 </div>
-                <div className="flex flex-col">
-                  <h3 className="font-bold text-sm sm:text-base text-blue-800 dark:text-blue-400 truncate">Upcoming Dues</h3>
-                  <p className="text-xs text-blue-600 dark:text-blue-500 font-medium mt-0.5">
+                <div className="flex flex-col min-w-0">
+                  <h3 className={cn(TYPOGRAPHY.cardTitle, "font-bold text-blue-800 dark:text-blue-400 truncate")}>Upcoming Dues</h3>
+                  <p className={cn(TYPOGRAPHY.cardSubtitle, "text-blue-600 dark:text-blue-500 font-medium mt-0.5")}>
                     {dues.length} dues in next {daysAhead} days
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold tracking-wider block">Total Amount:</span>
-                <div className="font-bold text-base sm:text-lg text-blue-700 dark:text-blue-400">
+              <div className="text-right shrink-0">
+                <span className={cn(TYPOGRAPHY.cardLabel, "text-muted-foreground uppercase font-semibold tracking-wider block")}>Total Amount:</span>
+                <div className={cn(TYPOGRAPHY.cardAmount, "font-bold text-blue-700 dark:text-blue-400")}>
                   {format(totalAmount)}
                 </div>
               </div>
@@ -119,15 +119,15 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                 <Calendar className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <DialogTitle className="truncate">
+                <DialogTitle className={cn(TYPOGRAPHY.modalTitle, "truncate")}>
                   Upcoming Dues
                 </DialogTitle>
-                <DialogDescription className="truncate">
+                <DialogDescription className={cn(TYPOGRAPHY.modalDescription, "truncate")}>
                   {dues.length} {dues.length === 1 ? "due" : "dues"} • Total {format(totalAmount)}
                 </DialogDescription>
               </div>
             </div>
-            <Badge variant="secondary" className="font-bold text-xs px-2.5 py-1 rounded-lg shrink-0 hidden sm:inline-flex">
+            <Badge variant="secondary" className={cn(TYPOGRAPHY.badge, "font-bold px-2.5 py-1 rounded-lg shrink-0 hidden sm:inline-flex")}>
               {format(totalAmount)}
             </Badge>
           </div>
@@ -138,7 +138,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
               <Input
                 type="text"
                 placeholder="Search by name, amount, date..."
-                className="pl-9 bg-background w-full h-9 text-xs sm:text-sm rounded-xl border-border/60"
+                className={cn(TYPOGRAPHY.modalInput, "pl-9 bg-background w-full h-9 rounded-xl border-border/60")}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -153,7 +153,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[200px] h-9 shrink-0 bg-background text-foreground text-xs sm:text-sm rounded-xl border-border/60">
+              <SelectTrigger className={cn(TYPOGRAPHY.modalInput, "w-full sm:w-[200px] h-9 shrink-0 bg-background text-foreground rounded-xl border-border/60")}>
                 <SelectValue placeholder="All Categories">
                   {selectedCategory === "all" ? "All Categories" : CATEGORY_CONFIG[selectedCategory]?.label}
                 </SelectValue>
@@ -182,10 +182,10 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                     <span className={`p-1 rounded-md ${config.bgColor} ${config.color}`}>
                       <CategoryIcon className="w-3.5 h-3.5" />
                     </span>
-                    <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">{config.label}</span>
-                    <span className="text-[11px] sm:text-xs text-muted-foreground">({items.length})</span>
+                    <span className={cn(TYPOGRAPHY.cardLabel, "uppercase tracking-wider font-bold text-muted-foreground")}>{config.label}</span>
+                    <span className={cn(TYPOGRAPHY.cardSubtitle, "text-muted-foreground")}>({items.length})</span>
                   </div>
-                  <span className="text-xs font-semibold text-foreground">{format(groupTotal)}</span>
+                  <span className={cn(TYPOGRAPHY.cardAmount, "font-bold text-foreground")}>{format(groupTotal)}</span>
                 </div>
 
                 <div className="flex flex-col gap-2 w-full min-w-0">
@@ -205,30 +205,35 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                             : "bg-card hover:bg-muted/30 border-border/60 shadow-2xs"
                         }`}
                       >
-                        {/* Top Row: Title + Amount */}
-                        <div className="flex items-start justify-between gap-2 min-w-0">
-                          <div className="min-w-0 flex-1 pr-1">
-                            <h4 className={cn(TYPOGRAPHY.cardTitle, "leading-snug break-words")} title={due.title}>
-                              {due.title}
-                            </h4>
-                            {due.subtitle && (
-                              <p className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>
-                                {due.subtitle}
-                              </p>
-                            )}
+                        {/* Top Row: Respective Icon + Title + Amount */}
+                        <div className="flex items-center justify-between gap-3 min-w-0">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-1">
+                            <div className={cn("w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs", config.bgColor, config.color)}>
+                              <CategoryIcon className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className={cn(TYPOGRAPHY.cardTitle, "font-bold leading-snug break-words")} title={due.title}>
+                                {due.title}
+                              </h4>
+                              {due.subtitle && (
+                                <p className={cn(TYPOGRAPHY.cardSubtitle, "mt-0.5")}>
+                                  {due.subtitle}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <span className={cn(TYPOGRAPHY.cardAmount, "shrink-0 text-right whitespace-nowrap")}>
+                          <span className={cn(TYPOGRAPHY.cardAmount, "shrink-0 text-right whitespace-nowrap font-bold")}>
                             {format(due.amount)}
                           </span>
                         </div>
 
                         {/* Bottom Row: Due Date countdown + Action Button */}
-                        <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
+                        <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border/40">
                           <div className={cn(TYPOGRAPHY.cardLabel, "flex items-center gap-1.5 normal-case font-normal min-w-0 flex-1")}>
-                            <CalendarDays className="w-3.5 h-3.5 shrink-0" />
+                            <CalendarDays className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                             <span className="shrink-0">{formatDateString(due.dueDate, "DD MMM YYYY")}</span>
                             <span>•</span>
-                            <span className={cn(TYPOGRAPHY.badge, isOverdue ? "text-red-500 bg-red-500/10" : isToday ? "text-amber-500 bg-amber-500/10" : "text-primary bg-primary/10")}>
+                            <span className={cn(TYPOGRAPHY.badge, "px-2 py-0.5 rounded-full font-bold", isOverdue ? "text-red-500 bg-red-500/10" : isToday ? "text-amber-500 bg-amber-500/10" : "text-primary bg-primary/10")}>
                               {isOverdue 
                                 ? `${Math.abs(days)}d overdue` 
                                 : isToday 
@@ -240,7 +245,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                           <Button
                             size="sm"
                             variant={isOverdue ? "destructive" : "default"}
-                            className={cn("h-7 sm:h-8 px-3 rounded-lg flex items-center gap-1.5 shadow-2xs shrink-0", TYPOGRAPHY.modalButton)}
+                            className={cn("h-7 sm:h-8 px-3 rounded-lg flex items-center gap-1.5 shadow-2xs shrink-0 cursor-pointer", TYPOGRAPHY.btnXs)}
                             onClick={() => {
                               setSelectedDue(due);
                               setIsPayModalOpen(true);

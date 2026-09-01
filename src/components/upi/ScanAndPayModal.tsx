@@ -677,12 +677,12 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                         key={app.id} 
                         value={app.id}
                         label={
-                          <div className="flex items-center justify-between w-full h-full pr-1 gap-2">
+                          <div className="flex items-center justify-between w-full h-full gap-2">
                             <div className="flex items-center gap-2 min-w-0">
                               <UpiAppLogo appId={app.id} size="sm" className="w-5 h-5 rounded-md shrink-0" />
                               <span className="font-semibold text-xs text-foreground truncate leading-none">{app.name}</span>
                             </div>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 leading-none ${
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ml-auto leading-none ${
                               isActive 
                                 ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
                                 : "bg-muted text-muted-foreground border border-border/40"

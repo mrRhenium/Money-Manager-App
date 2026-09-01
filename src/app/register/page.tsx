@@ -130,7 +130,6 @@ export default function RegisterPage() {
             name="register_form"
             layout="vertical"
             onFinish={handleRegister}
-            size="large"
           >
             {error && (
               <Form.Item>
@@ -201,7 +200,6 @@ export default function RegisterPage() {
             name="verify_otp_form"
             layout="vertical"
             onFinish={handleVerifyOtp}
-            size="large"
           >
             {error && (
               <Form.Item>

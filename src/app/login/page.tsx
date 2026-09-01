@@ -60,7 +60,6 @@ function LoginFormContent() {
           name="login_form"
           layout="vertical"
           onFinish={onFinish}
-          size="large"
         >
           {isInactiveLogout && !error && (
             <Form.Item>

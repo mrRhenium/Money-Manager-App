@@ -132,7 +132,7 @@ export function DashboardAdvancedFilter() {
         />
       )}
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-center gap-2">
         <AntSelect
           mode="multiple"
           allowClear
@@ -140,9 +140,8 @@ export function DashboardAdvancedFilter() {
           value={isMonthYear ? selectedMonths : []}
           onChange={handleMonthsChange}
           options={MONTHS}
-          className="w-full sm:w-[200px]"
+          className="w-full sm:w-[180px] h-10 [&_.ant-select]:!h-10 [&_.ant-select]:!min-h-[40px] [&_.ant-select]:!max-h-10 [&_.ant-select-selector]:!h-10 [&_.ant-select-content]:!flex-nowrap"
           maxTagCount="responsive"
-          size="large"
           disabled={!isMonthYear}
           popupMatchSelectWidth={false}
         />
@@ -153,9 +152,8 @@ export function DashboardAdvancedFilter() {
           value={isMonthYear ? selectedYears : []}
           onChange={handleYearsChange}
           options={YEARS}
-          className="w-full sm:w-[140px]"
+          className="w-full sm:w-[140px] h-10 [&_.ant-select]:!h-10 [&_.ant-select]:!min-h-[40px] [&_.ant-select]:!max-h-10 [&_.ant-select-selector]:!h-10 [&_.ant-select-content]:!flex-nowrap"
           maxTagCount="responsive"
-          size="large"
           disabled={!isMonthYear}
           popupMatchSelectWidth={false}
         />

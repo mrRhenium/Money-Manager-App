@@ -134,7 +134,6 @@ export default function ForgotPasswordPage() {
             name="reset_password_form"
             layout="vertical"
             onFinish={handleResetPassword}
-            size="large"
           >
             {error && (
               <Form.Item>

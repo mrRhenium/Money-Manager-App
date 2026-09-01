@@ -46,6 +46,7 @@ function AppConfigurator({ children }: { children: React.ReactNode }) {
             borderRadius: 8,
             fontFamily: "var(--font-family-base, var(--font-sans))",
             controlHeight: 40,
+            paddingSM: 14,
           },
           components: {
             Select: {

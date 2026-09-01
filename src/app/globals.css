@@ -384,11 +384,15 @@ button,
   font-size: var(--font-size-modal-input, 0.875rem) !important;
 }
 
-/* ─── Ant Design 6 & 5 Select Global Vertical Centering ─── */
+/* ─── Ant Design 6 & 5 Select Global Vertical Centering & Spacing ─── */
 .ant-select {
   display: inline-flex !important;
   align-items: center !important;
   box-sizing: border-box !important;
+  padding-inline-start: 14px !important;
+  padding-left: 14px !important;
+  padding-inline-end: 12px !important;
+  padding-right: 12px !important;
 }
 
 /* Ant Design 6 Content Container */
@@ -445,6 +449,10 @@ button,
   display: flex !important;
   align-items: center !important;
   height: 100% !important;
+  padding-inline-start: 14px !important;
+  padding-left: 14px !important;
+  padding-inline-end: 12px !important;
+  padding-right: 12px !important;
 }
 
 .ant-select-single .ant-select-selection-wrap {

@@ -52,12 +52,12 @@ export function ActionCenterWrapper({
           <div className="flex items-center gap-3 sm:gap-4">
             <Link 
               href="/settings" 
-              className="w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex lg:hidden items-center justify-center hover:opacity-80 transition-opacity"
+              className="w-12 h-12 min-[400px]:w-14 min-[400px]:h-14 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-primary/20 border-2 border-background shadow-sm shrink-0 flex lg:hidden items-center justify-center hover:opacity-80 transition-opacity"
             >
               {user?.image ? (
                 <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
               ) : (
-                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                <Users className="w-6 h-6 min-[400px]:w-7 min-[400px]:h-7 sm:w-7 sm:h-7 text-primary" />
               )}
             </Link>
             <div>

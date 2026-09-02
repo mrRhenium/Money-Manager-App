@@ -76,7 +76,8 @@ export function TimezonePicker({
               showCloseButton={false}
               initialFocus={false}
               size="md"
-              className="z-[70]"
+              className="!z-[1350]"
+              overlayClassName="!z-[1300]"
             >
               <AdvancedTimezonePicker 
                 initialTimezone={selectedTimezone} 
@@ -121,7 +122,8 @@ export function TimezonePicker({
             showCloseButton={false}
             initialFocus={false}
             size="md"
-            className="z-[70]"
+            className="!z-[1350]"
+            overlayClassName="!z-[1300]"
           >
             <AdvancedTimezonePicker 
               initialTimezone={selectedTimezone} 

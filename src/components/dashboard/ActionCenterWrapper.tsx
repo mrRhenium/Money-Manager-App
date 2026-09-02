@@ -6,6 +6,7 @@ import { UpcomingDuesWidget } from "@/components/dashboard/UpcomingDuesWidget";
 import { BellDot, X, Users, Filter, CheckCircle2, ShieldAlert, Clock, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DashboardScanTrigger } from "@/components/upi/DashboardScanTrigger";
 import { DashboardAdvancedFilter } from "@/components/dashboard/DashboardAdvancedFilter";
 import { MasterFilterDrawer } from "@/components/layout/MasterView";
@@ -18,13 +19,18 @@ export function ActionCenterWrapper({
   upcomingDues = [], 
   daysAhead = 7, 
   user, 
-  accounts = [] 
+  accounts = [],
+  filterSummary = "Last 7 Days",
+  isFilterActive = false,
 }: { 
   upcomingDues: any[]; 
   daysAhead: number; 
   user: any; 
   accounts?: any[]; 
+  filterSummary?: string;
+  isFilterActive?: boolean;
 }) {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
@@ -72,16 +78,25 @@ export function ActionCenterWrapper({
               variant="outline" 
               size="icon" 
               onClick={() => setFilterOpen(true)} 
-              className="lg:hidden rounded-full shadow-sm bg-background/80 backdrop-blur text-foreground border-border/50 hover:bg-muted h-9 w-9 transition-all"
+              className={cn(
+                "lg:hidden rounded-full relative shadow-sm bg-background/80 backdrop-blur text-foreground border-border/50 hover:bg-muted h-9 w-9 transition-all cursor-pointer",
+                isFilterActive && "border-primary/60 text-primary bg-primary/10 hover:bg-primary/15"
+              )}
               title="Filters & Date Range"
             >
               <Filter className="w-4 h-4" />
+              {isFilterActive && (
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-background animate-pulse" />
+              )}
             </Button>
             <MasterFilterDrawer
               isOpen={filterOpen}
               onClose={() => setFilterOpen(false)}
-              isFilterActive={false}
-              onClearFilters={() => {}}
+              isFilterActive={isFilterActive}
+              onClearFilters={() => {
+                router.push("/");
+                setFilterOpen(false);
+              }}
             >
               <div className="flex-1 overflow-y-auto pb-8 custom-scrollbar">
                 <Suspense fallback={<div className="h-10 w-full animate-pulse bg-muted rounded-full"></div>}>
@@ -109,6 +124,39 @@ export function ActionCenterWrapper({
               )}
             </Button>
           </div>
+        </div>
+
+        {/* Mobile Active Filter Status Bar */}
+        <div className="flex lg:hidden items-center justify-between gap-2 pt-1.5 border-t border-border/40 mt-0.5">
+          <button
+            type="button"
+            onClick={() => setFilterOpen(true)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer shadow-2xs min-w-0 max-w-full active:scale-98",
+              isFilterActive 
+                ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/15" 
+                : "bg-secondary/70 text-foreground border-border/60 hover:bg-secondary"
+            )}
+            title="Tap to change filter"
+          >
+            <CalendarDays className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="truncate font-medium text-muted-foreground text-[11px]">Filter:</span>
+            <span className="truncate font-bold">{filterSummary}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/15 text-primary font-bold ml-1 shrink-0">
+              Edit
+            </span>
+          </button>
+
+          {isFilterActive && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/")}
+              className="text-[11px] h-6 px-2 text-muted-foreground hover:text-foreground font-medium shrink-0 rounded-md hover:bg-muted"
+            >
+              Reset (7d)
+            </Button>
+          )}
         </div>
 
         {/* Desktop Filter Row */}

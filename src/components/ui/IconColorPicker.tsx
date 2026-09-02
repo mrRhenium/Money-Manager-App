@@ -138,7 +138,7 @@ export function IconPicker({ value, onChange, color, disabled }: IconPickerProps
         }}
         options={groupedCategories}
         placeholder="Select or search an icon..."
-        dropdownStyle={{ maxHeight: 340, overflowY: "auto" }}
+        dropdownStyle={{ maxHeight: 340, overflowY: "auto", zIndex: 3000 }}
       />
     </div>
   );

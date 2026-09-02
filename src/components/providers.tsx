@@ -47,11 +47,25 @@ function AppConfigurator({ children }: { children: React.ReactNode }) {
             fontFamily: "var(--font-family-base, var(--font-sans))",
             controlHeight: 40,
             paddingSM: 14,
+            zIndexPopupBase: 3000,
           },
           components: {
             Select: {
               controlHeight: 40,
               singleItemHeightLG: 40,
+              zIndexPopup: 3000,
+            },
+            DatePicker: {
+              zIndexPopup: 3000,
+            },
+            Dropdown: {
+              zIndexPopup: 3000,
+            },
+            Popover: {
+              zIndexPopup: 3000,
+            },
+            Tooltip: {
+              zIndexPopup: 3000,
             },
             Input: {
               controlHeight: 40,

@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PayDueModal, DueItem } from "./PayDueModal";
 import { TYPOGRAPHY } from "@/lib/designTokens";
 import { cn } from "@/lib/utils";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string; bgColor: string }> = {
   loan_emi: { label: "Loans (EMIs)", icon: Landmark, color: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-500/10" },
@@ -123,13 +124,13 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                   Upcoming Dues
                 </DialogTitle>
                 <DialogDescription className={cn(TYPOGRAPHY.modalDescription, "truncate")}>
-                  {dues.length} {dues.length === 1 ? "due" : "dues"} • Total {format(totalAmount)}
+                  {dues.length} {dues.length === 1 ? "due" : "dues"} • Total <span className="font-semibold text-foreground">{format(totalAmount)}</span>
                 </DialogDescription>
               </div>
             </div>
-            <Badge variant="secondary" className={cn(TYPOGRAPHY.badge, "font-bold px-2.5 py-1 rounded-lg shrink-0 hidden sm:inline-flex")}>
+            <span className={cn(TYPOGRAPHY.cardAmount, "px-3.5 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 font-bold shrink-0 hidden sm:inline-flex shadow-2xs")}>
               {format(totalAmount)}
-            </Badge>
+            </span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-1">
@@ -205,11 +206,14 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                             : "bg-card hover:bg-muted/30 border-border/60 shadow-2xs"
                         }`}
                       >
-                        {/* Top Row: Respective Icon + Title + Amount */}
+                        {/* Top Row: Respective Entry Icon + Title + Amount */}
                         <div className="flex items-center justify-between gap-3 min-w-0">
                           <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-1">
-                            <div className={cn("w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs", config.bgColor, config.color)}>
-                              <CategoryIcon className="w-4 h-4" />
+                            <div
+                              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs text-white"
+                              style={{ backgroundColor: due.color || (due.type === "credit_card" ? "#3b82f6" : "#f59e0b") }}
+                            >
+                              <CategoryIcon name={due.icon || (config.icon?.displayName || "Landmark")} className="w-4 h-4 text-white" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <h4 className={cn(TYPOGRAPHY.cardTitle, "font-bold leading-snug break-words")} title={due.title}>
@@ -222,7 +226,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                               )}
                             </div>
                           </div>
-                          <span className={cn(TYPOGRAPHY.cardAmount, "shrink-0 text-right whitespace-nowrap font-bold")}>
+                          <span className={cn(TYPOGRAPHY.cardValue, "shrink-0 text-right whitespace-nowrap font-bold text-foreground")}>
                             {format(due.amount)}
                           </span>
                         </div>

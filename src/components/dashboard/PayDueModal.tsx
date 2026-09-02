@@ -50,6 +50,8 @@ export interface DueItem {
   linkedAccountId?: string;
   bankName?: string;
   last4Digits?: string;
+  icon?: string;
+  color?: string;
 }
 
 interface PayDueModalProps {
@@ -229,7 +231,7 @@ export function PayDueModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent initialFocus={false} size="md" className="z-[60]">
+      <DialogContent initialFocus={false} size="md" className="!z-[1350]" overlayClassName="!z-[1300]">
         <DialogHeader>
           <DialogTitle>
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${typeConfig.bgColor} ${typeConfig.color}`}>

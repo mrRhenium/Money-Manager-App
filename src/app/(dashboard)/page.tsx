@@ -143,6 +143,41 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     pastDate.setDate(now.getDate() - daysFilter);
   }
 
+  const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  let filterSummary = "Last 7 Days";
+  let isFilterActive = false;
+
+  if (isCustom && customStartDate && customEndDate) {
+    filterSummary = `${formatDate(customStartDate, "short", userTimezone)} – ${formatDate(customEndDate, "short", userTimezone)}`;
+    isFilterActive = true;
+  } else if (isMonthYear) {
+    if (selectedMonths.length > 0 && selectedYears.length > 0) {
+      const monthStr = selectedMonths.map(m => MONTH_NAMES[m] || m).join(", ");
+      const yearStr = selectedYears.join(", ");
+      filterSummary = `${monthStr} ${yearStr}`;
+    } else if (selectedYears.length > 0) {
+      filterSummary = selectedYears.join(", ");
+    } else {
+      filterSummary = "By Month/Year";
+    }
+    isFilterActive = true;
+  } else if (daysParam === "15") {
+    filterSummary = "Last 15 Days";
+    isFilterActive = true;
+  } else if (daysParam === "30") {
+    filterSummary = "Last 30 Days";
+    isFilterActive = true;
+  } else if (daysParam === "90") {
+    filterSummary = "Last 3 Months";
+    isFilterActive = true;
+  } else if (daysParam === "180") {
+    filterSummary = "Last 6 Months";
+    isFilterActive = true;
+  } else if (daysParam && daysParam !== "7") {
+    filterSummary = `Last ${daysParam} Days`;
+    isFilterActive = true;
+  }
+
   const timeframeTxns = transactions.filter((t: any) => {
     // Only completed transactions should be counted towards period income/expenses
     if (t.status && t.status !== "completed") return false;
@@ -203,6 +238,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           linkedAccountId: c.linkedAccountId?.toString(),
           bankName: c.bankName,
           last4Digits: c.last4Digits,
+          icon: "CreditCard",
+          color: c.color || "#3b82f6",
         });
       }
     }
@@ -236,6 +273,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           type: 'sip',
           entityId: inv._id?.toString(),
           linkedAccountId: inv.linkedAccountId?.toString(),
+          icon: inv.icon || "TrendingUp",
+          color: inv.color || "#8b5cf6",
         });
       }
     }
@@ -253,6 +292,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           type: 'insurance',
           entityId: pol._id?.toString(),
           linkedAccountId: pol.linkedAccountId?.toString(),
+          icon: pol.icon || "Shield",
+          color: pol.color || "#10b981",
         });
       }
     }
@@ -290,6 +331,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           type: loan.type === 'taken' ? 'loan_emi' : 'loan_emi_receive',
           entityId: loan._id?.toString(),
           linkedAccountId: loan.linkedAccountId?.toString(),
+          icon: loan.icon || "Landmark",
+          color: loan.color || "#f59e0b",
         });
       }
     }
@@ -307,6 +350,8 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
           type: 'subscription',
           entityId: b._id?.toString(),
           linkedAccountId: b.accountId?._id ? b.accountId._id.toString() : (b.accountId ? b.accountId.toString() : undefined),
+          icon: b.icon || "Repeat",
+          color: b.color || "#6366f1",
         });
       }
     }
@@ -334,7 +379,14 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     <div className="absolute inset-0 flex flex-col lg:relative lg:block lg:inset-auto lg:h-auto overflow-hidden lg:overflow-visible">
       {/* Static Header Container */}
       <div className="shrink-0 z-40 border-b lg:border-none bg-card/80 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none px-4 lg:px-8 py-3 lg:pt-8 shadow-sm lg:shadow-none">
-        <ActionCenterWrapper upcomingDues={upcomingDues} daysAhead={daysFilter} user={session.user} accounts={accounts} />
+        <ActionCenterWrapper 
+          upcomingDues={upcomingDues} 
+          daysAhead={daysFilter} 
+          user={session.user} 
+          accounts={accounts}
+          filterSummary={filterSummary}
+          isFilterActive={isFilterActive}
+        />
       </div>
 
       {/* Scrollable Content Container */}
@@ -417,8 +469,16 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
       <div className="grid gap-6 lg:grid-cols-7">
         {/* Charts */}
         <Card className="lg:col-span-4 border-none shadow-sm hover:shadow-md transition-all">
-          <CardHeader>
-            <CardTitle className={cn(TYPOGRAPHY.sectionTitle)}>Spending by Category</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+            <div className="min-w-0">
+              <CardTitle className={cn(TYPOGRAPHY.sectionTitle)}>Spending by Category</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Expenses for <span className="font-semibold text-foreground">{filterSummary}</span>
+              </p>
+            </div>
+            <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground border border-border/50 shrink-0">
+              {filterSummary}
+            </span>
           </CardHeader>
           <CardContent>
             {chartData.length > 0 ? (

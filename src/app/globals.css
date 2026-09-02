@@ -719,6 +719,19 @@ button,
   color: var(--primary-foreground) !important;
 }
 
+/* Universal project-wide z-index fix for all dropdowns, select menus, and popovers */
+.ant-select-dropdown,
+.ant-dropdown,
+.ant-dropdown-menu,
+.ant-picker-dropdown,
+.ant-popover,
+.ant-tooltip,
+.ant-table-filter-dropdown,
+.ant-cascader-dropdown,
+.ant-color-picker-dropdown {
+  z-index: 3000 !important;
+}
+
 .dark .ant-select-dropdown,
 .dark .ant-dropdown-menu {
   background-color: var(--card) !important;

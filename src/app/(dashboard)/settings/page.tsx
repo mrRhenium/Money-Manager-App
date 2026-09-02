@@ -120,7 +120,7 @@ function SettingsContent() {
     document.documentElement.style.setProperty("--font-family-base", familyCss);
     localStorage.setItem("user-font-family-key", key);
     localStorage.setItem("user-font-family", familyCss);
-    toast.success("Font family updated!");
+    toast.success(`Font family set to ${key === "poppins" ? "Poppins" : "Default (Noto Sans)"}`);
   };
 
   const [isMobile, setIsMobile] = useState(false);
@@ -549,6 +549,41 @@ function SettingsContent() {
               </div>
             </div>
 
+            {/* Font Family Card */}
+            <div className="p-3.5 rounded-xl border bg-card space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-xs sm:text-sm text-foreground">Font Family</p>
+                  <p className="text-[11px] text-muted-foreground">Select typeface styling for the whole app</p>
+                </div>
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                  {fontFamilyPreference === "poppins" ? "Poppins" : "Default (Noto)"}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted/50 rounded-xl border">
+                {[
+                  { key: "noto", label: "Default (Noto)", css: "var(--font-sans), sans-serif", preview: "Aa Bb 123" },
+                  { key: "poppins", label: "Poppins", css: "var(--font-poppins), sans-serif", preview: "Aa Bb 123" },
+                ].map(opt => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => handleFontFamilyChange(opt.key, opt.css)}
+                    style={{ fontFamily: opt.css }}
+                    className={cn(
+                      "py-2 px-2.5 rounded-lg text-xs font-semibold transition-all text-center flex flex-col items-center justify-center cursor-pointer",
+                      fontFamilyPreference === opt.key 
+                        ? "bg-card text-foreground shadow-xs border font-bold ring-1 ring-primary/30" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span>{opt.label}</span>
+                    <span className="text-[10px] opacity-70 mt-0.5">{opt.preview}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Display Theme Card */}
             <div className="p-3.5 rounded-xl border bg-card flex items-center justify-between shadow-2xs">
               <div>
@@ -628,6 +663,37 @@ function SettingsContent() {
                 )}
               >
                 {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Font Family Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 gap-3">
+          <div className="flex flex-col">
+            <h4 className="text-xs sm:text-sm font-semibold text-foreground">Font Family</h4>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">Select your preferred typeface across the entire app.</p>
+          </div>
+
+          <div className="flex items-center gap-1.5 p-1 bg-muted/50 rounded-xl border">
+            {[
+              { key: "noto", label: "Default (Noto Sans)", css: "var(--font-sans), sans-serif" },
+              { key: "poppins", label: "Poppins", css: "var(--font-poppins), sans-serif" },
+            ].map(opt => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => handleFontFamilyChange(opt.key, opt.css)}
+                style={{ fontFamily: opt.css }}
+                className={cn(
+                  "py-1.5 px-3 rounded-lg text-xs font-semibold transition-all text-center flex items-center gap-2 cursor-pointer",
+                  fontFamilyPreference === opt.key 
+                    ? "bg-card text-foreground shadow-xs border font-bold ring-1 ring-primary/30" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <span>{opt.label}</span>
+                <span className="text-[10px] opacity-60 font-normal">(Aa)</span>
               </button>
             ))}
           </div>

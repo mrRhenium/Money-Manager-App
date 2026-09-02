@@ -67,9 +67,10 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
   let customEndDate: Date | null = null;
 
   if (isCustom && fromDateStr && toDateStr) {
-    customStartDate = new Date(fromDateStr);
-    customEndDate = new Date(toDateStr);
-    customEndDate.setHours(23, 59, 59, 999);
+    const [sYear, sMonth, sDay] = fromDateStr.split("-").map(Number);
+    customStartDate = new Date(sYear, sMonth - 1, sDay, 0, 0, 0, 0); // 12:00 AM
+    const [eYear, eMonth, eDay] = toDateStr.split("-").map(Number);
+    customEndDate = new Date(eYear, eMonth - 1, eDay + 1, 0, 0, 0, 0); // 12:00 AM
     daysFilter = Math.max(1, Math.ceil((customEndDate.getTime() - customStartDate.getTime()) / (1000 * 3600 * 24)));
   } else {
     daysFilter = parseInt(daysParam, 10);
@@ -140,15 +141,21 @@ export default async function DashboardPage(props: { searchParams?: Promise<{ [k
     pastDate = customStartDate;
     effectiveNow = customEndDate;
   } else if (!isMonthYear) {
+    pastDate = new Date(now);
     pastDate.setDate(now.getDate() - daysFilter);
+    pastDate.setHours(0, 0, 0, 0); // 12:00 AM
+    effectiveNow = new Date(now);
+    effectiveNow.setHours(23, 59, 59, 999);
   }
 
   const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   let filterSummary = "Last 7 Days";
   let isFilterActive = false;
 
-  if (isCustom && customStartDate && customEndDate) {
-    filterSummary = `${formatDate(customStartDate, "short", userTimezone)} – ${formatDate(customEndDate, "short", userTimezone)}`;
+  if (isCustom && fromDateStr && toDateStr) {
+    const [sy, sm, sd] = fromDateStr.split("-");
+    const [ey, em, ed] = toDateStr.split("-");
+    filterSummary = `${sd}-${sm}-${sy} – ${ed}-${em}-${ey}`;
     isFilterActive = true;
   } else if (isMonthYear) {
     if (selectedMonths.length > 0 && selectedYears.length > 0) {

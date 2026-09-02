@@ -116,6 +116,7 @@ export function DashboardAdvancedFilter() {
       {isCustom && (
         <RangePicker 
           className="h-10 w-full sm:w-[240px] rounded-full border-border/50 hover:border-primary/50" 
+          format="DD-MM-YYYY"
           value={fromDate && toDate ? [dayjs(fromDate), dayjs(toDate)] : null}
           onChange={(dates) => {
             const params = new URLSearchParams(searchParams.toString());

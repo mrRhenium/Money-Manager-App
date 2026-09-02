@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
+import { Noto_Sans, Noto_Sans_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
@@ -11,6 +11,12 @@ const notoSans = Noto_Sans({
 const notoSansMono = Noto_Sans_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -36,7 +42,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-font-size="compact"
-      className={`${notoSans.variable} ${notoSansMono.variable} antialiased`}
+      className={`${notoSans.variable} ${notoSansMono.variable} ${poppins.variable} antialiased`}
       suppressHydrationWarning
     >
       <body className="h-[100dvh] w-full relative flex flex-col">

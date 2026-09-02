@@ -128,7 +128,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                 </DialogDescription>
               </div>
             </div>
-            <span className={cn(TYPOGRAPHY.cardAmount, "px-3.5 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 font-bold shrink-0 hidden sm:inline-flex shadow-2xs")}>
+            <span className={cn("text-[length:var(--font-size-card-title)] font-bold px-3 py-1 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0 hidden sm:inline-flex shadow-2xs")}>
               {format(totalAmount)}
             </span>
           </div>
@@ -226,7 +226,7 @@ export function UpcomingDuesWidget({ dues, daysAhead = 30, accounts = [] }: { du
                               )}
                             </div>
                           </div>
-                          <span className={cn(TYPOGRAPHY.cardValue, "shrink-0 text-right whitespace-nowrap font-bold text-foreground")}>
+                          <span className={cn("text-[length:var(--font-size-card-title)] font-bold text-foreground shrink-0 text-right whitespace-nowrap")}>
                             {format(due.amount)}
                           </span>
                         </div>

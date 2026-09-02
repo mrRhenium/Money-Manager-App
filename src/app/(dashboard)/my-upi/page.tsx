@@ -713,6 +713,7 @@ function MyUpiContent() {
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground text-[length:var(--font-size-modal-input)]">₹</span>
                           <Input
                             type="number"
+                            inputMode="decimal"
                             min="1"
                             step="any"
                             placeholder="Enter amount (e.g. 500)"

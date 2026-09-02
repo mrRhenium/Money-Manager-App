@@ -296,6 +296,7 @@ export function PayDueModal({
                 <Input
                   id="due-amount"
                   type="number"
+                  inputMode="decimal"
                   step="any"
                   min="0.01"
                   required

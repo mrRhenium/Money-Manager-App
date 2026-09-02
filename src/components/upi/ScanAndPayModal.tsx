@@ -573,6 +573,7 @@ export function ScanAndPayModal({ open, onOpenChange }: ScanAndPayModalProps) {
                   <Input
                     id="amount"
                     type="text"
+                    inputMode="decimal"
                     placeholder="0.00"
                     value={amount}
                     onChange={e => setAmount(formatIndianNumber(e.target.value))}

@@ -96,6 +96,7 @@ export function PayBillModal({ cardId, outstanding, accounts, statements }: { ca
             <Label className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Amount ({currencyCode})</Label>
             <Input
               type="number"
+              inputMode="decimal"
               value={amount}
               min="0"
               onKeyDown={(e) => {

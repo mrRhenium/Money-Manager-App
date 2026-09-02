@@ -52,6 +52,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
         </Select>
         <Input
           ref={ref}
+          inputMode="decimal"
           className={cn("flex-1", className)}
           {...props}
         />

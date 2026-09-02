@@ -37,7 +37,7 @@ export function InvestmentUpdateForm({ investment, onUpdate }: { investment: any
     <div className="flex gap-2">
       <Input 
         type="text"
-        inputMode="numeric"
+        inputMode="decimal"
         placeholder={`New Value (${currencyCode})`} 
         value={val}
         onChange={(e) => setVal(formatIndianNumber(e.target.value))}

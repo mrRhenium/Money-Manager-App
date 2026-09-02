@@ -245,6 +245,7 @@ export function InsuranceForm({ policy, accounts, triggerClassName }: { policy?:
                     <FormLabel>Premium Amount</FormLabel>
                     <FormControl>
                       <Input 
+                        inputMode="decimal"
                         placeholder="e.g. 15,000"
                         {...field}
                         onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}

@@ -381,6 +381,7 @@ export function InvestmentForm({ investment, accounts, triggerClassName }: { inv
                     <FormLabel>Current Value {isAutoPricedAsset && watchAutoUpdate && "(Auto-calculated)"}</FormLabel>
                     <FormControl>
                       <Input
+                        inputMode="decimal"
                         placeholder="e.g. 55,000"
                         {...field}
                         onChange={(e) => field.onChange(formatIndianNumber(e.target.value))}

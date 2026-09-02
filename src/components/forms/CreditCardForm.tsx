@@ -226,6 +226,7 @@ export function CreditCardForm({ card, triggerClassName }: { card?: any, trigger
                 <FormItem><FormLabel className="flex items-center gap-2"><Banknote className="w-4 h-4 text-muted-foreground" /> Credit Limit ({currencyCode})</FormLabel><FormControl>
                   <Input 
                     type="text" 
+                    inputMode="decimal"
                     placeholder="e.g. 5,00,000"
                     {...field}
                     onChange={(e) => {

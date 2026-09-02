@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 
 // Common style classes for consistent Light/Dark mode visibility
-const commonClasses = "bg-background text-foreground text-xs border-input placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary/50 shadow-2xs transition-colors";
+const commonClasses = "bg-background text-foreground text-xs border-input placeholder:text-muted-foreground/45 placeholder:font-normal focus-visible:ring-1 focus-visible:ring-primary/50 shadow-2xs transition-colors";
 
 interface FilterInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;

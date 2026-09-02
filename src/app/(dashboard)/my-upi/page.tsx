@@ -267,7 +267,7 @@ function MyUpiContent() {
         <div className="max-w-7xl mx-auto space-y-4 min-w-0 w-full">
 
           {/* Quick Info & Security Banner */}
-          <div className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xs min-w-0 w-full overflow-hidden">
+          <div className="hidden sm:flex rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3 sm:p-4 flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xs min-w-0 w-full overflow-hidden">
             <div className="flex items-center gap-3 min-w-0 w-full flex-1">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
                 <Smartphone className="w-5 h-5" />

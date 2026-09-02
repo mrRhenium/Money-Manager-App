@@ -911,3 +911,26 @@ html.dark .ant-table-filter-dropdown button:nth-of-type(2) {
   background-color: var(--primary) !important;
   color: var(--primary-foreground) !important;
 }
+
+/* Universal soft & light placeholder styling across native & Ant Design inputs */
+::placeholder,
+input::placeholder,
+textarea::placeholder,
+.ant-select-selection-placeholder,
+.ant-input::placeholder,
+.ant-picker-input > input::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 0.45 !important;
+  font-weight: 400 !important;
+}
+
+html.dark ::placeholder,
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+html.dark .ant-select-selection-placeholder,
+html.dark .ant-input::placeholder,
+html.dark .ant-picker-input > input::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 0.45 !important;
+  font-weight: 400 !important;
+}
